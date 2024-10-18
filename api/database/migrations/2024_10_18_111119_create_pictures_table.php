@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('width');
             $table->string('height');
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('album_id')->constrained('albums');
+            $table->foreignId('album_id')->constrained('albums')->ondelete('cascade');
             $table->timestamps();
         });
     }
