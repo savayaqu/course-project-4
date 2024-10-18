@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('path')->unique();
             $table->string('hash')->unique();
-            $table->string('preview')->unique();
+            $table->string('preview')->unique()->nullable();
+            $table->dateTime('date');
+            $table->string('size');
+            $table->string('width');
+            $table->string('height');
             $table->foreignId('user_id')->constrained('users');
             $table->foreignId('album_id')->constrained('albums');
             $table->timestamps();

@@ -11,6 +11,10 @@ class Picture extends Model
       'path',
       'hash',
       'preview',
+      'date',
+      'size',
+      'width',
+      'height',
       'user_id',
       'album_id'
     ];
