@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use \App\Http\Controllers\Api\AlbumController;
 use \App\Http\Controllers\Api\PictureController;
+use \App\Http\Middleware\CheckRole;
 
 Route::controller(AuthController::class)->group(function ($users) {
    $users->post('/register', 'register');
@@ -15,11 +16,12 @@ Route::controller(AuthController::class)->group(function ($users) {
 
 Route::controller(AlbumController::class)->group(function ($albums) {
     $albums->post('/create', 'create');
+    $albums->middleware('auth:sanctum', CheckRole::class.':admin')->delete('/albums/{album}', 'destroy');
+
 });
 
 Route::controller(PictureController::class)->group(function ($pictures) {
    $pictures->middleware('auth:sanctum')->post('/albums/{album}/images', 'create');
-   $pictures->middleware('auth:sanctum', 'role:admin')->delete('/albums/{album}', 'destroy');
 });
 
 

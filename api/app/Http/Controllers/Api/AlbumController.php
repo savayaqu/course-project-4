@@ -23,8 +23,12 @@ class AlbumController extends Controller
     }
 
     public function destroy(Request $request, $album_name) {
-        Storage::delete('albums/' . $album_name);
+        $album = Album::where('name', $album_name)->first();
+        if(!$album) {
+            throw new ApiException('Альбом не найден', 404);
+        }
+        Storage::delete($album->path);
         Album::destroy($album_name);
-        return response()->json(null, 204);
+
     }
 }

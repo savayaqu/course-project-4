@@ -51,4 +51,6 @@ class PictureController extends Controller
         return response($responses);
     }
 
+
+
 }
