@@ -15,8 +15,17 @@ Route::controller(AuthController::class)->group(function ($users) {
 
 
 Route::controller(AlbumController::class)->group(function ($albums) {
+    //Создание альбома
     $albums->middleware('auth:sanctum')->post('/create', 'create');
+    //Удаление альбома со всем содержимым
     $albums->middleware('auth:sanctum')->delete('/albums/{album}', 'destroy');
+    //Просмотр альбомов
+    $albums->middleware('auth:sanctum')->get('/albums', 'index');
+    //Просмотр картинок в папке
+    $albums->middleware('auth:sanctum')->get('/albums/{album}/images', 'showPictures');
+
+
+
     //реализовать для админа$albums->middleware('auth:sanctum', CheckRole::class.':admin')->delete('/albums/{album}', 'destroy');
 
 });

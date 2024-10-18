@@ -12,6 +12,31 @@ use Illuminate\Support\Facades\Storage;
 
 class AlbumController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $albums = Album::where('user_id', $user->id)->get();
+        if($albums->isEmpty())
+        {
+            throw new ApiException('Альбомы не найдены', 404);
+        }
+        return response($albums)->setStatusCode(200);
+    }
+    public function showPictures(Request $request, $album_name)
+    {
+        $user = Auth::user();
+        $album = Album::where('name', $album_name)->first();
+        if(!$album)
+        {
+            throw new ApiException('Альбом не найден', 404);
+        }
+        $pictures = Picture::with('album')->where('album_id', $album->id)->where('user_id', $user->id)->get();
+        if($pictures->isEmpty())
+        {
+            throw new ApiException('Картинки в альбоме не найдены', 404);
+        }
+        return response($pictures)->setStatusCode(200);
+    }
     public function create(Request $request)
     {
         $user = Auth::user();
