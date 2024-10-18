@@ -34,4 +34,8 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+    public function codeRole(array $role)
+    {
+        return in_array($this->role->code, $role);
+    }
 }

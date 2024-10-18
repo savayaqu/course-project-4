@@ -8,10 +8,14 @@ class Album extends Model
 {
     protected $fillable = [
       'name',
-      'path'
+      'path',
+      'user_id'
     ];
     public function pictures()
     {
         return $this->hasMany(Picture::class);
+    }
+    public function user() {
+        return $this->belongsTo(User::class);
     }
 }

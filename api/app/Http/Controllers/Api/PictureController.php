@@ -21,7 +21,6 @@ class PictureController extends Controller
         $responses = [];
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
-            $fileExtension = $file->extension();
             $imageHash = sha1_file($file->getRealPath());
 
             $image = Picture::where('album_id', $album->id)->where('hash', $imageHash)->first();

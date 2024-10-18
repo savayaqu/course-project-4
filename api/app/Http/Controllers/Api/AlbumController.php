@@ -21,4 +21,10 @@ class AlbumController extends Controller
      Storage::createDirectory($path);
      Album::create(['name' => $name, 'path' => $path]);
     }
+
+    public function destroy(Request $request, $album_name) {
+        Storage::delete('albums/' . $album_name);
+        Album::destroy($album_name);
+        return response()->json(null, 204);
+    }
 }

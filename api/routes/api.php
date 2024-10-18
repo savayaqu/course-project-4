@@ -19,6 +19,7 @@ Route::controller(AlbumController::class)->group(function ($albums) {
 
 Route::controller(PictureController::class)->group(function ($pictures) {
    $pictures->middleware('auth:sanctum')->post('/albums/{album}/images', 'create');
+   $pictures->middleware('auth:sanctum', 'role:admin')->delete('/albums/{album}', 'destroy');
 });
 
 
