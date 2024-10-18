@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('hash')->unique();
             $table->string('preview')->unique()->nullable();
             $table->dateTime('date');
+            $table->unique(['user_id', 'name']);
+            $table->unique(['user_id', 'path']);
+            $table->unique(['user_id', 'id']);
             $table->string('size');
             $table->string('width');
             $table->string('height');

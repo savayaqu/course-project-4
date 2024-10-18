@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('albums', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('path')->unique();
+            $table->string('name');
+            $table->string('path');
+            $table->unique(['user_id','name']);
+            $table->unique(['user_id', 'path']);
+            $table->unique(['user_id', 'id']);
             $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });

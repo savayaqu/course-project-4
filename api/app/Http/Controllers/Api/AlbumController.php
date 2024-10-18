@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Album;
+use App\Models\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -33,10 +34,14 @@ class AlbumController extends Controller
         }
         //Проверка что папка принадлежит текущему пользователю
         $user = Auth::user();
-        if(Album::where('name', $album_name)->where('user_id',$user->id)) {
+        $files = Picture::where('album_id', $album->id)->get();
+        if(Album::where('name', $album_name)->where('user_id',$user->id)->first()) {
             Storage::deleteDirectory($album->path);
-            Album::destroy($album_name);
-            return response("Альбом удален")->setStatusCode(204);
+            foreach ($files as $file) {
+                Picture::where('id', $file->id)->delete();
+            }
+            Album::where('name', $album_name)->delete();
+            return response("Альбом удален")->setStatusCode(200);
         }
         else {
             throw new ApiException('Forbidden for you', 403);
