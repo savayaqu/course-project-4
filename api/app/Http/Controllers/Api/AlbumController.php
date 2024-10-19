@@ -52,11 +52,11 @@ class AlbumController extends Controller
         {
             Album::create([
                'name' => $name,
-               'path' => Str::random(60),
+               'path' => $input_path,
                'user_id' => $user->id
             ]);
             $current_album = Album::where('name', $name)->where('user_id', $user->id)->first();
-            $path = $user->login.'/albums/'.$current_album->id.'/'.$input_path;
+            $path = $user->login.'/albums/'.$current_album->id;
 
             if(Storage::exists($path) && !$exist_album)
             {
