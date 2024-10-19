@@ -8,7 +8,9 @@ use App\Models\Album;
 use App\Models\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class AlbumController extends Controller
 {
@@ -22,10 +24,10 @@ class AlbumController extends Controller
         }
         return response($albums)->setStatusCode(200);
     }
-    public function showPictures(Request $request, $album_name)
+    public function showPictures(Request $request, $album_id)
     {
         $user = Auth::user();
-        $album = Album::where('name', $album_name)->first();
+        $album = Album::where('name', $album_id)->first();
         if(!$album)
         {
             throw new ApiException('Альбом не найден', 404);
@@ -40,32 +42,49 @@ class AlbumController extends Controller
     public function create(Request $request)
     {
         $user = Auth::user();
-     $name = $request->input('name');
-     $path = '/albums/' . $name; // TODO: создавать папку пользователя до привата
-     if(Storage::exists('albums/' . $name))
-     {
-         throw  new ApiException('Данная папка уже существует', 409);
-     }
-     Storage::createDirectory($path);
-     $album = Album::create(['name' => $name, 'path' => $request->path, 'user_id' => $user->id]);
-     return  response(['message' => 'Папка создана', $album])->setStatusCode(201);
+        $name = $request->input('name');
+        $input_path = $request->input('path');
+        if($exist_album = Album::where('name', $name)->where('user_id', $user->id)->exists())
+        {
+            throw new ApiException('Данный альбом уже существует', 409);
+        }
+        else
+        {
+            Album::create([
+               'name' => $name,
+               'path' => Hash::make(Str::random(60)),
+               'user_id' => $user->id
+            ]);
+            $current_album = Album::where('name', $name)->where('user_id', $user->id)->first();
+            $path = $user->login.'/albums/'.$current_album->id;
+
+            if(Storage::exists($path) && !$exist_album)
+            {
+                Storage::deleteDirectory($path);
+                //return response('папка удалена');
+            }
+            $current_album->path = $path.'/'.$input_path;
+            Storage::createDirectory($current_album->path);
+            return  response(['message' => 'Папка создана', $current_album])->setStatusCode(201);
+        }
+
     }
 
-    public function destroy(Request $request, $album_name) {
+    public function destroy(Request $request, $album_id) {
 
-        $album = Album::where('name', $album_name)->first();
+        $album = Album::where('id', $album_id)->first();
         if(!$album) {
             throw new ApiException('Альбом не найден', 404);
         }
         //Проверка что папка принадлежит текущему пользователю
         $user = Auth::user();
         $files = Picture::where('album_id', $album->id)->get();
-        if(Album::where('name', $album_name)->where('user_id',$user->id)->first()) {
+        if(Album::where('id', $album_id)->where('user_id',$user->id)->first()) {
             Storage::deleteDirectory($album->path);
             foreach ($files as $file) {
                 Picture::where('id', $file->id)->delete();
             }
-            Album::where('name', $album_name)->delete();
+            Album::where('id', $album_id)->delete();
             return response("Альбом удален")->setStatusCode(200);
         }
         else {
