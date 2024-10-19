@@ -64,7 +64,7 @@ class AlbumController extends Controller
         // Если существует альбом с таким именем, модифицируем имя
         while (Album::where('name', $name)->where('user_id', $user->id)->exists()) {
             $name_counter++;
-            $name = $original_name . ' ' . $name_counter;
+            $name = $original_name . $name_counter;
         }
 
         // Создание нового альбома с уникальным именем
