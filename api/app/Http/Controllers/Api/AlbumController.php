@@ -81,10 +81,6 @@ class AlbumController extends Controller
         if (Storage::exists($path)) {
             Storage::deleteDirectory($path);
         }
-
-        // Обновление пути альбома и создание директории
-        $new_album->path = $path;
-        $new_album->save();
         Storage::makeDirectory($new_album->path);
 
         // Формирование ответа
