@@ -16,7 +16,7 @@ Route::controller(AuthController::class)->group(function ($users) {
 
 Route::controller(AlbumController::class)->group(function ($albums) {
     //Создание альбома
-    $albums->middleware('auth:sanctum')->post('/create', 'create');
+    $albums->middleware('auth:sanctum')->post('/albums', 'create');
     //Удаление альбома со всем содержимым
     $albums->middleware('auth:sanctum')->delete('/albums/{album}', 'destroy');
     //Просмотр альбомов
