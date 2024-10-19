@@ -12,18 +12,19 @@ use Illuminate\Support\Facades\Storage;
 
 class PictureController extends Controller
 {
-    public function create(Request $request, $album_name)
+    public function create(Request $request, $album_id)
     {
         $user = Auth::user();
         $files = $request->file('images');
-        $album = Album::where('name', $album_name)->first();
-        $path = "$album->path/images/"; // TODO: Путь в базе не тот, надо по ID пользователя и ID альбома найти в файлах
+        $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
+
+        $path = $user->login.'/albums/'.$album->id.'/pictures/';
         $responses = [];
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
             $imageHash = sha1_file($file->getRealPath());
 
-            $image = Picture::where('album_id', $album->id)->where('hash', $imageHash)->first();
+            $image = Picture::where('album_id', $album_id)->where('hash', $imageHash)->first();
             if ($image) {
                 $responses['errored'][] = [
                     'name' => $filename,
@@ -44,7 +45,7 @@ class PictureController extends Controller
                 'width' => $sizes[0],
                 'height' => $sizes[1],
                 'user_id' => $user->id,
-                'album_id' => $album->id,
+                'album_id' => $album_id,
             ]);
             $responses['successful'][] = $imageDB;
         }
