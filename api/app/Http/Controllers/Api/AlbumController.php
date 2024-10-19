@@ -52,18 +52,18 @@ class AlbumController extends Controller
         {
             Album::create([
                'name' => $name,
-               'path' => Hash::make(Str::random(60)),
+               'path' => Str::random(60),
                'user_id' => $user->id
             ]);
             $current_album = Album::where('name', $name)->where('user_id', $user->id)->first();
-            $path = $user->login.'/albums/'.$current_album->id;
+            $path = $user->login.'/albums/'.$current_album->id.'/'.$input_path;
 
             if(Storage::exists($path) && !$exist_album)
             {
                 Storage::deleteDirectory($path);
                 //return response('папка удалена');
             }
-            $current_album->path = $path.'/'.$input_path;
+            $current_album->path = $path;
             Storage::createDirectory($current_album->path);
             return  response(['message' => 'Папка создана', $current_album])->setStatusCode(201);
         }
