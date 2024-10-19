@@ -15,7 +15,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         if (!Auth::attempt($request->only('login', 'password'))) {
-            throw new ApiException(401, 'Invalid credentials');
+            throw new ApiException('Invalid credentials', 401);
         }
 
         $user = Auth::user();

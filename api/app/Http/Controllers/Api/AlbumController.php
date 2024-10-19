@@ -41,14 +41,14 @@ class AlbumController extends Controller
     {
         $user = Auth::user();
      $name = $request->input('name');
-     $path = '/albums/' . $name;
+     $path = '/albums/' . $name; // TODO: создавать папку пользователя до привата
      if(Storage::exists('albums/' . $name))
      {
          throw  new ApiException('Данная папка уже существует', 409);
      }
      Storage::createDirectory($path);
-     $album = Album::create(['name' => $name, 'path' => $path, 'user_id' => $user->id]);
-     return  response(['Папка создана', $album])->setStatusCode(201);
+     $album = Album::create(['name' => $name, 'path' => $request->path, 'user_id' => $user->id]);
+     return  response(['message' => 'Папка создана', $album])->setStatusCode(201);
     }
 
     public function destroy(Request $request, $album_name) {
