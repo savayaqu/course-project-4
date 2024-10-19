@@ -17,7 +17,7 @@ class PictureController extends Controller
         $user = Auth::user();
         $files = $request->file('images');
         $album = Album::where('name', $album_name)->first();
-        $path = "$album->path/images/";
+        $path = "$album->path/images/"; // TODO: Путь в базе не тот, надо по ID пользователя и ID альбома найти в файлах
         $responses = [];
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
