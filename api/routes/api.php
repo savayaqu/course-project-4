@@ -13,25 +13,25 @@ Route::controller(AuthController::class)->group(function ($users) {
    $users->middleware('auth:sanctum')->post('/logout', 'logout');
 });
 
-
-Route::controller(AlbumController::class)->group(function ($albums) {
+Route::controller(AlbumController::class)->prefix('albums')->middleware('auth:sanctum')->group(function ($albums) {
     //Создание альбома
-    $albums->middleware('auth:sanctum')->post('/albums', 'create');
+    $albums->post( '','create');
     //Удаление альбома со всем содержимым
-    $albums->middleware('auth:sanctum')->delete('/albums/{album}', 'destroy');
+    $albums->delete('/{album}', 'destroy');
     //Просмотр альбомов
-    $albums->middleware('auth:sanctum')->get('/albums', 'index');
+    $albums->get('', 'index');
     //Просмотр картинок в папке
-    $albums->middleware('auth:sanctum')->get('/albums/{album}/images', 'showPictures');
-
-
-
-    //реализовать для админа$albums->middleware('auth:sanctum', CheckRole::class.':admin')->delete('/albums/{album}', 'destroy');
+    $albums->get('/{album}/images', 'showPictures');
+    //реализовать для админа
+    //$albums->middleware(CheckRole::class.':admin')->delete('/{album}', 'destroy');
 
 });
 
-Route::controller(PictureController::class)->group(function ($pictures) {
-   $pictures->middleware('auth:sanctum')->post('/albums/{album}/images', 'create');
+Route::controller(PictureController::class)->middleware('auth:sanctum')->group(function ($pictures) {
+    //Создание картинок в альбом
+   $pictures->post('/albums/{album}/images', 'create');
+   //Скачивание картинки
+    $pictures->get('/albums/{album}/images/{image}/download', 'download');
 });
 
 

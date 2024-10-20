@@ -27,17 +27,17 @@ class AlbumController extends Controller
     public function showPictures(Request $request, $album_id)
     {
         $user = Auth::user();
-        $album = Album::where('name', $album_id)->first();
+        $album = Album::where('id', $album_id)->first();
         if(!$album)
         {
             throw new ApiException('Альбом не найден', 404);
         }
-        $pictures = Picture::with('album')->where('album_id', $album->id)->where('user_id', $user->id)->get();
+        $pictures = Picture::without('album')->where('album_id', $album->id)->where('user_id', $user->id)->get();
         if($pictures->isEmpty())
         {
             throw new ApiException('Картинки в альбоме не найдены', 404);
         }
-        return response($pictures)->setStatusCode(200);
+        return response()->json(['pictures' => $pictures])->setStatusCode(200);
     }
     public function create(Request $request)
     {
@@ -51,7 +51,7 @@ class AlbumController extends Controller
         if ($exist_album) {
             // Если альбом с таким путём уже существует, возвращаем его ID
             return response()->json([
-                'message' => 'Альбом уже существует по данному пути',
+                'message' => 'Альбом уже существует',
                 'album' => $exist_album
             ])->setStatusCode(409);
 
@@ -81,7 +81,7 @@ class AlbumController extends Controller
         if (Storage::exists($path)) {
             Storage::deleteDirectory($path);
         }
-        Storage::makeDirectory($new_album->path);
+        Storage::makeDirectory($path);
 
         // Формирование ответа
         return response()->json([
@@ -90,10 +90,6 @@ class AlbumController extends Controller
         ])->setStatusCode(201);
     }
 
-    public function createAlbum()
-    {
-
-    }
     public function destroy(Request $request, $album_id) {
 
         $album = Album::where('id', $album_id)->first();
@@ -104,15 +100,15 @@ class AlbumController extends Controller
         $user = Auth::user();
         $files = Picture::where('album_id', $album->id)->get();
         if(Album::where('id', $album_id)->where('user_id',$user->id)->first()) {
-            Storage::deleteDirectory($album->path);
+            Storage::deleteDirectory($user->login.'/albums/'.$album_id);
             foreach ($files as $file) {
                 Picture::where('id', $file->id)->delete();
             }
             Album::where('id', $album_id)->delete();
-            return response("Альбом удален")->setStatusCode(200);
+            return response()->json(['message' => 'Альбом удалён'])->setStatusCode(200);
         }
         else {
-            throw new ApiException('Forbidden for you', 403);
+            throw new ApiException('Доступ запрещён', 403);
         }
 
 
