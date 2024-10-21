@@ -14,18 +14,12 @@ return new class extends Migration
         Schema::create('pictures', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('path');
-            $table->string('hash');
-            $table->string('preview')->unique()->nullable();
             $table->dateTime('date');
-            $table->unique(['user_id', 'name']);
-            $table->unique(['user_id', 'path']);
-            $table->unique(['user_id', 'id']);
+            $table->unique(['album_id', 'name']);
             $table->string('size');
             $table->string('width');
             $table->string('height');
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('album_id')->constrained('albums')->ondelete('cascade');
+            $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
             $table->timestamps();
         });
     }
