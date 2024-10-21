@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('login')->unique();
             $table->string('password');
+            $table->integer('complaints')->default(0);
+            $table->boolean('is_banned')->default(false);
             $table->foreignId('role_id')->constrained();
             $table->rememberToken()->unique();
             $table->timestamps();

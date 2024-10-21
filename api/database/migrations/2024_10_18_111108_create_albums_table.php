@@ -21,6 +21,11 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users');
             $table->timestamps();
         });
+        Schema::create('album_accesses', function (Blueprint $table) {
+           $table->primary(['album_id','user_id']);
+           $table->foreignId('album_id')->constrained('albums');
+           $table->foreignId('user_id')->constrained('users');
+        });
     }
 
     /**
