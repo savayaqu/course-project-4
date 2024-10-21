@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unique(['name', 'user_id']);
             $table->timestamps();
         });
-        Schema::create('tags_pictures', function (Blueprint $table) {
+        Schema::create('tag_pictures', function (Blueprint $table) {
             $table->primary(['tag_id', 'picture_id']);
             $table->foreignId('tag_id')->constrained();
             $table->foreignId('picture_id')->constrained();

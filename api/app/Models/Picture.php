@@ -14,7 +14,15 @@ class Picture extends Model
       'height',
       'album_id'
     ];
-    public function user() {
-        return $this->belongsTo(User::class);
+    public function album() {
+        return $this->belongsTo(Album::class);
+    }
+    public function tagPictures()
+    {
+        return $this->hasMany(TagPicture::class);
+    }
+    public function complaints()
+    {
+        return $this->hasMany(Complaint::class);
     }
 }

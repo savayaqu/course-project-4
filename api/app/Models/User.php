@@ -16,7 +16,9 @@ class User extends Authenticatable
         'name',
         'login',
         'password',
-        'role_id'
+        'role_id',
+        'complaint',
+        'is_banned'
     ];
 
     protected $hidden = [
@@ -30,6 +32,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function codeRole(array $role)
+    {
+        return in_array($this->role->code, $role);
+    }
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -38,8 +44,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(Album::class);
     }
-    public function codeRole(array $role)
+    public function complaints()
     {
-        return in_array($this->role->code, $role);
+        return $this->hasMany(Complaint::class);
     }
+    public function albumAccesses()
+    {
+        return $this->hasMany(AlbumAccess::class);
+    }
+    public function tags()
+    {
+        return $this->hasMany(Tag::class);
+    }
+
 }
