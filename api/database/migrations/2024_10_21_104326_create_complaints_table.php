@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('description');
             $table->foreignId('album_id')->nullable()->constrained('albums');
             $table->foreignId('picture_id')->nullable()->constrained('pictures');
+            $table->foreignId('user_id')->nullable()->constrained('users');
             $table->foreignId('complaint_type_id')->constrained('complaint_types');
             $table->timestamps();
         });
