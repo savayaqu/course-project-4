@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invitations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('album_id')->constrained('albums');
+            $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
             $table->string('link')->unique();
             $table->dateTime('expires_at');
             $table->timestamps();

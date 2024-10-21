@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->dateTime('date');
             $table->unique(['album_id', 'name']);
-            $table->string('size');
-            $table->string('width');
-            $table->string('height');
+            $table->bigInteger('size');
+            $table->integer('width');
+            $table->integer('height');
             $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
             $table->timestamps();
         });

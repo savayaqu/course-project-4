@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('albums', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('path');
+            $table->string('path', 4095)->nullable();
             $table->unique(['user_id','name']);
             $table->unique(['user_id', 'path']);
             $table->unique(['user_id', 'id']);
@@ -23,8 +23,8 @@ return new class extends Migration
         });
         Schema::create('album_accesses', function (Blueprint $table) {
            $table->primary(['album_id','user_id']);
-           $table->foreignId('album_id')->constrained('albums');
-           $table->foreignId('user_id')->constrained('users');
+           $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
+           $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
         });
     }
 
