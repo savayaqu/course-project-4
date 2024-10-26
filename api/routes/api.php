@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TagController;
 
 use App\Http\Middleware\CheckRole;
 
+//Авторизация
 Route::controller(AuthController::class)->group(function ($users) {
     //Регистрация
    $users->post('/register', 'register');
@@ -37,8 +38,21 @@ Route::middleware('auth:sanctum')->group(function () {
                 //Удаление ссылки-приглашения на альбом
                 $albums->delete('/{access}', 'destroy');
             });
+            Route::controller(PictureController::class)->group(function ($pictures) {
+                //Просмотр картинок в папке
+                $pictures->get('/{album}', 'showPictures');
+
+                $pictures->middleware('{picture}')->group(function ($pictures) {
+                    //Добавление тега к картинки
+                    $pictures->post('/add', 'addTag');
+                    //Удаление тега с картинки
+                    $pictures->post('/del', 'destroyTag');
+                });
+
+            });
 
         });
+
     });
 
 
@@ -46,18 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 //--------------------------------------------------
 //Всё что ниже не реализовано
-    Route::controller(PictureController::class)->group(function ($pictures) {
-        //Просмотр картинок в папке
-        $pictures->get('/{album}', 'showPictures');
 
-        $pictures->middleware('{pictures}')->group(function ($pictures) {
-            //Добавление тега к картинки
-            $pictures->post('', 'addTag');
-            //Удаление тега с картинки
-            $pictures->delete('', 'destroyTag');
-        });
-
-    });
     Route::controller(ComplaintController::class)->prefix('complaints')->group(function ($complaints) {
         //Создание жалобы
         $complaints->post('', 'create');
@@ -70,9 +73,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         $tags->middleware('{tag}')->group(function ($tags) {
             //Редактирование тега
-            $tags->post('/{tag}', 'edit');
+            $tags->post('', 'edit');
             //Удаление тега
-            $tags->delete('/{tag}', 'destroy');
+            $tags->delete('', 'destroy');
         });;
 
     });
