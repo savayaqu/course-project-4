@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('value');
             $table->foreignId('user_id')->constrained();
-            $table->unique(['name', 'user_id']);
+            $table->unique(['value', 'user_id']);
             $table->timestamps();
         });
         Schema::create('tag_pictures', function (Blueprint $table) {

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('albums', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('path', 4095)->nullable();
+            $table->string('path')->nullable();
             $table->unique(['user_id','name']);
             $table->unique(['user_id', 'path']);
             $table->unique(['user_id', 'id']);
