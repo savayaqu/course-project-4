@@ -27,20 +27,15 @@ class PictureController extends Controller
         {
             throw new ApiException('Картинки в альбоме не найдены', 404);
         }
-        return response()->json(['pictures' => $pictures])->setStatusCode(200);
+        return response()->json(['pictures' => $pictures]);
     }
 
     public function download($album_id, $picture_id, Request $request)
     {
-        $user = User::where('remember_token', $request->token)->first();
-
-        // Проверка на существование пользователя
-        if (!$user) {
-            throw new ApiException('Не авторизован', 401);
-        }
+        $user = Auth::user();
 
         $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
-        $picture = Picture::where('album_id', $album_id)->where('id', $picture_id)->where('user_id', $user->id)->first();
+        $picture = Picture::where('album_id', $album_id)->where('id', $picture_id)->first();
 
         if (!$album) {
             throw new ApiException('Альбом не найден', 404);
@@ -48,8 +43,8 @@ class PictureController extends Controller
         if (!$picture) {
             throw new ApiException('Картинка не найдена', 404);
         }
-
-        return response()->file(Storage::download($picture->path))->setStatusCode(200);
+        $path = Storage::path($user->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
+        return response()->download($path, $picture->name);
     }
 
     public function create(Request $request, $album_id)
