@@ -47,9 +47,10 @@ Route
                 ->prefix('{picture}')
                 ->group(function ($picture) {
                     // Картинка
-                    $picture->get (''        , 'info');
-                    $picture->get ('original', 'original');
-                    $picture->get ('download', 'download');
+                    $picture->get (''            , 'info');
+                    $picture->get ('thumb/{size}', 'thumbnail');
+                    $picture->get ('original'    , 'original');
+                    $picture->get ('download'    , 'download');
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']);
                     $picture
                     ->prefix('tags')

@@ -8,6 +8,7 @@ class Picture extends Model
 {
     protected $fillable = [
       'name',
+      'hash',
       'date',
       'size',
       'width',
