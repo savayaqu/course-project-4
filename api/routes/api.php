@@ -9,80 +9,82 @@ use App\Http\Controllers\Api\TagController;
 
 use App\Http\Middleware\CheckRole;
 
-//Авторизация
-Route::controller(AuthController::class)->group(function ($users) {
-    //Регистрация
-   $users->post('/register', 'register');
-   //Вход
-   $users->post('/login', 'login');
-   //Выход
-   $users->middleware('auth:sanctum')->post('/logout', 'logout');
+Route::controller(AuthController::class)->group(function ($auth) {
+    // Авторизация
+    $auth->post('register', 'register');
+    $auth->post('login'   , 'login');
+    $auth->post('logout'  , 'logout')->middleware('auth:sanctum');
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::controller(AlbumController::class)->prefix('albums')->group(function ($albums) {
-        //Создание альбома
-        $albums->post( '','create');
-        //Удаление альбома со всем содержимым
-        $albums->delete('/{album}', 'destroy');
-        //Просмотр альбомов
-        $albums->get('', 'index');
-
-        $albums->prefix('{album}')->group(function ($albums) {
-            //--------------------------------------------------
-            //Нереализованный функционал:
-            $albums->middleware(CheckRole::class.':admin')->delete('', 'destroy');
-            $albums->prefix('access')->group(function ($albums) {
-                //Создание ссылки-приглашения на альбом
-                $albums->post('', 'createAccess');
-                //Удаление ссылки-приглашения на альбом
-                $albums->delete('/{access}', 'destroy');
-            });
-            Route::controller(PictureController::class)->group(function ($pictures) {
-                //Просмотр картинок в папке
-                $pictures->get('/{album}', 'showPictures');
-
-                $pictures->middleware('{picture}')->group(function ($pictures) {
-                    //Добавление тега к картинки
-                    $pictures->post('/add', 'addTag');
-                    //Удаление тега с картинки
-                    $pictures->post('/del', 'destroyTag');
+Route
+::middleware('auth:sanctum')
+->group(function ($authorized) {
+    // Авторизованные функции
+    $authorized
+    ->controller(AlbumController::class)
+    ->prefix('albums')
+    ->group(function ($albums) {
+        // Альбомы
+        $albums->post('', 'create');
+        $albums->get ('', 'index');
+        $albums
+        ->prefix('{album}')
+        ->group(function ($album) {
+            // Альбом
+            $album->get   ('', 'show'); // TODO: Тут выводить картинки вместе с инфой об альбоме
+            $album->post  ('', 'edit');
+            $album->delete('', 'destroy');
+          /*$album // TODO: Удалить, если не делать доступы по логинам (хочется таблицу приглашений, если делать)
+            ->controller(AccessController::class)
+            ->prefix('accesses')
+            ->group(function ($accesses) {
+                $accesses->post  (''        , 'create');
+                $accesses->delete('{access}', 'destroy');
+            });*/
+            $album->post('complaint', [ComplaintsController::class, 'createToAlbum']); // Жалоба на альбом
+            $album
+          //->prefix('pictures') // TODO: Удалить, если выводить в информации об альбоме, но потеря пагинации
+            ->controller(PictureController::class)
+            ->group(function ($albumPictures) {
+                // Картинки в альбоме
+              //$albumPictures->get ('', 'index'); // TODO: Удалить, если выводить в информации об альбоме, но потеря пагинации
+                $albumPictures->post('', 'create');
+                $albumPictures
+                ->prefix('{picture}')
+                ->group(function ($picture) {
+                    // Картинка
+                    $picture->get (''        , 'info');
+                    $picture->get ('original', 'original');
+                    $picture->get ('download', 'download');
+                    $picture->post('complaint', [ComplaintsController::class, 'createToPicture']);
+                    $picture
+                    ->prefix('tags')
+                    ->controller(TagController::class)
+                    ->group(function ($pictureTags) {
+                        // Управление тегами на картинке
+                        $pictureTags->post  (''    , 'attachToPicture');
+                        $pictureTags->delete('{id}', 'detachToPicture');
+                    });
                 });
-
             });
-
         });
-
     });
-
-
-
-
-//--------------------------------------------------
-//Всё что ниже не реализовано
-
-    Route::controller(ComplaintController::class)->prefix('complaints')->group(function ($complaints) {
-        //Создание жалобы
-        $complaints->post('', 'create');
-        //Удаление жалобы (для админа)
-        $complaints->middleware(CheckRole::class.':admin')->delete('/{complaint}', 'destroy');
+    $authorized
+    ->prefix('tags')
+    ->controller(TagController::class)
+    ->group(function ($tags) {
+        // Теги
+        $tags->post('', 'create');
+        $tags->get ('', 'index');
+        $tags->prefix('{tag}')->group(function ($tag) {
+            // Тег
+            $tag->get   ('', 'show');
+            $tag->post  ('', 'edit');
+            $tag->delete('', 'destroy');
+        });
     });
-    Route::controller(TagController::class)->prefix('tags')->group(function ($tags) {
-        //Создание тега
-        $tags->post( '','create');
-
-        $tags->middleware('{tag}')->group(function ($tags) {
-            //Редактирование тега
-            $tags->post('', 'edit');
-            //Удаление тега
-            $tags->delete('', 'destroy');
-        });;
-
-    });
+    // TODO: Доступы
+    // TODO: Жалобы
+    // TODO: Пользователи
+    // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...)
 });
-
-
-
-
-
-
