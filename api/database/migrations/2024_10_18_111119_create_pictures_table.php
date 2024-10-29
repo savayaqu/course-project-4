@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('hash');
             $table->dateTime('date');
             $table->unique(['album_id', 'name']);
+            $table->unique(['album_id', 'hash']);
             $table->bigInteger('size');
             $table->integer('width');
             $table->integer('height');
