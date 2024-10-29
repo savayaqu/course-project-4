@@ -37,11 +37,11 @@ Route
             $album->post('invite'   , [InvitationController::class, 'create'       ]); // Код приглашения
             $album->post('complaint', [ ComplaintController::class, 'createToAlbum']); // Жалоба на альбом
             $album
-          //->prefix('pictures') // TODO: Удалить, если выводить в информации об альбоме, но потеря пагинации
+            ->prefix('pictures')
             ->controller(PictureController::class)
             ->group(function ($albumPictures) {
                 // Картинки в альбоме
-              //$albumPictures->get ('', 'index'); // TODO: Удалить, если выводить в информации об альбоме, но потеря пагинации
+                $albumPictures->get ('', 'index');
                 $albumPictures->post('', 'create');
                 $albumPictures
                 ->prefix('{picture}')
