@@ -34,8 +34,8 @@ Route
             $album->get   ('', 'show'); // TODO: Тут выводить картинки вместе с инфой об альбоме
             $album->post  ('', 'edit');
             $album->delete('', 'destroy');
-            $album->post('invite'   , [   InviteController::class, 'create']); // Код приглашения
-            $album->post('complaint', [ComplaintController::class, 'createToAlbum']); // Жалоба на альбом
+            $album->post('invite'   , [InvitationController::class, 'create'       ]); // Код приглашения
+            $album->post('complaint', [ ComplaintController::class, 'createToAlbum']); // Жалоба на альбом
             $album
           //->prefix('pictures') // TODO: Удалить, если выводить в информации об альбоме, но потеря пагинации
             ->controller(PictureController::class)
@@ -77,9 +77,9 @@ Route
             $tag->delete('', 'destroy');
         });
     });
-    // TODO: Доступы      —    AccessController
-    // TODO: Приглашения  —    InviteController
-    // TODO: Жалобы       — ComplaintController
-    // TODO: Пользователи —      UserController
+    // TODO: Доступы      —     AccessController
+    // TODO: Приглашения  — InvitationController
+    // TODO: Жалобы       —  ComplaintController
+    // TODO: Пользователи —       UserController
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
 });
