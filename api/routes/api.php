@@ -34,14 +34,8 @@ Route
             $album->get   ('', 'show'); // TODO: Тут выводить картинки вместе с инфой об альбоме
             $album->post  ('', 'edit');
             $album->delete('', 'destroy');
-          /*$album // TODO: Удалить, если не делать доступы по логинам (хочется таблицу приглашений, если делать)
-            ->controller(AccessController::class)
-            ->prefix('accesses')
-            ->group(function ($accesses) {
-                $accesses->post  (''        , 'create');
-                $accesses->delete('{access}', 'destroy');
-            });*/
-            $album->post('complaint', [ComplaintsController::class, 'createToAlbum']); // Жалоба на альбом
+            $album->post('invite'   , [   InviteController::class, 'create']); // Код приглашения
+            $album->post('complaint', [ComplaintController::class, 'createToAlbum']); // Жалоба на альбом
             $album
           //->prefix('pictures') // TODO: Удалить, если выводить в информации об альбоме, но потеря пагинации
             ->controller(PictureController::class)
@@ -56,7 +50,7 @@ Route
                     $picture->get (''        , 'info');
                     $picture->get ('original', 'original');
                     $picture->get ('download', 'download');
-                    $picture->post('complaint', [ComplaintsController::class, 'createToPicture']);
+                    $picture->post('complaint', [ComplaintController::class, 'createToPicture']);
                     $picture
                     ->prefix('tags')
                     ->controller(TagController::class)
@@ -83,8 +77,9 @@ Route
             $tag->delete('', 'destroy');
         });
     });
-    // TODO: Доступы
-    // TODO: Жалобы
-    // TODO: Пользователи
-    // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...)
+    // TODO: Доступы      —    AccessController
+    // TODO: Приглашения  —    InviteController
+    // TODO: Жалобы       — ComplaintController
+    // TODO: Пользователи —      UserController
+    // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
 });
