@@ -24,21 +24,6 @@ class AlbumController extends Controller
         }
         return response($albums)->setStatusCode(200);
     }
-    public function showPictures(Request $request, $album_id)
-    {
-        $user = Auth::user();
-        $album = Album::where('id', $album_id)->first();
-        if(!$album)
-        {
-            throw new ApiException('Альбом не найден', 404);
-        }
-        $pictures = Picture::without('album')->where('album_id', $album->id)->where('user_id', $user->id)->get();
-        if($pictures->isEmpty())
-        {
-            throw new ApiException('Картинки в альбоме не найдены', 404);
-        }
-        return response()->json(['pictures' => $pictures])->setStatusCode(200);
-    }
     public function create(Request $request)
     {
         $user = Auth::user();

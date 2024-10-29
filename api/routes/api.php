@@ -56,8 +56,8 @@ Route
                     ->controller(TagController::class)
                     ->group(function ($pictureTags) {
                         // Управление тегами на картинке
-                        $pictureTags->post  (''    , 'attachToPicture');
-                        $pictureTags->delete('{id}', 'detachToPicture');
+                        $pictureTags->post  ('{tag}', 'attachToPicture');
+                        $pictureTags->delete('{tag}', 'detachToPicture');
                     });
                 });
             });

@@ -14,6 +14,22 @@ use Illuminate\Support\Facades\Storage;
 
 class PictureController extends Controller
 {
+    public function index(Request $request, $album_id)
+    {
+        $user = Auth::user();
+        $album = Album::where('id', $album_id)->first();
+        if(!$album)
+        {
+            throw new ApiException('Альбом не найден', 404);
+        }
+        $pictures = Picture::without('album')->where('album_id', $album->id)->get();
+        if($pictures->isEmpty())
+        {
+            throw new ApiException('Картинки в альбоме не найдены', 404);
+        }
+        return response()->json(['pictures' => $pictures])->setStatusCode(200);
+    }
+
     public function download($album_id, $picture_id, Request $request)
     {
         $user = User::where('remember_token', $request->token)->first();
@@ -36,21 +52,20 @@ class PictureController extends Controller
         return response()->file(Storage::download($picture->path))->setStatusCode(200);
     }
 
-
     public function create(Request $request, $album_id)
     {
         $user = Auth::user();
-        $files = $request->file('images');
+        $files = $request->file('pictures');
         $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
 
         $path = $user->login.'/albums/'.$album->id.'/pictures/';
         $responses = [];
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
-            $imageHash = sha1_file($file->getRealPath());
+            $pictureHash = hash('xxh3', Storage::path($path.$filename));
 
-            $image = Picture::where('album_id', $album_id)->where('hash', $imageHash)->first();
-            if ($image) {
+            $picture = Picture::where('album_id', $album_id)->where('hash', $pictureHash)->first();
+            if ($picture) {
                 $responses['errored'][] = [
                     'name' => $filename,
                     'message' => 'already exist in this album'
@@ -60,23 +75,17 @@ class PictureController extends Controller
             $file->storeAs($path, $filename);
             $sizes = getimagesize(Storage::path($path.$filename));
 
-            $imageDB = Picture::create([
+            $pictureDB = Picture::create([
                 'name' => $filename,
-                'path' => $path.$filename,
-                'hash' => $imageHash,
-                'preview',
+                'hash' => $pictureHash,
                 'date' => Carbon::createFromTimestamp(Storage::lastModified($path.$filename)),
                 'size' => Storage::size($path.$filename),
                 'width' => $sizes[0],
                 'height' => $sizes[1],
-                'user_id' => $user->id,
                 'album_id' => $album_id,
             ]);
-            $responses['successful'][] = $imageDB;
+            $responses['successful'][] = $pictureDB;
         }
         return response($responses);
     }
-
-
-
 }
