@@ -31,7 +31,7 @@ Route
         ->prefix('{album}')
         ->group(function ($album) {
             // Альбом
-            $album->get   ('', 'show'); // TODO: Тут выводить картинки вместе с инфой об альбоме
+            $album->get   ('', 'show');
             $album->post  ('', 'edit');
             $album->delete('', 'destroy');
             $album->post('invite'   , [InvitationController::class, 'create'       ]); // Код приглашения
