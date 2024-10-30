@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();
             $table->string('description');
-            $table->foreignId('album_id')->nullable()->constrained('albums')->cascadeOnDelete();
-            $table->foreignId('picture_id')->nullable()->constrained('pictures')->cascadeOnDelete();
+            $table->foreignId('album_id')->nullable()->constrained('albums')->nullOnDelete();
+            $table->foreignId('picture_id')->nullable()->constrained('pictures')->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
+            $table->foreignId('status_id')->constrained('complaint_types');
             $table->foreignId('complaint_type_id')->constrained('complaint_types');
             $table->timestamps();
         });
