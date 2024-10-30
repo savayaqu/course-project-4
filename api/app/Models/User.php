@@ -56,5 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Tag::class);
     }
+    public function warnings()
+    {
+        return $this->hasMany(Warning::class);
+    }
 
 }

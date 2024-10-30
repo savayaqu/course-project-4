@@ -14,6 +14,14 @@ use Illuminate\Support\Str;
 
 class AlbumController extends Controller
 {
+    public function edit(Request $request, $album_id)
+    {
+        $user = Auth::user();
+        $album = Album::find($album_id)->where('user_id', $user->id)->first();
+        $album->fill($request->all());
+        $album->save();
+        return response()->json([$album], 200);
+    }
     public function index(Request $request)
     {
         $user = Auth::user();

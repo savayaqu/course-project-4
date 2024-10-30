@@ -14,10 +14,15 @@ use Illuminate\Support\Facades\Storage;
 
 class PictureController extends Controller
 {
+    public function info($album_id, $picture_id)
+    {
+        $picture = Picture::where('album_id', $album_id)->where('id', $picture_id)->first();
+        return response()->json($picture);
+    }
     public function index(Request $request, $album_id)
     {
         $user = Auth::user();
-        $album = Album::where('id', $album_id)->first();
+        $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
         if(!$album)
         {
             throw new ApiException('Альбом не найден', 404);
@@ -27,7 +32,9 @@ class PictureController extends Controller
         {
             throw new ApiException('Картинки в альбоме не найдены', 404);
         }
-        return response()->json(['pictures' => $pictures]);
+        $sign = Album::getSign($user->id, $album_id);
+        //$check = Album::checkSign($sign);
+        return response()->json([ 'sign' => $sign,'pictures' => $pictures]);
     }
 
     public function download($album_id, $picture_id, Request $request)
@@ -42,6 +49,11 @@ class PictureController extends Controller
         }
         if (!$picture) {
             throw new ApiException('Картинка не найдена', 404);
+        }
+        $sign = Album::checkSign($request->query('sign'));
+        if (!$sign)
+        {
+            throw new ApiException('Доступ запрещён', 403);
         }
         $path = Storage::path($user->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->download($path, $picture->name);

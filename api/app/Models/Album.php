@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 
 class Album extends Model
 {
@@ -30,5 +34,40 @@ class Album extends Model
     {
         return $this->hasMany(Complaint::class);
     }
+
+    public static function getSign($user_id, $album_id)
+    {
+        // Формируем строку user_id:album_id
+        $data = $user_id . ':' . $album_id;
+
+        // Шифруем данные
+        $token = Crypt::encrypt($data);
+
+        // Сохраняем токен в кэше на 6 часов
+        Cache::put($token, $data, now()->addHours(6));
+
+        return $token;
+    }
+
+    public static function checkSign($token): bool
+    {
+        try {
+            // Проверяем, есть ли токен в кэше
+            if (!Cache::has($token)) {
+                return false;
+            }
+
+            // Расшифровываем токен
+            $decryptedData = Crypt::decrypt($token);
+
+            // Сравниваем расшифрованные данные с данными в кэше
+            return Cache::get($token) === $decryptedData;
+
+        } catch (\Exception $e) {
+            // Ошибка расшифровки или токен не найден в кэше
+            return false;
+        }
+    }
+
 
 }
