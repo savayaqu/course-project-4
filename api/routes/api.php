@@ -16,6 +16,8 @@ Route::controller(AuthController::class)->group(function ($auth) {
     $auth->post('logout'  , 'logout')->middleware('auth:sanctum');
 });
 
+Route::get('/albums/{album}/pictures/{picture}/download', [PictureController::class, 'download']);
+
 Route
 ::middleware('auth:sanctum')
 ->group(function ($authorized) {
@@ -50,7 +52,7 @@ Route
                     $picture->get (''            , 'info');
                     $picture->get ('thumb/{size}', 'thumbnail');
                     $picture->get ('original'    , 'original');
-                    $picture->get ('download'    , 'download');
+                   // $picture->get ('download'    , 'download');
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']);
                     $picture
                     ->prefix('tags')

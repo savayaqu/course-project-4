@@ -40,9 +40,8 @@ class PictureController extends Controller
 
     public function download($album_id, $picture_id, Request $request)
     {
-        $user = Auth::user();
 
-        $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
+        $album = Album::where('id', $album_id)->first();
         $picture = Picture::where('album_id', $album_id)->where('id', $picture_id)->first();
 
         if (!$album) {
@@ -56,7 +55,7 @@ class PictureController extends Controller
         {
             throw new ApiException('Доступ запрещён', 403);
         }
-        $path = Storage::path($user->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
+        $path = Storage::path($sign[1]['login'].'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->download($path, $picture->name);
     }
 

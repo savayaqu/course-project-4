@@ -40,6 +40,7 @@ class Album extends Model
     {
         // Формируем строку user->token:album_id
         $data = Auth::user()->getRememberToken() . ':' . $album_id;
+
         // Проверяем, есть ли токен уже в кэше
         $cachedToken = Cache::get("token_for_{$data}");
 
@@ -48,7 +49,7 @@ class Album extends Model
         }
 
         // Создаем новый токен и шифруем данные
-        $token = Hash::make($data);
+        $token = Crypt::encrypt($data);
 
         // Сохраняем токен в кэше на 6 часов под ключом "token_for_user_token:album_id"
         Cache::put("token_for_{$data}", $token, now()->addHours(6));
@@ -56,26 +57,34 @@ class Album extends Model
         return $token;
     }
 
-    public static function checkSign($token, $album_id): bool
+    public static function checkSign($token, $album_id)
     {
         try {
             // Расшифровываем токен для извлечения данных
-            $decryptedData =  Auth::user()->getRememberToken() . ':' . $album_id;
-            // Проверяем, есть ли расшифрованные данные в кэше под этим ключом
-            $cachedToken = Cache::get("token_for_{$decryptedData}");
+            $decryptedData = Crypt::decrypt($token);
 
-            // Сравниваем исходный токен с тем, что хранится в кэше
-            if ($cachedToken != $token) {
+            // Проверяем, что данные соответствуют формату user_token:album_id
+            list($user_token, $decrypted_album_id) = explode(':', $decryptedData);
+
+            // Проверяем, что расшифрованный album_id совпадает с переданным
+            if ($decrypted_album_id != $album_id) {
                 return false;
             }
-            return true;
 
+            // Проверяем, есть ли токен в кэше и совпадает ли с переданным токеном
+            $cachedToken = Cache::get("token_for_{$decryptedData}");
+            if ($cachedToken !== $token) {
+                return false;
+            }
+            $user = User::where('remember_token', $user_token)->first();
+            return [true, $user];
 
         } catch (\Exception $e) {
             // Если произошла ошибка (например, токен недействителен), возвращаем false
             return false;
         }
     }
+
 
 
 
