@@ -32,7 +32,7 @@ class PictureController extends Controller
         {
             throw new ApiException('Картинки в альбоме не найдены', 404);
         }
-        $sign = Album::getSign($album_id);
+        $sign = Album::getSign($user, $album_id);
 
         //$check = Album::checkSign($sign);
         return response()->json([ 'sign' => $sign,'pictures' => $pictures]);
@@ -50,12 +50,12 @@ class PictureController extends Controller
         if (!$picture) {
             throw new ApiException('Картинка не найдена', 404);
         }
-        $sign = Album::checkSign($request->query('sign'), $album_id);
-        if (!$sign)
-        {
-            throw new ApiException('Доступ запрещён', 403);
-        }
-        $path = Storage::path($sign[1]['login'].'/albums/'.$album->id.'/pictures/'.$picture->name);
+        $sign = Album::checkSign($album_id, $request->query('sign'));
+       if (!$sign)
+       {
+           throw new ApiException('Доступ запрещён', 403);
+       }
+        $path = Storage::path($sign.'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->download($path, $picture->name);
     }
 

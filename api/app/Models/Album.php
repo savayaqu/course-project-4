@@ -36,53 +36,47 @@ class Album extends Model
         return $this->hasMany(Complaint::class);
     }
 
-    public static function getSign($album_id)
-    {
-        // Формируем строку user->token:album_id
-        $data = Auth::user()->getRememberToken() . ':' . $album_id;
+    public static function getSign(User $user, $albumId): string {
+        $cacheKey = "signAccess:to=$albumId;for=$user->id";
+        $cachedSign = Cache::get($cacheKey);
+        if ($cachedSign) return $user->id .'_'. $cachedSign;
 
-        // Проверяем, есть ли токен уже в кэше
-        $cachedToken = Cache::get("token_for_{$data}");
+        $currentDay = date("Y-m-d");
+        $userToken = $user->getRememberToken();
 
-        if ($cachedToken) {
-            return $cachedToken; // Возвращаем существующий токен, если он уже есть
-        }
+        $string = $userToken . $currentDay . $albumId;
+        $signCode = base64_encode(Hash::make($string));
 
-        // Создаем новый токен и шифруем данные
-        $token = Crypt::encrypt($data);
-
-        // Сохраняем токен в кэше на 6 часов под ключом "token_for_user_token:album_id"
-        Cache::put("token_for_{$data}", $token, now()->addHours(6));
-
-        return $token;
+        Cache::put($cacheKey, $signCode, 3600);
+        return $user->id .'_'. $signCode;
     }
 
-    public static function checkSign($token, $album_id)
+    public static function checkSign($albumId, $sign)
     {
         try {
-            // Расшифровываем токен для извлечения данных
-            $decryptedData = Crypt::decrypt($token);
-
-            // Проверяем, что данные соответствуют формату user_token:album_id
-            list($user_token, $decrypted_album_id) = explode(':', $decryptedData);
-
-            // Проверяем, что расшифрованный album_id совпадает с переданным
-            if ($decrypted_album_id != $album_id) {
-                return false;
-            }
-
-            // Проверяем, есть ли токен в кэше и совпадает ли с переданным токеном
-            $cachedToken = Cache::get("token_for_{$decryptedData}");
-            if ($cachedToken !== $token) {
-                return false;
-            }
-            $user = User::where('remember_token', $user_token)->first();
-            return [true, $user];
-
-        } catch (\Exception $e) {
-            // Если произошла ошибка (например, токен недействителен), возвращаем false
+            $signExploded = explode('_', $sign);
+            $userId   = $signExploded[0];
+            $signCode = $signExploded[1];
+        }
+        catch (\Exception $e) {
             return false;
         }
+
+        $cacheKey = "signAccess:to=$albumId;for=$userId";
+        $cachedSign = Cache::get("signAccess:to=$albumId;for=$userId");
+        if ($cachedSign !== $signCode) return false;
+
+        $user = User::find($signExploded[0]);
+        if (!$user)
+            return false;
+
+        $currentDay = date("Y-m-d");
+        $string = $user->getRememberToken() . $currentDay . $albumId;
+
+        $allow = Hash::check($string, base64_decode($signExploded[1]));
+        Cache::put($cacheKey, $signCode, 3600);
+
+        return $user->login;
     }
 
 

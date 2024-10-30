@@ -52,7 +52,7 @@ Route
                     $picture->get (''            , 'info');
                     $picture->get ('thumb/{size}', 'thumbnail');
                     $picture->get ('original'    , 'original');
-                   // $picture->get ('download'    , 'download');
+                  // $picture->get ('download'    , 'download');
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']);
                     $picture
                     ->prefix('tags')
