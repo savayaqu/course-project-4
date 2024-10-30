@@ -40,11 +40,18 @@ class Album extends Model
         // Формируем строку user_id:album_id
         $data = $user_id . ':' . $album_id;
 
-        // Шифруем данные
+        // Проверяем, есть ли токен уже в кэше
+        $cachedToken = Cache::get("token_for_{$data}");
+
+        if ($cachedToken) {
+            return $cachedToken; // Возвращаем существующий токен, если он уже есть
+        }
+
+        // Создаем новый токен и шифруем данные
         $token = Crypt::encrypt($data);
 
-        // Сохраняем токен в кэше на 6 часов
-        Cache::put($token, $data, now()->addHours(6));
+        // Сохраняем токен в кэше на 6 часов под ключом "token_for_user_id:album_id"
+        Cache::put("token_for_{$data}", $token, now()->addHours(6));
 
         return $token;
     }
@@ -52,22 +59,25 @@ class Album extends Model
     public static function checkSign($token): bool
     {
         try {
-            // Проверяем, есть ли токен в кэше
-            if (!Cache::has($token)) {
+            // Расшифровываем токен для извлечения данных
+            $decryptedData = Crypt::decrypt($token);
+            // Проверяем, есть ли расшифрованные данные в кэше под этим ключом
+            $cachedToken = Cache::get("token_for_{$decryptedData}");
+
+            // Сравниваем исходный токен с тем, что хранится в кэше
+            if ($cachedToken != $token) {
                 return false;
             }
+            return true;
 
-            // Расшифровываем токен
-            $decryptedData = Crypt::decrypt($token);
-
-            // Сравниваем расшифрованные данные с данными в кэше
-            return Cache::get($token) === $decryptedData;
 
         } catch (\Exception $e) {
-            // Ошибка расшифровки или токен не найден в кэше
+            // Если произошла ошибка (например, токен недействителен), возвращаем false
             return false;
         }
     }
+
+
 
 
 }
