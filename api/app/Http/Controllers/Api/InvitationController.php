@@ -42,13 +42,18 @@ class InvitationController extends Controller
     {
         $user = Auth::user();
         $invitation = Invitation::where('link', $code)->first();
-        if(!$invitation) throw new ApiException('Приглашение недействительно', 404);
-        if(AlbumAccess::where('user_id', $user->id)->where('album_id', $invitation->album_id)->first()) throw new ApiException('Вы уже имеете доступ', 404);
+        $currentDate = date('Y-m-d H:i:s');
+        if ($currentDate > $invitation->expires_at)
+        {
+            $invitation::where('link', $code)->delete();
+            throw new ApiException('Приглашение недействительно', 404);
+        }
+        if (AlbumAccess::where('user_id', $user->id)->where('album_id', $invitation->album_id)->first()) throw new ApiException('Вы уже имеете доступ', 404);
         AlbumAccess::create([
             'user_id' => $user->id,
             'album_id' => $invitation->album_id
         ]);
-        return response()->json()->setStatusCode(204);
+       return response()->json()->setStatusCode(204);
     }
     public function create($album_id, Request $request)
     {
@@ -58,7 +63,7 @@ class InvitationController extends Controller
         $currentDate = date('Y-m-d H:i:s');
 
         // Проверка значения expires_at в запросе
-        if (empty($request->expires_at)) {
+        if ($request->expires_at) {
             $date =  strtotime("$currentDate + $request->expires_at minute");
             $formattedDate = date('Y-m-d H:i:s', $date);
 
