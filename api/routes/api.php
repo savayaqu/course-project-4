@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\InvitationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AlbumController;
 use App\Http\Controllers\Api\PictureController;
@@ -15,15 +16,26 @@ Route::controller(AuthController::class)->group(function ($auth) {
     $auth->post('login'   , 'login');
     $auth->post('logout'  , 'logout')->middleware('auth:sanctum');
 });
-
-Route::get('/albums/{album}/pictures/{picture}/download', [PictureController::class, 'download']);
-Route::get('/albums/{album}/pictures/{picture}/original', [PictureController::class, 'original']);
-Route::get('/albums/{album}/pictures/{picture}/thumb/{size}', [PictureController::class, 'thumbnail']);
+// Работа с картинками с sign
+Route::controller(PictureController::class)->prefix('albums/{album}/pictures/{picture}')->group(function ($pictures) {
+    $pictures->get('download', 'download');
+    $pictures->get('original', 'original');
+    $pictures->get('thumb/{size}', 'thumbnail');
+});
 
 Route
 ::middleware('auth:sanctum')
 ->group(function ($authorized) {
     // Авторизованные функции
+    //Приглашения
+    $authorized
+        ->controller(InvitationController::class)
+        ->prefix('invitation/{code}')
+        ->group(function ($invitations) {
+            $invitations->get('join'); //Присоединиться к альбому
+            $invitations->get('album'); //Просмотр содержимого альбома по приглосу
+        });
+
     $authorized
     ->controller(AlbumController::class)
     ->prefix('albums')
@@ -51,11 +63,8 @@ Route
                 ->prefix('{picture}')
                 ->group(function ($picture) {
                     // Картинка
-                    $picture->get (''            , 'info');
-                    //$picture->get ('thumb/{size}', 'thumbnail');
-                    //$picture->get ('original'    , 'original');
-                  // $picture->get ('download'    , 'download');
-                    $picture->delete('', 'destroy');
+                    $picture->get (  ''   , 'info');
+                    $picture->delete('' , 'destroy');
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']);
                     $picture
                     ->prefix('tags')
@@ -83,8 +92,9 @@ Route
             $tag->delete('', 'destroy');
         });
     });
-    // TODO: Доступы      —     AccessController
+
     // TODO: Приглашения  — InvitationController
+    // TODO: Доступы  — AccessesController
     // TODO: Жалобы       —  ComplaintController
     // TODO: Пользователи —       UserController
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
