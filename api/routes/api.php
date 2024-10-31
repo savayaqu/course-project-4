@@ -11,97 +11,94 @@ use App\Http\Controllers\Api\AccessController;
 
 use App\Http\Middleware\CheckRole;
 
-Route::controller(AuthController::class)->group(function ($auth) {
-    // Авторизация
-    $auth->post('register', 'register');
-    $auth->post('login'   , 'login');
-    $auth->post('logout'  , 'logout')->middleware('auth:sanctum');
-});
-// Работа с картинками с sign
-Route::controller(PictureController::class)->prefix('albums/{album}/pictures/{picture}')->group(function ($pictures) {
-    $pictures->get('download', 'download');
-    $pictures->get('original', 'original');
-    $pictures->get('thumb/{size}', 'thumbnail');
+Route
+::controller(AuthController::class)
+->group(function ($auth) {                                          // [АВТОРИЗАЦИЯ]
+    $auth->post('register', 'register');                            // Регистрация
+    $auth->post('login'   , 'login');                               // Авторизация
+    $auth->post('logout'  , 'logout')->middleware('auth:sanctum');  // Выход (удаление токена)
 });
 
 Route
 ::middleware('auth:sanctum')
-->group(function ($authorized) {
-    // Авторизованные функции
-    //Приглашения
-    $authorized
-        ->controller(InvitationController::class)
-        ->prefix('invitation/{code}')
-        ->group(function ($invitations) {
-            $invitations->get('join', 'join'); //Присоединиться к альбому
-            $invitations->get('album', 'album'); //Просмотр содержимого альбома по приглосу
-        });
-    //Доступы
-    $authorized
-        ->controller(AccessController::class)
-        ->group(function ($accesses) {
-            $accesses->get('accesses', 'all'); // Список выданных доступов (и приглашений?)
-            $accesses->delete('/albums/{album}/accesses/{user}', 'destroy'); // Убрать доступ у пользователя
-        });
+->group(function ($authorized) { // [АВТОРИЗОВАННЫЕ ФУНКЦИИ]
     $authorized
     ->controller(AlbumController::class)
     ->prefix('albums')
-    ->group(function ($albums) {
-        // Альбомы
-        $albums->post('', 'create');
-        $albums->get ('', 'index');
+    ->group(function ($albums) {        // [АЛЬБОМЫ]
+        $albums->post('', 'create');    // Создание личного альбома
+        $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
-        ->group(function ($album) {
-            // Альбом
-            $album->get   ('', 'show');
-            $album->post  ('', 'edit');
-            $album->delete('', 'destroy');
-            $album->post('invite'   , [InvitationController::class, 'create'       ]); // Код приглашения
-            $album->post('complaint', [ ComplaintController::class, 'createToAlbum']); // Жалоба на альбом
+      //->middleware('access:check') // TODO: РАЗРАБОТАТЬ middleware ДЛЯ АЛЬБОМОВ ПО ДОСТУПУ (мб только для GET запросов, т.к. DEL и POST чисто для действий со СВОИМИ альбомами (кроме жалоб))
+        ->group(function ($album) {         // [АЛЬБОМ]
+            $album->get   ('', 'show');     // Просмотр информации об альбоме
+            $album->post  ('', 'edit');     // Изменение информации об СВОЁМ альбоме
+            $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
+            $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома / у СЕБЯ с ЧУЖОГО альбома
+            $album->delete('invite'         , [InvitationController::class, 'destroy'      ]);  // Удалить код приглашения на СВОЁМ альбоме
+            $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
+            $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum']);  // Создание жалоба на ЧУЖОЙ альбом
             $album
             ->prefix('pictures')
             ->controller(PictureController::class)
-            ->group(function ($albumPictures) {
-                // Картинки в альбоме
-                $albumPictures->get ('', 'index');
-                $albumPictures->post('', 'create');
+            ->group(function ($albumPictures) {     // [КАРТИНКИ В АЛЬБОМЕ]
+                $albumPictures->get ('', 'index');  // Список картинок в альбоме (с выдачей сигнатуры доступа)
+                $albumPictures->post('', 'create'); // Загрузка картинок на сервер
                 $albumPictures
                 ->prefix('{picture}')
-                ->group(function ($picture) {
-                    // Картинка
-                    $picture->get (  ''   , 'info');
-                    $picture->delete('' , 'destroy');
-                    $picture->post('complaint', [ComplaintController::class, 'createToPicture']);
+                ->group(function ($picture) {           // [КАРТИНКА]
+                    $picture->get   ('', 'info');       // Получение информации об картинке
+                    $picture->delete('', 'destroy');    // Удаление СВОЕЙ картинки
+                    $picture->post('complaint', [ComplaintController::class, 'createToPicture']);   // Создание жалобы на ЧУЖУЮ картинку
+                    $picture
+                    ->withoutMiddleware('auth:sanctum')
+                  //->middleware('sign:check') // TODO: вынести проверку сигнатур в middleware
+                    ->group(function ($pictureBySign) {                     // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
+                        $pictureBySign->get('download'    , 'download');    // Скачивание картинки
+                        $pictureBySign->get('original'    , 'original');    // Отображение картинки
+                        $pictureBySign->get('thumb/{size}', 'thumbnail');   // Отображение превью картинки заданного размера
+                    });
                     $picture
                     ->prefix('tags')
                     ->controller(TagController::class)
-                    ->group(function ($pictureTags) {
-                        // Управление тегами на картинке
-                        $pictureTags->post  ('{tag}', 'attachToPicture');
-                        $pictureTags->delete('{tag}', 'detachToPicture');
+                    ->group(function ($pictureTags) {                       // [ТЕГИ НА КАРТИНКЕ]
+                        $pictureTags->post  ('{tag}', 'attachToPicture');   // Прикрепление тега к СВОЕЙ картинке
+                        $pictureTags->delete('{tag}', 'detachToPicture');   // Открепление тега от СВОЕЙ картинки
                     });
                 });
             });
         });
     });
     $authorized
+    ->controller(InvitationController::class)
+    ->prefix('invitation/{code}')
+    ->group(function ($invitations) {           // [ПРИГЛАШЕНИЯ]
+        $invitations->get('album', 'album');    // Просмотр содержимого альбома по приглашению
+        $invitations->get('join' , 'join');     // Присоединиться к альбому (добавление доступа)
+    });
+    $authorized
+    ->controller(AccessController::class)
+    ->prefix('accesses')
+    ->group(function ($accesses) {  // [ДОСТУПЫ]
+        $accesses->get('', 'all');  // Список выданных доступов (и приглашений?)
+    });
+    $authorized
     ->prefix('tags')
     ->controller(TagController::class)
-    ->group(function ($tags) {
-        // Теги
-        $tags->post('', 'create');
-        $tags->get ('', 'index');
-        $tags->prefix('{tag}')->group(function ($tag) {
-            // Тег
-            $tag->get   ('', 'show');
-            $tag->post  ('', 'edit');
-            $tag->delete('', 'destroy');
+    ->group(function ($tags) {      // [ТЕГИ]
+        $tags->post('', 'create');  // Создание ЛИЧНОГО тега
+        $tags->get ('', 'index');   // Просмотр ЛИЧНЫХ тегов
+        $tags
+        ->prefix('{tag}')
+        ->group(function ($tag) {           // [ТЕГ]
+            $tag->get   ('', 'show');       // Просмотр информации о теге (прикреплённые картинки)
+            $tag->post  ('', 'edit');       // Изменение тега
+            $tag->delete('', 'destroy');    // Удаление тега
         });
     });
-// TODO: РАЗРАБОТАТЬ middleware ДЛЯ АЛЬБОМОВ ПО ДОСТУПУ
-
-    // TODO: Жалобы       —  ComplaintController
-    // TODO: Пользователи —       UserController
+    // TODO: Жалобы         —  ComplaintController
+    // TODO: Предупреждения —    WarningController
+    // TODO: Пользователи   —       UserController
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
 });
