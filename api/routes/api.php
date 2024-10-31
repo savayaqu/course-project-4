@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AlbumController;
 use App\Http\Controllers\Api\PictureController;
 use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\AccessController;
 
 use App\Http\Middleware\CheckRole;
 
@@ -32,10 +33,16 @@ Route
         ->controller(InvitationController::class)
         ->prefix('invitation/{code}')
         ->group(function ($invitations) {
-            $invitations->get('join'); //Присоединиться к альбому
-            $invitations->get('album'); //Просмотр содержимого альбома по приглосу
+            $invitations->get('join', 'join'); //Присоединиться к альбому
+            $invitations->get('album', 'album'); //Просмотр содержимого альбома по приглосу
         });
-
+    //Доступы
+    $authorized
+        ->controller(AccessController::class)
+        ->group(function ($accesses) {
+            $accesses->get('accesses', 'all'); // Список выданных доступов (и приглашений?)
+            $accesses->delete('/albums/{album}/accesses/{user}', 'destroy'); // Убрать доступ у пользователя
+        });
     $authorized
     ->controller(AlbumController::class)
     ->prefix('albums')
@@ -92,9 +99,8 @@ Route
             $tag->delete('', 'destroy');
         });
     });
+// TODO: РАЗРАБОТАТЬ middleware ДЛЯ АЛЬБОМОВ ПО ДОСТУПУ
 
-    // TODO: Приглашения  — InvitationController
-    // TODO: Доступы  — AccessesController
     // TODO: Жалобы       —  ComplaintController
     // TODO: Пользователи —       UserController
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController

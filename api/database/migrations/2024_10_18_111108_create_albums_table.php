@@ -25,6 +25,7 @@ return new class extends Migration
            $table->primary(['album_id','user_id']);
            $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->timestamps();
         });
     }
 

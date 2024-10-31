@@ -10,21 +10,45 @@ use App\Models\Invitation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
-use Illuminate\Support\Facades\Hash;
-use Psy\Util\Str;
+use Illuminate\Support\Str;
 
 class InvitationController extends Controller
 {
+
+    public function album($code)
+    {
+        $user = Auth::user();
+        $invitation = Invitation::where('link', $code)->first();
+        if(!$invitation) throw new ApiException('Приглашение недействительно', 404);
+        $album = Album::find($invitation->album_id)->with('user')->first();
+        $responseData = [
+            'album' => [
+                'id' => $album->id,
+                'name' => $album->name,
+                'user' => [
+                    'id' => $album->user->id,
+                    'name' => $album->user->name,
+                    'login' => $album->user->login,
+                    'complaint' => $album->user->complaint,
+                    'is_banned' => $album->user->is_banned,
+                    'role_id' => $album->user->role_id,
+                ],
+            ],
+        ];
+
+        return response()->json($responseData)->setStatusCode(200);
+    }
     public function join($code)
     {
         $user = Auth::user();
         $invitation = Invitation::where('link', $code)->first();
         if(!$invitation) throw new ApiException('Приглашение недействительно', 404);
+        if(AlbumAccess::where('user_id', $user->id)->where('album_id', $invitation->album_id)->first()) throw new ApiException('Вы уже имеете доступ', 404);
         AlbumAccess::create([
             'user_id' => $user->id,
             'album_id' => $invitation->album_id
         ]);
-        return response()->setStatusCode(204);
+        return response()->json()->setStatusCode(204);
     }
     public function create($album_id, Request $request)
     {
@@ -46,7 +70,7 @@ class InvitationController extends Controller
         $invitation = Invitation::create([
             'expires_at' => $formattedDate,
             'album_id' => $album_id,
-            'link' => Hash::make($album_id.$formattedDate)
+            'link' => Str::random(8)
         ]);
 
         return response()->json(['invitationCode' => $invitation->link])->setStatusCode(201);
