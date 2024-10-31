@@ -14,44 +14,33 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
-        if (!Auth::attempt($request->only('login', 'password'))) {
+        if (!Auth::attempt($request->only('login', 'password')))
             throw new ApiException('Invalid credentials', 401);
-        }
 
         $user = Auth::user();
-
         $token = $user->createToken('remember_token')->plainTextToken;
-
-        $user->remember_token = $token;
-        $user->save();
-
         return response([
+            'success' => true,
             'token' => $token,
-            'data' => $user,
-        ], 200);
+            'user' => $user,
+        ]);
     }
 
     public function register(RegisterRequest $request)
     {
-        $role_id = Role::where(['code' =>'user'])->first()->id;
-        $user = User::create([...$request->validated(), 'role_id' => $role_id]);
+        $roleId = Role::firstOrCreate(['code' =>'user'])->id;
+        $user = User::create([...$request->validated(), 'role_id' => $roleId]);
         $token = $user->createToken('remember_token')->plainTextToken;
-        $user->remember_token = $token;
-        $user->save();
-        return response()->json([$user, 'token' => $token])->setStatusCode(201);
-
+        return response([
+            'success' => true,
+            'token' => $token,
+            'user' => $user,
+        ], 201);
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
-        $user = $request->user();
-        $user->remember_token = null;
-        $user->save();
-
-        return response()->json([
-            'message' => 'Logged out successfully',
-        ])->setStatusCode(200);
+        return response(null, 204);
     }
-
-
 }

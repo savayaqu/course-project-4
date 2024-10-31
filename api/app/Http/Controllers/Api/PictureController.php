@@ -15,31 +15,29 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 class PictureController extends Controller
 {
-
-
     public function thumbnail($album_id, $picture_id, $size, Request $request)
     {
         $album = Album::find($album_id);
         if (!$album) {
-            throw new ApiException('Альбом не найден', 404);
+            throw new ApiException('Альбом не найден', 404); // TODO: На английский
         }
 
         $picture = Picture::where('id', $picture_id)->where('album_id', $album_id)->first();
         if (!$picture) {
-            throw new ApiException('Картинка не найдена', 404);
+            throw new ApiException('Картинка не найдена', 404); // TODO: На английский
         }
 
         $sign = Album::checkSign($album_id, $request->query('sign'));
         if (!$sign) {
-            throw new ApiException('Доступ запрещён', 403);
+            throw new ApiException('Доступ запрещён', 403); // TODO: На английский
         }
         $orientation = $picture->height > $picture->width ? 'h' : 'w';
 
-        $thumbPath = "$sign/thumbs/$picture->name-$orientation$size.jpg";
+        $thumbPath = "users/$sign/thumbs/$picture->name-$orientation$size.jpg";
         if (!Storage::exists($thumbPath)) {
             // Проверка запрашиваемого размера и редирект, если не прошло
             $askedSize = $size;
-            $allowedSizes = [144, 240, 360, 480, 720, 1080];
+            $allowedSizes = [144, 240, 360, 480, 720, 1080]; // TODO: Управлять настройками
             $allowSize = false;
             foreach ($allowedSizes as $allowedSize) {
                 if ($size <= $allowedSize) {
@@ -49,17 +47,17 @@ class PictureController extends Controller
                 }
             }
             if (!$allowSize) $size = $allowedSizes[count($allowedSizes)-1];
-            if ($askedSize != $size) throw new ApiException('Ты хуйню ввёл', 409);
+            if ($askedSize != $size) throw new ApiException('Ты хуйню ввёл', 409); // TODO: На английский
 
 
             // Проверка наличия превью в файлах x2
-            $thumbPath = "$sign/thumbs/$picture->name-$orientation$size.jpg";
+            $thumbPath = "users/$sign/thumbs/$picture->name-$orientation$size.jpg";
             if (!Storage::exists($thumbPath)) {
                 // Создание превью
                 //if (!isset($image)) $image = Image::getByHash($album_id, $picture_id);
 
                 //$imagePath = 'images'. $image->album->path . $image->name;
-                $imagePath = $sign.'/albums/'.$album_id.'/pictures/'.$picture->name;
+                $imagePath = 'users/'.$sign.'/albums/'.$album_id.'/pictures/'.$picture->name;
 
                 $manager = new ImageManager(new Driver());
                 $thumb = $manager->read(Storage::get($imagePath));
@@ -69,16 +67,14 @@ class PictureController extends Controller
                 else
                     $thumb->scale(height: $size);
 
-                if (!Storage::exists($sign.'/thumbs'))
-                    Storage::makeDirectory($sign.'/thumbs');
+                if (!Storage::exists('users/'.$sign.'/thumbs'))
+                    Storage::makeDirectory('users/'.$sign.'/thumbs');
 
-                $thumb->toWebp(90)->save(Storage::path($thumbPath));
+                $thumb->toJpeg(90)->save(Storage::path($thumbPath));
             }
         }
         return response()->file(Storage::path($thumbPath));
     }
-
-
 
     public function destroy($album_id, $picture_id)
     {
@@ -93,7 +89,7 @@ class PictureController extends Controller
         if (!$picture) {
             throw new ApiException('Картинка не найдена', 404);
         }
-        $path = $user->login . '/albums/' . $album_id. '/pictures/' . $picture->name;
+        $path = 'users/' . $user->login . '/albums/' . $album_id . '/pictures/' . $picture->name;
         if(Storage::exists($path))
         {
            Storage::delete($path);
@@ -102,11 +98,13 @@ class PictureController extends Controller
         return response()->json()->setStatusCode(204);
 
     }
+
     public function info($album_id, $picture_id)
     {
         $picture = Picture::where('album_id', $album_id)->where('id', $picture_id)->first();
         return response()->json($picture);
     }
+
     public function index(Request $request, $album_id)
     {
         $user = Auth::user();
@@ -125,6 +123,7 @@ class PictureController extends Controller
         //$check = Album::checkSign($sign);
         return response()->json([ 'sign' => $sign,'pictures' => $pictures]);
     }
+
     public function original($album_id, $picture_id, Request $request)
     {
 
@@ -143,7 +142,7 @@ class PictureController extends Controller
         {
             throw new ApiException('Доступ запрещён', 403);
         }
-        $path = Storage::path($sign.'/albums/'.$album->id.'/pictures/'.$picture->name);
+        $path = Storage::path('users/'.$sign.'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->file($path);
     }
 
@@ -164,7 +163,7 @@ class PictureController extends Controller
        {
            throw new ApiException('Доступ запрещён', 403);
        }
-        $path = Storage::path($sign.'/albums/'.$album->id.'/pictures/'.$picture->name);
+        $path = Storage::path('users/'.$sign.'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->download($path, $picture->name);
     }
 
@@ -174,7 +173,7 @@ class PictureController extends Controller
         $files = $request->file('pictures');
         $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
 
-        $path = $user->login.'/albums/'.$album->id.'/pictures/';
+        $path = 'users/'.$user->login.'/albums/'.$album->id.'/pictures/';
         $responses = [];
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();

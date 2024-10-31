@@ -22,6 +22,7 @@ class AlbumController extends Controller
         $album->save();
         return response()->json([$album], 200);
     }
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -32,6 +33,7 @@ class AlbumController extends Controller
         }
         return response($albums)->setStatusCode(200);
     }
+
     public function create(Request $request)
     {
         $user = Auth::user();
@@ -68,7 +70,7 @@ class AlbumController extends Controller
         ]);
 
         $album_id = $new_album->id;
-        $path = $user->login . '/albums/' . $album_id;
+        $path = 'users/' . $user->login . '/albums/' . $album_id;
 
         // Проверка и удаление директории, если она существует
         if (Storage::exists($path)) {
@@ -103,7 +105,5 @@ class AlbumController extends Controller
         else {
             throw new ApiException('Доступ запрещён', 403);
         }
-
-
     }
 }

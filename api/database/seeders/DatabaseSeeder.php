@@ -6,6 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,6 +16,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        Cache::flush();
+        Storage::deleteDirectory('users');
        $role_admin = Role::create([
            'code' => 'admin',
        ]);
@@ -22,9 +26,9 @@ class DatabaseSeeder extends Seeder
        ]);
 
        User::create([
-           'name'       => 'admin',
-           'login'      => 'admin'         ,
-           'password'   => 'admin'         ,
+           'name'       => 'Администратор',
+           'login'      => 'admin'        ,
+           'password'   => 'Admin123!'    ,
            'role_id'    => $role_admin->id,
        ]);
     }

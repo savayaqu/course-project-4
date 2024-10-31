@@ -78,13 +78,9 @@ class Album extends Model
         $string = $user->getRememberToken() . $currentDay . $albumId;
 
         $allow = Hash::check($string, base64_decode($signCode));
-        Cache::put($cacheKey, $signCode, 3600);
+        if ($allow)
+            Cache::put($cacheKey, $signCode, 3600);
 
         return $user->login;
     }
-
-
-
-
-
 }
