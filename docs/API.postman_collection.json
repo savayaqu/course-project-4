@@ -1,0 +1,1431 @@
+{
+	"info": {
+		"_postman_id": "6ceb3d03-6d6a-41ba-a36e-477ba277e684",
+		"name": "API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32893653",
+		"_collection_link": "https://wepics.postman.co/workspace/PicSync~050ca731-5476-4ad5-a8a3-e7e2919d2489/collection/32893653-6ceb3d03-6d6a-41ba-a36e-477ba277e684?action=share&source=collection_link&creator=32893653"
+	},
+	"item": [
+		{
+			"name": "Авторизация",
+			"item": [
+				{
+					"name": "✅Регистрация",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Получение ответа\r",
+									"const response = pm.response.json()\r",
+									"\r",
+									"// Проверка, если ли токен в ответе\r",
+									"if (response. token) {\r",
+									"    pm.environment.set(\"token\", response.token)\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "lol",
+									"description": "['requred', 'string', 'max:255', 'min:2']",
+									"type": "text"
+								},
+								{
+									"key": "login",
+									"value": "lol",
+									"description": "['requred', 'string', 'max:64', 'min:2', 'regex:/^[a-zA-Z0-9_-]+$/', 'unique:users']",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "lol",
+									"description": "['requred', 'string', 'max:255', 'min:8', \n'regex:/[a-z]/',\n'regex:/[A-Z]/',\n'regex:/[0-9]/',\n'regex:/[@$!%*#?&.,<>_-]/']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/register",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Авторизация",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Получение ответа\r",
+									"const response = pm.response.json()\r",
+									"\r",
+									"// Проверка, если ли токен в ответе\r",
+									"if (response. token) {\r",
+									"    pm.environment.set(\"token\", response.token)\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "login",
+									"value": "lol",
+									"description": "['requred', 'string']",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "lol",
+									"description": "['requred', 'string']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/login",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Выход",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{api}}/logout",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Альбомы",
+			"item": [
+				{
+					"name": "✅Создание альбома",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "test",
+									"description": "['requred', 'string', 'max:255']",
+									"type": "text"
+								},
+								{
+									"key": "path",
+									"value": "testik/test",
+									"description": "['nullable', 'string', 'max:255']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/albums",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Список альбомов",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Изменение альбома",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "test2",
+									"description": "['string', 'max:255']",
+									"type": "text"
+								},
+								{
+									"key": "path",
+									"value": "testik/test2",
+									"description": "['string', 'max:255']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/albums/{{album}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Удаление альбома",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Доступы на альбом",
+			"item": [
+				{
+					"name": "Приглашения",
+					"item": [
+						{
+							"name": "✅Создание кода приглашения",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "timeLimit",
+											"value": "60",
+											"description": "['integer', 'min:1'] В минутах, По умолчанию на день",
+											"type": "text"
+										},
+										{
+											"key": "usersLimit",
+											"value": "1",
+											"description": "['integer', 'min:1'] По умолчанию бесконечно",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{api}}/albums/{{album}}/invite",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"albums",
+										"{{album}}",
+										"invite"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удаление кода приглашения",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{api}}/albums/{{album}}/invite",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"albums",
+										"{{album}}",
+										"invite"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "✅Вступление по приглашению (получение доступа)",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{api}}/invitation/{{invitationCode}}/join",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"invitation",
+										"{{invitationCode}}",
+										"join"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "✅Получение альбома в приглашении",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{api}}/invitation/{{invitationCode}}/album",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"invitation",
+										"{{invitationCode}}",
+										"album"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "✅Список выданных доступов и приглашений",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{api}}/accesses",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"accesses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Отзыв доступа",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/accesses/{{user}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"accesses",
+								"{{user}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Картинки в альбоме",
+			"item": [
+				{
+					"name": "✅Загрузка картинок в альбом",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "pictures[]",
+									"description": "['required', 'array', 'min:1'];   'pictures.*' => ['file', 'mimes:jpeg,png,jpg,gif']",
+									"type": "file",
+									"src": "postman-cloud:///1eede4e1-85cb-4bd0-9c5b-0ff92e52b86c"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Список картинок альбома",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Картинка",
+			"item": [
+				{
+					"name": "✅Информация о картинке",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Превью картинки",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/thumb/{{size}}?sign={{albumToken}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}",
+								"thumb",
+								"{{size}}"
+							],
+							"query": [
+								{
+									"key": "sign",
+									"value": "{{albumToken}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Скачивание картинки",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/download?sign={{albumToken}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}",
+								"download"
+							],
+							"query": [
+								{
+									"key": "sign",
+									"value": "{{albumToken}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Отображение(оригинал) картинки",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/original?sign={{albumToken}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}",
+								"original"
+							],
+							"query": [
+								{
+									"key": "sign",
+									"value": "{{albumToken}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Удаление картинки",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Теги",
+			"item": [
+				{
+					"name": "К картинке",
+					"item": [
+						{
+							"name": "Добавление тега к картинке",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": []
+								},
+								"url": {
+									"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/tags/{{tag}}",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"albums",
+										"{{album}}",
+										"pictures",
+										"{{picture}}",
+										"tags",
+										"{{tag}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Удаление тега с картинки",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": []
+								},
+								"url": {
+									"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/tags/{{tag}}",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"albums",
+										"{{album}}",
+										"pictures",
+										"{{picture}}",
+										"tags",
+										"{{tag}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Создание тега",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "value",
+									"value": "название",
+									"description": "['requred', 'string', 'max:255', 'min:1'] Уникальный по пользователю",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/tags",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Список личных тегов",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{api}}/tags",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Редактирование тега",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "value",
+									"value": "название",
+									"description": "['string', 'max:255', 'min:1'] Уникальный по пользователю",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/tags/{{tag}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"tags",
+								"{{tag}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Удаление тега",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "value",
+									"value": "название",
+									"type": "text"
+								},
+								{
+									"key": "user_Id",
+									"value": "current",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/tags/{{tag}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"tags",
+								"{{tag}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Жалобы",
+			"item": [
+				{
+					"name": "Создать жалобу",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "Офигел",
+									"description": "['string', 'max:255', 'min:1']",
+									"type": "text"
+								},
+								{
+									"key": "type_id",
+									"value": "{{complaintType}}",
+									"description": "['required', 'integer', 'exists:complaint_types,id']",
+									"type": "text"
+								},
+								{
+									"key": "album_id",
+									"value": "{{album}}",
+									"description": "['integer', 'exists:albums,id']",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "picture_id",
+									"value": "{{picture}}",
+									"description": "['integer', 'exists:pictures,id']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/complaints",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"complaints"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Создать жалобу (на альбом)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "Офигел",
+									"description": "['string', 'max:255', 'min:1']",
+									"type": "text"
+								},
+								{
+									"key": "type_id",
+									"value": "1",
+									"description": "['required', 'integer', 'exists:complaint_types,id']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/complaint",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"complaint"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Создать жалобу (на картинку)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "description",
+									"value": "Офигел",
+									"description": "['string', 'max:255', 'min:1']",
+									"type": "text"
+								},
+								{
+									"key": "type_id",
+									"value": "1",
+									"description": "['required', 'integer', 'exists:complaint_types,id']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/complaint",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}",
+								"complaint"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Список жалоб",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/complaints",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"complaints"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Отменить жалобу (свою)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/complaints/{{complaint}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"complaints",
+								"{{complaint}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Пользователи",
+			"item": [
+				{
+					"name": "Себя",
+					"item": [
+						{
+							"name": "Получение себя",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{api}}/users/me",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Редактирование себя",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "",
+											"description": "['string', 'max:255', 'min:2']",
+											"type": "text"
+										},
+										{
+											"key": "login",
+											"value": "",
+											"description": "['string', 'max:64', 'min:2', 'regex:/^[a-zA-Z0-9_-]+$/']",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "",
+											"description": "['string', 'max:255', 'min:8', \n'regex:/[a-z]/',\n'regex:/[A-Z]/',\n'regex:/[0-9]/',\n'regex:/[@$!%*#?&.,<>_-]/']",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{api}}/users/me",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"users",
+										"me"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Список пользователей",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/users",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Получение пользователя",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/users/{{user}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"users",
+								"{{user}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Редактирование пользователя",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "",
+									"description": "['string', 'max:255', 'min:2']",
+									"type": "text"
+								},
+								{
+									"key": "login",
+									"value": "",
+									"description": "['string', 'max:64', 'min:2', 'regex:/^[a-zA-Z0-9_-]+$/', 'unique:users']",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"description": "['string', 'max:255', 'min:8', \n'regex:/[a-z]/',\n'regex:/[A-Z]/',\n'regex:/[0-9]/',\n'regex:/[@$!%*#?&.,<>_-]/']",
+									"type": "text"
+								},
+								{
+									"key": "role",
+									"value": "",
+									"description": "['string', 'exists:roles,code']",
+									"type": "text"
+								},
+								{
+									"key": "is_banned",
+									"value": "",
+									"description": "['boolean']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/users/{{user}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"users",
+								"{{user}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "@мб лень будет делать",
+			"item": [
+				{
+					"name": "Настройки",
+					"item": [
+						{
+							"name": "Получение настроек (публичные)",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{api}}/",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										""
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Получение настроек",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{api}}/settings",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"settings"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Изменение настроек",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "{{api}}/settings",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"settings"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Приглашения",
+					"item": [
+						{
+							"name": "Рассылка приглашений (по логинам)",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "logins",
+											"value": "",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{api}}/albums/{{album}}/invite",
+									"host": [
+										"{{api}}"
+									],
+									"path": [
+										"albums",
+										"{{album}}",
+										"invite"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api",
+			"value": "http://api/api",
+			"type": "string"
+		}
+	]
+}
