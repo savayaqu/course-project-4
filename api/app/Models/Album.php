@@ -26,7 +26,11 @@ class Album extends Model
     public function albumAccesses()
     {
         return $this->hasMany(AlbumAccess::class);
-    }
+    }/*
+    public function usersViaAccess()
+    {   // TODO: можно избавится от модели AlbumAccess, соединив эту модель напрямую к User модели
+        return $this->belongsToMany(User::class, 'album_accesses');
+    }*/
     public function invitations()
     {
         return $this->hasMany(Invitation::class);
@@ -73,7 +77,7 @@ class Album extends Model
         $currentDay = date("Y-m-d");
         $string = $user->getRememberToken() . $currentDay . $albumId;
 
-        $allow = Hash::check($string, base64_decode($signExploded[1]));
+        $allow = Hash::check($string, base64_decode($signCode));
         Cache::put($cacheKey, $signCode, 3600);
 
         return $user->login;
