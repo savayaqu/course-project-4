@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\ComplaintType;
 use App\Models\Role;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -31,5 +32,12 @@ class DatabaseSeeder extends Seeder
            'password'   => 'Admin123!'    ,
            'role_id'    => $role_admin->id,
        ]);
+       ComplaintType::create([
+          'name' => 'Детская порнография'
+       ]);
+        ComplaintType::create([
+            'name' => 'Расчленёнка'
+        ]);
+
     }
 }

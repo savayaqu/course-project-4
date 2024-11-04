@@ -97,7 +97,14 @@ Route
             $tag->delete('', 'destroy');    // Удаление тега
         });
     });
-    // TODO: Жалобы         —  ComplaintController
+    $authorized
+        ->prefix('complaints')
+        ->controller(ComplaintController::class)
+        ->group(function ($complaints) {
+            $complaints->get('', 'all');
+            $complaints->delete('{complaint}', 'destroy');
+        });
+
     // TODO: Предупреждения —    WarningController
     // TODO: Пользователи   —       UserController
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController

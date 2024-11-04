@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -16,6 +15,8 @@ class Album extends Model
       'path',
       'user_id'
     ];
+
+
     public function user() {
         return $this->belongsTo(User::class);
     }

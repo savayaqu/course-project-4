@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Complaint extends Model
 {
     protected $fillable = [
@@ -11,7 +9,9 @@ class Complaint extends Model
       'complaint_type_id',
       'picture_id',
       'album_id',
-      'user_id'
+      'about_user_id',
+      'from_user_id',
+        'status'
     ];
     public function complaintType()
     {
@@ -28,5 +28,13 @@ class Complaint extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function fromUser()
+    {
+        return $this->belongsTo(User::class, 'from_user_id');
+    }
+    public function aboutUser()
+    {
+        return $this->belongsTo(User::class, 'about_user_id');
     }
 }
