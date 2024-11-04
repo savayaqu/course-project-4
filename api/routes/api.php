@@ -2,12 +2,14 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AlbumController;
 use App\Http\Controllers\Api\PictureController;
 use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\AccessController;
+use App\Http\Controllers\Api\WarningController;
 
 use App\Http\Middleware\CheckRole;
 
@@ -100,10 +102,35 @@ Route
     $authorized
         ->prefix('complaints')
         ->controller(ComplaintController::class)
-        ->group(function ($complaints) {
-            $complaints->get('', 'all');
-            $complaints->delete('{complaint}', 'destroy');
+        ->group(function ($complaints) {                    //  [ЖАЛОБЫ]
+            $complaints->get('', 'all');                    // Просмотр всех жалоб
+            $complaints->delete('{complaint}', 'destroy');  //  Удаление своей жалобы
         });
+    $authorized
+        ->prefix('users')
+        ->controller(UserController::class)
+        ->group(function ($users) {            // [ПОЛЬЗОВАТЕЛИ]
+            $users->get('', 'all');            // Список пользователей
+            $users->get('me', 'self');         // Получение себя
+            $users->post('edit', 'selfEdit');  // Редактирование себя
+            $users
+                ->prefix('{user}')
+                ->group(function ($user) {
+                   $user->get   ('', 'show');  // Получение пользователя
+                   $user->post  ('', 'edit');  // Редактирование пользователя
+                    $user
+                        ->prefix('warnings')
+                        ->middleware(CheckRole::class . ':admin')
+                        ->controller(WarningController::class)
+                        ->group(function ($warnings) {  // [ПРЕДУПРЕЖДЕНИЯ]
+                            $warnings->post('', 'create');
+                            $warnings->delete('{warning}', 'destroy');
+                        });
+                });
+
+        });
+
+
 
     // TODO: Предупреждения —    WarningController
     // TODO: Пользователи   —       UserController

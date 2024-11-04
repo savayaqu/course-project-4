@@ -51,11 +51,7 @@ class User extends Authenticatable
     public function albumAccesses()
     {
         return $this->hasMany(AlbumAccess::class);
-    }/*
-    public function albumsViaAccess()
-    {   // TODO: можно избавится от модели AlbumAccess, соединив эту модель напрямую к Album модели
-        return $this->belongsToMany(Album::class, 'album_accesses');
-    }*/
+    }
     public function tags()
     {
         return $this->hasMany(Tag::class);
