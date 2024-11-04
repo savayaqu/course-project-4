@@ -110,29 +110,25 @@ Route
         ->prefix('users')
         ->controller(UserController::class)
         ->group(function ($users) {            // [ПОЛЬЗОВАТЕЛИ]
-            $users->get('', 'all');            // Список пользователей
+            $users->middleware(CheckRole::class . ':admin')->get('', 'index');   // Список пользователей
             $users->get('me', 'self');         // Получение себя
-            $users->post('edit', 'selfEdit');  // Редактирование себя
+            $users->post('me', 'selfEdit');  // Редактирование себя
             $users
                 ->prefix('{user}')
+                ->middleware(CheckRole::class . ':admin')
                 ->group(function ($user) {
                    $user->get   ('', 'show');  // Получение пользователя
                    $user->post  ('', 'edit');  // Редактирование пользователя
                     $user
                         ->prefix('warnings')
-                        ->middleware(CheckRole::class . ':admin')
                         ->controller(WarningController::class)
                         ->group(function ($warnings) {  // [ПРЕДУПРЕЖДЕНИЯ]
-                            $warnings->post('', 'create');
-                            $warnings->delete('{warning}', 'destroy');
+                            $warnings->post('', 'create');              //Создание предупреждения
+                            $warnings->delete('{warning}', 'destroy');  //Удаление предупреждения
                         });
                 });
 
         });
 
-
-
-    // TODO: Предупреждения —    WarningController
-    // TODO: Пользователи   —       UserController
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
 });
