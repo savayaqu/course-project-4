@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->foreignId('album_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('picture_id')->nullable()->constrained()->nullOnDelete();
-            //$table->foreignId('from_user_id')->constrained('users')->cascadeOnDelete();
-            //$table->foreignId('about_user_id')->constrained('users')->cascadeOnDelete(); // TODO: если автор удалит альбом/картинку, то жалоба на автора не должна удаляться
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->foreignId('status_id')->constrained('complaint_types');
             $table->foreignId('complaint_type_id')->constrained('complaint_types');

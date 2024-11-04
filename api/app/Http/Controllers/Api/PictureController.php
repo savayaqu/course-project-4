@@ -19,17 +19,17 @@ class PictureController extends Controller
     {
         $album = Album::find($album_id);
         if (!$album) {
-            throw new ApiException('Альбом не найден', 404); // TODO: На английский
+            throw new ApiException('Not found', 404);
         }
 
         $picture = Picture::where('id', $picture_id)->where('album_id', $album_id)->first();
         if (!$picture) {
-            throw new ApiException('Картинка не найдена', 404); // TODO: На английский
+            throw new ApiException('Not found', 404);
         }
 
         $sign = Album::checkSign($album_id, $request->query('sign'));
         if (!$sign) {
-            throw new ApiException('Доступ запрещён', 403); // TODO: На английский
+            throw new ApiException('Forbidden', 403);
         }
         $orientation = $picture->height > $picture->width ? 'h' : 'w';
 
@@ -47,7 +47,7 @@ class PictureController extends Controller
                 }
             }
             if (!$allowSize) $size = $allowedSizes[count($allowedSizes)-1];
-            if ($askedSize != $size) throw new ApiException('Ты хуйню ввёл', 409); // TODO: На английский
+            if ($askedSize != $size) throw new ApiException('Allowed sizes: 144, 240, 360, 480, 720, 1080', 400);
 
 
             // Проверка наличия превью в файлах x2

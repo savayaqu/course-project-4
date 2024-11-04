@@ -14,7 +14,20 @@ use Illuminate\Support\Str;
 
 class InvitationController extends Controller
 {
-
+    public function destroy($albumId)
+    {
+        //Проверка принадлежности альбома пользователю
+        $user = Auth::user();
+        $album = Album::find($albumId);
+        if (!$album) throw new ApiException('Not found', 404);
+        if($album->user_id != $user->id)
+        {
+            throw new ApiException('Forbidden', 403);
+        }
+        $invitation = Invitation::where('album_id', $albumId)->first();
+        $invitation->delete();
+        return response()->json()->setStatusCode(204);
+    }
     public function album($code)
     {
         $user = Auth::user();
@@ -57,8 +70,14 @@ class InvitationController extends Controller
     }
     public function create($album_id, Request $request)
     {
+        //Проверка принадлежности альбома пользователю
+        $user = Auth::user();
         $album = Album::find($album_id);
-        if (!$album) throw new ApiException('Альбом не найден', 404);
+        if (!$album) throw new ApiException('Not found', 404);
+        if($album->user_id != $user->id)
+        {
+            throw new ApiException('Forbidden', 403);
+        }
         if(Invitation::where('album_id', $album_id)->first()) throw new ApiException('Приглашение уже существует', 418);
         $currentDate = date('Y-m-d H:i:s');
 

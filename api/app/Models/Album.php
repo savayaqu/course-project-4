@@ -26,11 +26,7 @@ class Album extends Model
     public function albumAccesses()
     {
         return $this->hasMany(AlbumAccess::class);
-    }/*
-    public function usersViaAccess()
-    {   // TODO: можно избавится от модели AlbumAccess, соединив эту модель напрямую к User модели
-        return $this->belongsToMany(User::class, 'album_accesses');
-    }*/
+    }
     public function invitations()
     {
         return $this->hasMany(Invitation::class);

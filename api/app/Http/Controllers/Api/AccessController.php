@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Invitation;
 use Illuminate\Http\Request;
@@ -18,12 +19,12 @@ class AccessController extends Controller
         $invitations = Invitation::with('album')->whereHas('album', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })->get();
-
+        $album = Album::where('user_id', $user->id)->get();
         //Получаем все album_id из приглашений
-        $albumIds = $invitations->pluck('album.id')->toArray();
-
+        $albumIds = $album->pluck('id')->toArray();
         //поиск всех пользователей у которых есть доступ к альбомам текущего пользователя
-       $accesses = AlbumAccess::whereIn('album_id', $albumIds)->get();
+       //$accesses = AlbumAccess::whereIn('album_id', $albumIds)->with('users')->get();
+       $accesses = AlbumAccess::with('user')->whereIn('album_id', $albumIds)->get();
 
        return response()->json(['accesses' => $accesses, 'invitations' => $invitations]);
 
