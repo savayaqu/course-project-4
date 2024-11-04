@@ -68,14 +68,8 @@ class TagController extends Controller
     }
     public function edit($tagId, Request $request)
     {
-        $user = Auth::user();
-        $tag = Tag::find($tagId)->where('user_id', $user->id)->first();
-        if(!$tag) {
-            throw new ApiException('Not found', 404);
-        }
-        $tag->fill($request->all());
-        $tag->save();
-        return response()->json($tag)->setStatusCode(200);
+        Tag::findOrFail($tagId)->update($request->all());
+        return response()->json(Tag::findOrFail($tagId))->setStatusCode(200);
     }
     public function destroy($tagId)
     {

@@ -12,7 +12,6 @@ class WarningController extends Controller
     public function create(Request $request, $userId)
     {
         User::findOrFail($userId);
-
         $warning = Warning::create([
            'user_id' => $userId,
            'comment' => $request->comment
