@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\AlbumResource;
 use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Picture;
@@ -24,12 +25,13 @@ class AlbumController extends Controller
         return response()->json([$album], 200);
     }
 
-    public function index(Request $request)
+    public function index()
     {
         $user = Auth::user();
-        $albums = Album::where('user_id', $user->id)->get();
-        $accessible = AlbumAccess::where('user_id', $user->id)->get();
-        return response()->json(['own' => $albums, 'accessible' => $accessible])->setStatusCode(200);
+        return response([
+            'own'        => AlbumResource::collection($user->albums),
+            'accessible' => AlbumResource::collection($user->albumsViaAccess),
+        ]);
     }
 
     public function create(Request $request)
