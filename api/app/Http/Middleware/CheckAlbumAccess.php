@@ -22,9 +22,8 @@ class CheckAlbumAccess
         {
             $user = Auth::user();
             $album_id = $request->route('album');
-            Album::findOrFail($album_id);
-            $originalAlbum = Album::findOrFail($album_id)->where('user_id', $user->id);
-            if($originalAlbum)
+            $album = Album::findOrFail($album_id);
+            if($album->user_id === $user->id)
             {
                 return $next($request);
             }

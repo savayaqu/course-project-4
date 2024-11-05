@@ -56,7 +56,7 @@ Route
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']);   // Создание жалобы на ЧУЖУЮ картинку
                     $picture
                     ->withoutMiddleware('auth:sanctum')
-                    ->middleware(SignCheck::class) // TODO: вынести проверку сигнатур в middleware
+                    ->middleware(SignCheck::class)
                     ->group(function ($pictureBySign) {                     // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
                         $pictureBySign->get('download'    , 'download');    // Скачивание картинки
                         $pictureBySign->get('original'    , 'original');    // Отображение картинки
