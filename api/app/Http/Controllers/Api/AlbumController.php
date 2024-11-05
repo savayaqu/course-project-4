@@ -16,15 +16,6 @@ use Illuminate\Support\Str;
 
 class AlbumController extends Controller
 {
-    public function edit(Request $request, $album_id)
-    {
-        $user = Auth::user();
-        $album = Album::find($album_id)->where('user_id', $user->id)->first();
-        $album->fill($request->all());
-        $album->save();
-        return response()->json([$album], 200);
-    }
-
     public function index()
     {
         $user = Auth::user();
@@ -34,76 +25,63 @@ class AlbumController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request) // TODO: Проверять валидность
     {
         $user = Auth::user();
-        $name = $request->input('name');
-        $input_path = $request->input('path');
+        $name      = $request->input('name');
+        $inputPath = $request->input('path');
 
-        // Проверка, существует ли альбом с таким путём
-        $exist_album = Album::where('path', $input_path)->where('user_id', $user->id)->first();
+        // Проверка, существует ли альбом с таким путём и возвращаем его если да
+        $existAlbum = Album
+            ::where('path', $inputPath)
+            ->where('user_id', $user->id)
+            ->first();
+        if ($existAlbum)
+            return response([
+                'message' => 'Album with this path already exists',
+                'album' => $existAlbum
+            ], 409);
 
-        if ($exist_album) {
-            // Если альбом с таким путём уже существует, возвращаем его ID
-            return response()->json([
-                'message' => 'Альбом уже существует',
-                'album' => $exist_album
-            ])->setStatusCode(409);
-
-        }
-
-        // Проверка, существует ли альбом с таким именем
-        $name_counter = 1;
-        $original_name = $name;
-
-        // Если существует альбом с таким именем, модифицируем имя
-        while (Album::where('name', $name)->where('user_id', $user->id)->exists()) {
-            $name_counter++;
-            $name = $original_name . $name_counter;
-        }
+        // Проверка, существует ли альбом с таким именем и модифицируем имя если да
+        $nameCounter = 1;
+        $originalName = $name;
+        while (Album
+            ::where('name', $name)
+            ->where('user_id', $user->id)
+            ->exists()
+        ) $name = $originalName . ++$nameCounter;
 
         // Создание нового альбома с уникальным именем
-        $new_album = Album::create([
+        $newAlbum = Album::create([
             'name' => $name,
-            'path' => $input_path,
+            'path' => $inputPath,
             'user_id' => $user->id
         ]);
 
-        $album_id = $new_album->id;
-        $path = 'users/' . $user->login . '/albums/' . $album_id;
-
-        // Проверка и удаление директории, если она существует
-        if (Storage::exists($path)) {
-            Storage::deleteDirectory($path);
-        }
-        Storage::makeDirectory($path);
+        // Создание пустой директории
+        $path = "users/$user->login/albums/$newAlbum->id";
+        Storage::deleteDirectory($path);
+        Storage::  makeDirectory($path);
 
         // Формирование ответа
-        return response()->json([
-            'message' => 'Альбом создан',
-            'album' => $new_album
-        ])->setStatusCode(201);
+        return response([
+            'message' => 'Album created',
+            'album' => $newAlbum
+        ], 201);
     }
 
-    public function destroy(Request $request, $album_id) {
+    public function edit(Request $request, $albumId)
+    {
+        $album = Album::findOrFail($albumId)->update($request->all()); // TODO: Проверять валидность и брать валидные
+        return response(['album' => $album]);
+    }
 
-        $album = Album::where('id', $album_id)->first();
-        if(!$album) {
-            throw new ApiException('Альбом не найден', 404);
-        }
-        //Проверка что папка принадлежит текущему пользователю
+    public function destroy($albumId)
+    {
+        $album = Album::findOrFail($albumId);
         $user = Auth::user();
-        $files = Picture::where('album_id', $album->id)->get();
-        if(Album::where('id', $album_id)->where('user_id',$user->id)->first()) {
-            Storage::deleteDirectory($user->login.'/albums/'.$album_id);
-            foreach ($files as $file) {
-                Picture::where('id', $file->id)->delete();
-            }
-            Album::where('id', $album_id)->delete();
-            return response()->json(['message' => 'Альбом удалён'])->setStatusCode(200);
-        }
-        else {
-            throw new ApiException('Доступ запрещён', 403);
-        }
+        Storage::deleteDirectory("users/$user->login/albums/$albumId");
+        $album->delete();
+        return response(['message' => 'Album deleted']);
     }
 }
