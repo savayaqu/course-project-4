@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Album;
+use App\Models\AlbumAccess;
 use App\Models\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -27,11 +28,8 @@ class AlbumController extends Controller
     {
         $user = Auth::user();
         $albums = Album::where('user_id', $user->id)->get();
-        if($albums->isEmpty())
-        {
-            throw new ApiException('Альбомы не найдены', 404);
-        }
-        return response($albums)->setStatusCode(200);
+        $accessible = AlbumAccess::where('user_id', $user->id)->get();
+        return response()->json(['own' => $albums, 'accessible' => $accessible])->setStatusCode(200);
     }
 
     public function create(Request $request)
