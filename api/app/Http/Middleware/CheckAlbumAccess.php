@@ -30,6 +30,17 @@ class CheckAlbumAccess
             $albumAccess = AlbumAccess::where('album_id', $album_id)->where('user_id', $user->id)->first();
             if (!$albumAccess) {throw new ApiException('Forbidden', 403);}
         }
+        if($request->isMethod('POST') || $request->isMethod('DEL') && $request->hasHeader('Authorization'))
+        {
+            $user = Auth::user();
+            $album_id = $request->route('album');
+            $album = Album::findOrFail($album_id);
+            if($album->user_id === $user->id)
+            {
+                return $next($request);
+            }
+            else {throw new ApiException('Forbidden', 404);}
+        }
 
 
         return $next($request);
