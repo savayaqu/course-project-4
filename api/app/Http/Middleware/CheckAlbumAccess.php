@@ -18,7 +18,7 @@ class CheckAlbumAccess
 
     public function handle(Request $request, Closure $next)
     {
-        if($request->isMethod('GET'))
+        if($request->isMethod('GET') && $request->hasHeader('Authorization'))
         {
             $user = Auth::user();
             $album_id = $request->route('album');

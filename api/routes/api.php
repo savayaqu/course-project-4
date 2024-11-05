@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\AccessController;
 use App\Http\Controllers\Api\WarningController;
 use App\Http\Middleware\CheckAlbumAccess;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\SignCheck;
 
 Route
 ::controller(AuthController::class)
@@ -32,7 +33,7 @@ Route
         $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
-        ->middleware(CheckAlbumAccess::class) // TODO: РАЗРАБОТАТЬ middleware ДЛЯ АЛЬБОМОВ ПО ДОСТУПУ (мб только для GET запросов, т.к. DEL и POST чисто для действий со СВОИМИ альбомами (кроме жалоб))
+        ->middleware(CheckAlbumAccess::class)
         ->group(function ($album) {         // [АЛЬБОМ]
             $album->get   ('', 'show');     // Просмотр информации об альбоме
             $album->post  ('', 'edit');     // Изменение информации об СВОЁМ альбоме
@@ -55,7 +56,7 @@ Route
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']);   // Создание жалобы на ЧУЖУЮ картинку
                     $picture
                     ->withoutMiddleware('auth:sanctum')
-                  //->middleware('sign:check') // TODO: вынести проверку сигнатур в middleware
+                    ->middleware(SignCheck::class) // TODO: вынести проверку сигнатур в middleware
                     ->group(function ($pictureBySign) {                     // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
                         $pictureBySign->get('download'    , 'download');    // Скачивание картинки
                         $pictureBySign->get('original'    , 'original');    // Отображение картинки
