@@ -20,11 +20,7 @@ class Picture extends Model
     public function tagPictures()
     {
         return $this->hasMany(TagPicture::class);
-    }/*
-    public function tags()
-    {   // TODO: можно избавится от модели TagPicture, соединив эту модель напрямую к Tag модели
-        return $this->belongsToMany(Tag::class, 'tag_pictures');
-    }*/
+    }
     public function complaints()
     {
         return $this->hasMany(Complaint::class);

@@ -17,10 +17,7 @@ class PictureController extends Controller
 {
     public function thumbnail($album_id, $picture_id, $size, Request $request)
     {
-        $album = Album::find($album_id);
-        if (!$album) {
-            throw new ApiException('Not found', 404);
-        }
+        $album = Album::findOrFail($album_id);
 
         $picture = Picture::where('id', $picture_id)->where('album_id', $album_id)->first();
         if (!$picture) {
@@ -108,11 +105,7 @@ class PictureController extends Controller
     public function index(Request $request, $album_id)
     {
         $user = Auth::user();
-        $album = Album::where('id', $album_id)->where('user_id', $user->id)->first();
-        if(!$album)
-        {
-            throw new ApiException('Альбом не найден', 404);
-        }
+        $album = Album::findOrFail($album_id);
         $pictures = Picture::without('album')->where('album_id', $album->id)->get();
         if($pictures->isEmpty())
         {
@@ -127,16 +120,8 @@ class PictureController extends Controller
     public function original($album_id, $picture_id, Request $request)
     {
 
-        $album = Album::find($album_id);
-        if (!$album) {
-            throw new ApiException('Альбом не найден', 404);
-        }
-        $picture = Picture::find($picture_id)->where('album_id', $album_id)->first();
-
-
-        if (!$picture) {
-            throw new ApiException('Картинка не найдена', 404);
-        }
+        $album = Album::findOrFail($album_id);
+        $picture = Picture::findOrFail($picture_id)->where('album_id', $album_id)->first();
         $sign = Album::checkSign($album_id, $request->query('sign'));
         if (!$sign)
         {
@@ -149,15 +134,8 @@ class PictureController extends Controller
     public function download($album_id, $picture_id, Request $request)
     {
 
-        $album = Album::where('id', $album_id)->first();
-        $picture = Picture::where('album_id', $album_id)->where('id', $picture_id)->first();
-
-        if (!$album) {
-            throw new ApiException('Альбом не найден', 404);
-        }
-        if (!$picture) {
-            throw new ApiException('Картинка не найдена', 404);
-        }
+        $album = Album::findOrFail($album_id)->first();
+        $picture = Picture::findOrFail($picture_id);
         $sign = Album::checkSign($album_id, $request->query('sign'));
        if (!$sign)
        {

@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\AccessController;
 use App\Http\Controllers\Api\WarningController;
-
+use App\Http\Middleware\CheckAlbumAccess;
 use App\Http\Middleware\CheckRole;
 
 Route
@@ -32,7 +32,7 @@ Route
         $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
-      //->middleware('access:check') // TODO: РАЗРАБОТАТЬ middleware ДЛЯ АЛЬБОМОВ ПО ДОСТУПУ (мб только для GET запросов, т.к. DEL и POST чисто для действий со СВОИМИ альбомами (кроме жалоб))
+        ->middleware(CheckAlbumAccess::class) // TODO: РАЗРАБОТАТЬ middleware ДЛЯ АЛЬБОМОВ ПО ДОСТУПУ (мб только для GET запросов, т.к. DEL и POST чисто для действий со СВОИМИ альбомами (кроме жалоб))
         ->group(function ($album) {         // [АЛЬБОМ]
             $album->get   ('', 'show');     // Просмотр информации об альбоме
             $album->post  ('', 'edit');     // Изменение информации об СВОЁМ альбоме
