@@ -21,8 +21,9 @@
 									"const response = pm.response.json()\r",
 									"\r",
 									"// Проверка, если ли токен в ответе\r",
-									"if (response. token) {\r",
-									"    pm.environment.set(\"token\", response.token)\r",
+									"if (response.token) {\r",
+									"    // Запись токена в env\r",
+									"    pm.environment.set('token', response.token)\r",
 									"}"
 								],
 								"type": "text/javascript",
@@ -31,6 +32,9 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -38,19 +42,19 @@
 							"formdata": [
 								{
 									"key": "name",
-									"value": "lol",
+									"value": "Тестовый челик",
 									"description": "['requred', 'string', 'max:255', 'min:2']",
 									"type": "text"
 								},
 								{
 									"key": "login",
-									"value": "lol",
+									"value": "test",
 									"description": "['requred', 'string', 'max:64', 'min:2', 'regex:/^[a-zA-Z0-9_-]+$/', 'unique:users']",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "lol",
+									"value": "Test123!",
 									"description": "['requred', 'string', 'max:255', 'min:8', \n'regex:/[a-z]/',\n'regex:/[A-Z]/',\n'regex:/[0-9]/',\n'regex:/[@$!%*#?&.,<>_-]/']",
 									"type": "text"
 								}
@@ -69,7 +73,7 @@
 					"response": []
 				},
 				{
-					"name": "✅Авторизация",
+					"name": "✅Авторизация пользователя",
 					"event": [
 						{
 							"listen": "test",
@@ -79,8 +83,9 @@
 									"const response = pm.response.json()\r",
 									"\r",
 									"// Проверка, если ли токен в ответе\r",
-									"if (response. token) {\r",
-									"    pm.environment.set(\"token\", response.token)\r",
+									"if (response.token) {\r",
+									"    // Запись токена в env\r",
+									"    pm.environment.set('token', response.token)\r",
 									"}"
 								],
 								"type": "text/javascript",
@@ -89,20 +94,93 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "noauth"
+						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
 						"body": {
 							"mode": "formdata",
 							"formdata": [
 								{
 									"key": "login",
-									"value": "lol",
+									"value": "test",
 									"description": "['requred', 'string']",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "lol",
+									"value": "Test123!",
+									"description": "['requred', 'string']",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/login",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Авторизация админа",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Получение ответа\r",
+									"const response = pm.response.json()\r",
+									"\r",
+									"// Проверка, если ли токен в ответе\r",
+									"if (response.token) {\r",
+									"    // Запись токена в env\r",
+									"    pm.environment.set('token', response.token)\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "login",
+									"value": "admin",
+									"description": "['requred', 'string']",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "Admin123!",
 									"description": "['requred', 'string']",
 									"type": "text"
 								}
@@ -123,16 +201,6 @@
 				{
 					"name": "✅Выход",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -151,6 +219,38 @@
 					},
 					"response": []
 				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
 			]
 		},
 		{
@@ -159,16 +259,6 @@
 				{
 					"name": "✅Создание альбома",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -203,16 +293,6 @@
 				{
 					"name": "✅Список альбомов",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -230,16 +310,6 @@
 				{
 					"name": "✅Изменение альбома",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -275,16 +345,6 @@
 				{
 					"name": "✅Удаление альбома",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
@@ -311,16 +371,6 @@
 						{
 							"name": "✅Создание кода приглашения",
 							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token}}",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [],
 								"body": {
@@ -337,6 +387,13 @@
 											"value": "1",
 											"description": "['integer', 'min:1'] По умолчанию бесконечно",
 											"type": "text"
+										},
+										{
+											"key": "joinLimit",
+											"value": "1",
+											"description": "['integer', 'min:1'] По умолчанию бесконечно",
+											"type": "text",
+											"disabled": true
 										}
 									]
 								},
@@ -355,18 +412,8 @@
 							"response": []
 						},
 						{
-							"name": "Удаление кода приглашения",
+							"name": "✅Удаление кода приглашения",
 							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token}}",
-											"type": "string"
-										}
-									]
-								},
 								"method": "DELETE",
 								"header": [],
 								"body": {
@@ -393,16 +440,6 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token}}",
-											"type": "string"
-										}
-									]
-								},
 								"method": "GET",
 								"header": [],
 								"body": {
@@ -429,16 +466,6 @@
 								"disableBodyPruning": true
 							},
 							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token}}",
-											"type": "string"
-										}
-									]
-								},
 								"method": "GET",
 								"header": [],
 								"body": {
@@ -467,16 +494,6 @@
 						"disableBodyPruning": true
 					},
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -498,16 +515,6 @@
 				{
 					"name": "✅Отзыв доступа",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
 						"header": [],
 						"body": {
@@ -537,16 +544,6 @@
 				{
 					"name": "✅Загрузка картинок в альбом",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -576,17 +573,26 @@
 				},
 				{
 					"name": "✅Список картинок альбома",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Получение ответа\r",
+									"const response = pm.response.json()\r",
+									"\r",
+									"// Проверка, если ли сигнатура в ответе\r",
+									"if (response.sign) {\r",
+									"    // Запись сигнатуры в env\r",
+									"    pm.environment.set('sign', response.sign)\r",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -611,16 +617,6 @@
 				{
 					"name": "✅Информация о картинке",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -639,7 +635,7 @@
 					"response": []
 				},
 				{
-					"name": "✅Превью картинки",
+					"name": "✅Отображение превью картинки",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -647,7 +643,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/thumb/{{size}}?sign={{albumToken}}",
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/thumb/{{size}}?sign={{sign}}",
 							"host": [
 								"{{api}}"
 							],
@@ -662,7 +658,37 @@
 							"query": [
 								{
 									"key": "sign",
-									"value": "{{albumToken}}"
+									"value": "{{sign}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Отображение картинки (оригинал)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/original?sign={{sign}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"pictures",
+								"{{picture}}",
+								"original"
+							],
+							"query": [
+								{
+									"key": "sign",
+									"value": "{{sign}}"
 								}
 							]
 						}
@@ -678,7 +704,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/download?sign={{albumToken}}",
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/download?sign={{sign}}",
 							"host": [
 								"{{api}}"
 							],
@@ -692,37 +718,7 @@
 							"query": [
 								{
 									"key": "sign",
-									"value": "{{albumToken}}"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "✅Отображение(оригинал) картинки",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/original?sign={{albumToken}}",
-							"host": [
-								"{{api}}"
-							],
-							"path": [
-								"albums",
-								"{{album}}",
-								"pictures",
-								"{{picture}}",
-								"original"
-							],
-							"query": [
-								{
-									"key": "sign",
-									"value": "{{albumToken}}"
+									"value": "{{sign}}"
 								}
 							]
 						}
@@ -732,16 +728,6 @@
 				{
 					"name": "✅Удаление картинки",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
 						"header": [],
 						"url": {
@@ -768,18 +754,8 @@
 					"name": "К картинке",
 					"item": [
 						{
-							"name": "Добавление тега к картинке",
+							"name": "✅Добавление тега к картинке",
 							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token}}",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [],
 								"body": {
@@ -804,7 +780,7 @@
 							"response": []
 						},
 						{
-							"name": "Удаление тега с картинки",
+							"name": "✅Удаление тега с картинки",
 							"request": {
 								"method": "DELETE",
 								"header": [],
@@ -832,18 +808,8 @@
 					]
 				},
 				{
-					"name": "Создание тега",
+					"name": "✅Создание тега",
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -870,7 +836,7 @@
 					"response": []
 				},
 				{
-					"name": "Список личных тегов",
+					"name": "✅Список личных тегов",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -894,7 +860,7 @@
 					"response": []
 				},
 				{
-					"name": "Редактирование тега",
+					"name": "✅Редактирование тега",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -903,7 +869,7 @@
 							"urlencoded": [
 								{
 									"key": "value",
-									"value": "название",
+									"value": "название3",
 									"description": "['string', 'max:255', 'min:1'] Уникальный по пользователю",
 									"type": "text"
 								}
@@ -923,8 +889,18 @@
 					"response": []
 				},
 				{
-					"name": "Удаление тега",
+					"name": "✅Удаление тега",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "DELETE",
 						"header": [],
 						"body": {
@@ -954,6 +930,24 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "?? ✅Просмотр информации о теге (прикреплённые картинки)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/tags/{{tag}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"tags",
+								"{{tag}}"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -961,54 +955,7 @@
 			"name": "Жалобы",
 			"item": [
 				{
-					"name": "Создать жалобу",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "description",
-									"value": "Офигел",
-									"description": "['string', 'max:255', 'min:1']",
-									"type": "text"
-								},
-								{
-									"key": "type_id",
-									"value": "{{complaintType}}",
-									"description": "['required', 'integer', 'exists:complaint_types,id']",
-									"type": "text"
-								},
-								{
-									"key": "album_id",
-									"value": "{{album}}",
-									"description": "['integer', 'exists:albums,id']",
-									"type": "text",
-									"disabled": true
-								},
-								{
-									"key": "picture_id",
-									"value": "{{picture}}",
-									"description": "['integer', 'exists:pictures,id']",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "{{api}}/complaints",
-							"host": [
-								"{{api}}"
-							],
-							"path": [
-								"complaints"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Создать жалобу (на альбом)",
+					"name": "✅Создать жалобу (на альбом)",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -1044,7 +991,7 @@
 					"response": []
 				},
 				{
-					"name": "Создать жалобу (на картинку)",
+					"name": "✅Создать жалобу (на картинку)",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -1082,7 +1029,7 @@
 					"response": []
 				},
 				{
-					"name": "Список жалоб",
+					"name": "✅Список жалоб",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1099,7 +1046,7 @@
 					"response": []
 				},
 				{
-					"name": "Отменить жалобу (свою)",
+					"name": "✅Отменить жалобу (свою)",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -1119,13 +1066,77 @@
 			]
 		},
 		{
+			"name": "Предупреждения",
+			"item": [
+				{
+					"name": "✅Создание предупреждения",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "comment",
+									"value": "Удаляй",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/users/{{user}}/warnings",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"users",
+								"{{user}}",
+								"warnings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Удаление предупреждения",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "comment",
+									"value": "Удаляй",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{api}}/users/{{user}}/warnings/{{warming}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"users",
+								"{{user}}",
+								"warnings",
+								"{{warming}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Пользователи",
 			"item": [
 				{
 					"name": "Себя",
 					"item": [
 						{
-							"name": "Получение себя",
+							"name": "✅Получение себя",
 							"request": {
 								"method": "GET",
 								"header": [],
@@ -1143,7 +1154,7 @@
 							"response": []
 						},
 						{
-							"name": "Редактирование себя",
+							"name": "✅Редактирование себя",
 							"request": {
 								"method": "POST",
 								"header": [],
@@ -1186,7 +1197,7 @@
 					]
 				},
 				{
-					"name": "Список пользователей",
+					"name": "✅Список пользователей",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1203,7 +1214,7 @@
 					"response": []
 				},
 				{
-					"name": "Получение пользователя",
+					"name": "✅Получение пользователя",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -1221,7 +1232,7 @@
 					"response": []
 				},
 				{
-					"name": "Редактирование пользователя",
+					"name": "✅Редактирование пользователя",
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -1287,6 +1298,9 @@
 								"disableBodyPruning": true
 							},
 							"request": {
+								"auth": {
+									"type": "noauth"
+								},
 								"method": "GET",
 								"header": [],
 								"body": {
@@ -1358,16 +1372,6 @@
 						{
 							"name": "Рассылка приглашений (по логинам)",
 							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token}}",
-											"type": "string"
-										}
-									]
-								},
 								"method": "POST",
 								"header": [],
 								"body": {
@@ -1399,6 +1403,16 @@
 			]
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
