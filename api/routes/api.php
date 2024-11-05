@@ -41,7 +41,8 @@ Route
             $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома / у СЕБЯ с ЧУЖОГО альбома
             $album->delete('invite'         , [InvitationController::class, 'destroy'      ]);  // Удалить код приглашения на СВОЁМ альбоме
             $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
-            $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum']);  // Создание жалоба на ЧУЖОЙ альбом
+            $album->withoutMiddleware(CheckAlbumAccess::class)
+                  ->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum']);  // Создание жалоба на ЧУЖОЙ альбом
             $album
             ->prefix('pictures')
             ->controller(PictureController::class)
@@ -53,7 +54,8 @@ Route
                 ->group(function ($picture) {           // [КАРТИНКА]
                     $picture->get   ('', 'info');       // Получение информации об картинке
                     $picture->delete('', 'destroy');    // Удаление СВОЕЙ картинки
-                    $picture->post('complaint', [ComplaintController::class, 'createToPicture']);   // Создание жалобы на ЧУЖУЮ картинку
+                    $picture->withoutMiddleware(CheckAlbumAccess::class)
+                            ->post('complaint', [ComplaintController::class, 'createToPicture']);   // Создание жалобы на ЧУЖУЮ картинку
                     $picture
                     ->withoutMiddleware('auth:sanctum')
                     ->middleware(SignCheck::class)
