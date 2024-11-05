@@ -39,7 +39,11 @@ class CheckAlbumAccess
             {
                 return $next($request);
             }
-            else {throw new ApiException('Forbidden', 404);}
+            if($request->input('description') && $request->input('type_id'))
+            {
+                return $next($request);
+            }
+            else {throw new ApiException('Forbidden', 403);}
         }
 
 
