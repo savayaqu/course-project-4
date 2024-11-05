@@ -29,7 +29,7 @@ Route
     ->controller(AlbumController::class)
     ->prefix('albums')
     ->group(function ($albums) {        // [АЛЬБОМЫ]
-        $albums->post('', 'create');    // Создание личного альбома
+        $albums->post('', 'create');    // Создание ЛИЧНОГО альбома
         $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
@@ -98,40 +98,40 @@ Route
         ->prefix('{tag}')
         ->group(function ($tag) {           // [ТЕГ]
             $tag->get   ('', 'show');       // Просмотр информации о теге (прикреплённые картинки)
-            $tag->post  ('', 'edit');       // Изменение тега
-            $tag->delete('', 'destroy');    // Удаление тега
+            $tag->post  ('', 'edit');       // Изменение ЛИЧНОГО тега
+            $tag->delete('', 'destroy');    // Удаление ЛИЧНОГО тега
         });
     });
     $authorized
-        ->prefix('complaints')
-        ->controller(ComplaintController::class)
-        ->group(function ($complaints) {                    //  [ЖАЛОБЫ]
-            $complaints->get('', 'all');                    // Просмотр всех жалоб
-            $complaints->delete('{complaint}', 'destroy');  //  Удаление своей жалобы
-        });
+    ->prefix('complaints')
+    ->controller(ComplaintController::class)
+    ->group(function ($complaints) {                    // [ЖАЛОБЫ]
+        $complaints->get('', 'all');                    // Просмотр всех жалоб
+        $complaints->delete('{complaint}', 'destroy');  // Удаление своей жалобы
+    });
     $authorized
-        ->prefix('users')
-        ->controller(UserController::class)
-        ->group(function ($users) {            // [ПОЛЬЗОВАТЕЛИ]
-            $users->middleware(CheckRole::class . ':admin')->get('', 'index');   // Список пользователей
-            $users->get('me', 'self');         // Получение себя
-            $users->post('me', 'selfEdit');  // Редактирование себя
-            $users
-                ->prefix('{user}')
-                ->middleware(CheckRole::class . ':admin')
-                ->group(function ($user) {
-                   $user->get   ('', 'show');  // Получение пользователя
-                   $user->post  ('', 'edit');  // Редактирование пользователя
-                    $user
-                        ->prefix('warnings')
-                        ->controller(WarningController::class)
-                        ->group(function ($warnings) {  // [ПРЕДУПРЕЖДЕНИЯ]
-                            $warnings->post('', 'create');              //Создание предупреждения
-                            $warnings->delete('{warning}', 'destroy');  //Удаление предупреждения
-                        });
-                });
-
+    ->prefix('users')
+    ->controller(UserController::class)
+    ->group(function ($users) {                                             // [ПОЛЬЗОВАТЕЛИ]
+        $users->get ('', 'index')->middleware(CheckRole::class . ':admin'); // Список пользователей
+        $users->get ('me', 'self');                                         // Получение СЕБЯ
+        $users->post('me', 'selfEdit');                                     // Редактирование СЕБЯ
+        $users
+        ->prefix('{user}')
+        ->middleware(CheckRole::class . ':admin')
+        ->group(function ($user) {       // [ПОЛЬЗОВАТЕЛЬ]
+            $user->get ('', 'show');     // Получение пользователя
+            $user->post('', 'edit');     // Редактирование пользователя
+            $user
+            ->prefix('warnings')
+            ->controller(WarningController::class)
+            ->group(function ($warnings) {                  // [ПРЕДУПРЕЖДЕНИЯ]
+                $warnings->post  (''         , 'create');   // Создание предупреждения
+                $warnings->delete('{warning}', 'destroy');  // Удаление предупреждения
+            });
         });
+
+    });
 
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
 });
