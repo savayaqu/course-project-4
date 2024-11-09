@@ -10,9 +10,9 @@ class InvitationCreateRequest extends ApiRequest
     public function rules(): array
     {
         return [
-            'expires_at_integer' => 'nullable|integer|min:1|required_without:expires_at_date',
-            'expires_at_date' => 'nullable|date_format:Y-m-d H:i:s|after:now|required_without:expires_at_integer',
-            'joinLimit' => 'nullable|integer|min:1',
+            'expires_at' => 'nullable|date|after:now',
+            'timeLimit'  => 'nullable|integer|min:1',
+            'joinLimit'  => 'nullable|integer|min:1',
         ];
     }
 }

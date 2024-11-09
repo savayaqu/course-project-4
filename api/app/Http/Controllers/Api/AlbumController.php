@@ -2,19 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Album\AlbumCreateRequest;
 use App\Http\Requests\Api\Album\AlbumUpdateRequest;
 use App\Http\Resources\AlbumResource;
 use App\Models\Album;
-use App\Models\AlbumAccess;
-use App\Models\Picture;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class AlbumController extends Controller
 {

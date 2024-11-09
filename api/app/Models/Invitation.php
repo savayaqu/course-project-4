@@ -6,9 +6,9 @@ namespace App\Models;
 class Invitation extends Model
 {
     protected $fillable = [
-      'link',
-      'expires_at',
-      'album_id',
+        'link',
+        'expires_at',
+        'album_id',
         'join_limit'
     ];
     public function album()

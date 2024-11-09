@@ -29,20 +29,20 @@ Route
     ->controller(AlbumController::class)
     ->prefix('albums')
     ->group(function ($albums) {        // [АЛЬБОМЫ]
-        $albums->post('', 'create');    // Создание ЛИЧНОГО альбома
+        $albums->post('', 'create');     // Создание ЛИЧНОГО альбома
         $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
         ->middleware(CheckAlbumAccess::class)
         ->group(function ($album) {         // [АЛЬБОМ]
             $album->get   ('', 'show');     // Просмотр информации об альбоме
-            $album->post  ('', 'edit');     // Изменение информации об СВОЁМ альбоме
+            $album->post  ('', 'update');   // Изменение информации об СВОЁМ альбоме
             $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
             $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома / у СЕБЯ с ЧУЖОГО альбома
             $album->delete('invite'         , [InvitationController::class, 'destroy'      ]);  // Удалить код приглашения на СВОЁМ альбоме
             $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
-            $album->withoutMiddleware(CheckAlbumAccess::class)
-                  ->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum']);  // Создание жалоба на ЧУЖОЙ альбом
+            $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum'])   // Создание жалобы на ЧУЖОЙ альбом
+                  ->withoutMiddleware(CheckAlbumAccess::class);
             $album
             ->prefix('pictures')
             ->controller(PictureController::class)
@@ -77,7 +77,7 @@ Route
     });
     $authorized
     ->controller(InvitationController::class)
-    ->prefix('invitation/{code}')
+    ->prefix('invitation/{invitation}')
     ->group(function ($invitations) {           // [ПРИГЛАШЕНИЯ]
         $invitations->get('album', 'album');    // Просмотр содержимого альбома по приглашению
         $invitations->get('join' , 'join');     // Присоединиться к альбому (добавление доступа)

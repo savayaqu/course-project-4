@@ -9,7 +9,6 @@ use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Invitation;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 
 use Illuminate\Support\Str;
 

@@ -7,15 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Invitation;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AccessController extends Controller
 {
-    public function all()
+    public function index()
     {
         $user = Auth::user();
-        // поиск всех ссылок от текущего пользователя
+        // Поиск всех ссылок от текущего пользователя
         $invitations = Invitation::with('album')->whereHas('album', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })->get();
@@ -30,6 +29,7 @@ class AccessController extends Controller
 
         // TODO:: это пиздец, а не вывод
     }
+
     public function destroy($albumId, $userId)
     {
         $albumAccess = AlbumAccess::where('album_id', $albumId)->where('user_id', $userId)->delete();
