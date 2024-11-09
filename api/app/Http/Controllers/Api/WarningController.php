@@ -11,7 +11,7 @@ class WarningController extends Controller
 {
     public function create(Request $request, $userId)
     {
-        User::findOrFail($userId);
+        User::findOrFailCustom($userId);
         $warning = Warning::create([
            'user_id' => $userId,
            'comment' => $request->comment
@@ -20,8 +20,8 @@ class WarningController extends Controller
     }
     public function destroy($userId, $warningId)
     {
-        User::findOrFail($userId);
-        Warning::findOrFail($warningId)->delete();
+        User::findOrFailCustom($userId);
+        Warning::findOrFailCustom($warningId)->delete();
         return response()->json()->setStatusCode(204);
 
     }

@@ -31,9 +31,9 @@ class SignCheck
         $cachedSign = Cache::get("signAccess:to=$albumId;for=$userId");
         if ($cachedSign !== $signCode) throw new ApiException('Forbidden', 403);
 
-        $user = User::findOrFail($signExploded[0]);
-        $originalAlbum = Album::findOrFail($albumId);
-        $originalUser = User::findOrFail($originalAlbum->user_id);
+        $user = User::findOrFailCustom($signExploded[0]);
+        $originalAlbum = Album::findOrFailCustom($albumId);
+        $originalUser = User::findOrFailCustom($originalAlbum->user_id);
         $currentDay = date("Y-m-d");
         $string = $user->getRememberToken() . $currentDay . $albumId;
 

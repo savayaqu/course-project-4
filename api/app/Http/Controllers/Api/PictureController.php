@@ -19,9 +19,9 @@ class PictureController extends Controller
 {
     public function thumbnail($album_id, $picture_id, $size, Request $request)
     {
-        Album::findOrFail($album_id);
+        Album::findOrFailCustom($album_id);
 
-        $picture = Picture::findOrFail($picture_id);
+        $picture = Picture::findOrFailCustom($picture_id);
 
         $orientation = $picture->height > $picture->width ? 'h' : 'w';
 
@@ -66,8 +66,8 @@ class PictureController extends Controller
     public function destroy($album_id, $picture_id)
     {
         $user = Auth::user();
-        Album::findOrFail($album_id);
-        $picture = Picture::findOrFail($picture_id)->where('album_id', $album_id)->first();
+        Album::findOrFailCustom($album_id);
+        $picture = Picture::findOrFailCustom($picture_id)->where('album_id', $album_id)->first();
         $path = 'users/' . $user->login . '/albums/' . $album_id . '/pictures/' . $picture->name;
         if(Storage::exists($path))
         {
@@ -80,14 +80,14 @@ class PictureController extends Controller
 
     public function info($album_id, $picture_id)
     {
-        $picture = Picture::findOrFail($picture_id)->where('album_id', $album_id)->first();
+        $picture = Picture::findOrFailCustom($picture_id)->where('album_id', $album_id)->first();
         return response()->json($picture);
     }
 
     public function index(Request $request, $album_id)
     {
         $user = Auth::user();
-        $album = Album::findOrFail($album_id);
+        $album = Album::findOrFailCustom($album_id);
         $pictures = Picture::without('album')->where('album_id', $album->id)->get();
         if($pictures->isEmpty())
         {
@@ -99,8 +99,8 @@ class PictureController extends Controller
 
     public function original($album_id, $picture_id, Request $request)
     {
-        $album = Album::findOrFail($album_id);
-        $picture = Picture::findOrFail($picture_id)->where('album_id', $album_id)->first();
+        $album = Album::findOrFailCustom($album_id);
+        $picture = Picture::findOrFailCustom($picture_id)->where('album_id', $album_id)->first();
         $path = Storage::path('users/'.$request->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->file($path);
     }
@@ -108,8 +108,8 @@ class PictureController extends Controller
     public function download($album_id, $picture_id, Request $request)
     {
 
-        $album = Album::findOrFail($album_id)->first();
-        $picture = Picture::findOrFail($picture_id);
+        $album = Album::findOrFailCustom($album_id)->first();
+        $picture = Picture::findOrFailCustom($picture_id);
         $path = Storage::path('users/'.$request->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
         return response()->download($path, $picture->name);
     }
@@ -118,7 +118,7 @@ class PictureController extends Controller
     {
         $user = Auth::user();
         $files = $request->file('pictures');
-        $album = Album::findOrFail($album_id);
+        $album = Album::findOrFailCustom($album_id);
 
         $path = 'users/'.$user->login.'/albums/'.$album->id.'/pictures/';
         $responses = [

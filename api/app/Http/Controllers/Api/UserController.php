@@ -12,7 +12,7 @@ class UserController extends Controller
 {
     public function show($userId)
     {
-        return response()->json(User::findOrFail($userId), 200);
+        return response()->json(User::findOrFailCustom($userId), 200);
     }
     public function edit(UserUpdateRequest $request, $userId)
     {
@@ -20,8 +20,8 @@ class UserController extends Controller
             return !is_null($value) && $value !== '';
         });
 
-        User::findOrFail($userId)->update($data);
-        return response()->json(User::findOrFail($userId), 200);
+        User::findOrFailCustom($userId)->update($data);
+        return response()->json(User::findOrFailCustom($userId), 200);
     }
     public function index()
     {

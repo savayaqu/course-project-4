@@ -70,8 +70,8 @@ class TagController extends Controller
     }
     public function edit($tagId, TagUpdateRequest $request)
     {
-        Tag::findOrFail($tagId)->update($request->all());
-        return response()->json(Tag::findOrFail($tagId))->setStatusCode(200);
+        Tag::findOrFailCustom($tagId)->update($request->all());
+        return response()->json(Tag::findOrFailCustom($tagId))->setStatusCode(200);
     }
     public function destroy($tagId)
     {

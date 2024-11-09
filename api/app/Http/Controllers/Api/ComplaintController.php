@@ -18,7 +18,7 @@ class ComplaintController extends Controller
     public function destroy($complaintId)
     {
         $user = Auth::user();
-        Complaint::findOrFail($complaintId)->where('from_user_id', $user->id)->delete();
+        Complaint::findOrFailCustom($complaintId)->where('from_user_id', $user->id)->delete();
         return response()->json()->setStatusCode(204);
     }
     public function all()
@@ -34,11 +34,11 @@ class ComplaintController extends Controller
     public function createToPicture(ComplaintCreateRequest $request, $albumId, $pictureId)
     {
         $user = Auth::user();
-        $album = Album::findOrFail($albumId);
+        $album = Album::findOrFailCustom($albumId);
         if(!AlbumAccess::where('user_id', $user->id)->where('album_id', $albumId)->exists()) {
             throw new ApiException('Forbidden', 403);
         }
-        Picture::findOrFail($pictureId);
+        Picture::findOrFailCustom($pictureId);
         if(Complaint::where('from_user_id', $user->id)->where('picture_id', $pictureId)->exists()) {
             throw new ApiException('You are already complain to this picture', 409);
         }
