@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
             $table->string('link')->unique();
+            $table->integer('join_limit')->nullable();
             $table->dateTime('expires_at');
             $table->timestamps();
         });

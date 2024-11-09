@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Invitation\InvitationCreateRequest;
 use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Invitation;
@@ -66,9 +67,13 @@ class InvitationController extends Controller
             'user_id' => $user->id,
             'album_id' => $invitation->album_id
         ]);
+        if($invitation->join_limit !== null)
+        {
+            $invitation->join_limit -= 1;
+        }
        return response()->json()->setStatusCode(204);
     }
-    public function create($album_id, Request $request)
+    public function create($album_id, InvitationCreateRequest $request)
     {
         //Проверка принадлежности альбома пользователю
         $user = Auth::user();
@@ -78,15 +83,19 @@ class InvitationController extends Controller
         {
             throw new ApiException('Forbidden', 403);
         }
-        if(Invitation::where('album_id', $album_id)->first()) throw new ApiException('Приглашение уже существует', 418);
+        if(Invitation::where('album_id', $album_id)->first()) throw new ApiException('Already exist', 418);
         $currentDate = date('Y-m-d H:i:s');
 
         // Проверка значения expires_at в запросе
-        if ($request->expires_at) {
-            $date =  strtotime("$currentDate + $request->expires_at minute");
+        if ($request->expires_at_integer) {
+            $date =  strtotime("$currentDate + $request->expires_at_integer minute");
             $formattedDate = date('Y-m-d H:i:s', $date);
-
-        } else {
+        }
+        else if ($request->expires_at_date)
+        {
+            $formattedDate = $request->expires_at_date;
+        }
+        else {
             $date =  strtotime("$currentDate + 1440 minute");
             $formattedDate = date('Y-m-d H:i:s', $date);
         }
@@ -94,6 +103,7 @@ class InvitationController extends Controller
         $invitation = Invitation::create([
             'expires_at' => $formattedDate,
             'album_id' => $album_id,
+            'joinLimit' => $request->joinLimit ?? null,
             'link' => Str::random(8)
         ]);
 
