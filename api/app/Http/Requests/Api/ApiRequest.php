@@ -13,6 +13,6 @@ class ApiRequest extends FormRequest
         throw new ApiException('Validation failed',422, $validator->errors());
     }
     protected function failedAuthorization(){
-        return response('ошибка доступа чтоль', 403);
+        return response('Unauthorized', 401);
     }
 }

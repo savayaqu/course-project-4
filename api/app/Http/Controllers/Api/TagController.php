@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Tag\TagCreateRequest;
+use App\Http\Requests\Api\Tag\TagUpdateRequest;
 use App\Models\Album;
 use App\Models\Picture;
 use App\Models\Tag;
@@ -40,7 +42,7 @@ class TagController extends Controller
         TagPicture::where('picture_id', $pictureId)->where('tag_id', $tagId)->delete();
         return response()->json()->setStatusCode(204);
     }
-    public function create(Request $request)
+    public function create(TagCreateRequest $request)
     {
         $user = Auth::user();
         if(Tag::where('value', $request->value)->first())
@@ -66,7 +68,7 @@ class TagController extends Controller
         $tagPictures = TagPicture::where('tag_id', $tagId)->with('picture')->get();
         return response()->json($tagPictures)->setStatusCode(200);
     }
-    public function edit($tagId, Request $request)
+    public function edit($tagId, TagUpdateRequest $request)
     {
         Tag::findOrFail($tagId)->update($request->all());
         return response()->json(Tag::findOrFail($tagId))->setStatusCode(200);

@@ -59,9 +59,9 @@ class InvitationController extends Controller
         if ($currentDate > $invitation->expires_at)
         {
             $invitation::where('link', $code)->delete();
-            throw new ApiException('Приглашение недействительно', 404);
+            throw new ApiException('Invitation expired', 409);
         }
-        if (AlbumAccess::where('user_id', $user->id)->where('album_id', $invitation->album_id)->first()) throw new ApiException('Вы уже имеете доступ', 404);
+        if (AlbumAccess::where('user_id', $user->id)->where('album_id', $invitation->album_id)->first()) throw new ApiException('Already exist', 409);
         AlbumAccess::create([
             'user_id' => $user->id,
             'album_id' => $invitation->album_id

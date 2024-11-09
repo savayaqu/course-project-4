@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Picture\PictureCreateRequest;
 use App\Models\Album;
 use App\Models\Picture;
 use App\Models\User;
@@ -112,7 +113,7 @@ class PictureController extends Controller
         return response()->download($path, $picture->name);
     }
 
-    public function create(Request $request, $album_id)
+    public function create(PictureCreateRequest $request, $album_id)
     {
         $user = Auth::user();
         $files = $request->file('pictures');

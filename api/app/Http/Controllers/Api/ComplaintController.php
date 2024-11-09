@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\CheckRole;
+use App\Http\Requests\Api\Complaint\ComplaintCreateRequest;
 use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Complaint;
@@ -30,7 +31,7 @@ class ComplaintController extends Controller
         }
         return response()->json(Complaint::where('from_user_id', $user->id)->get())->setStatusCode(200);
     }
-    public function createToPicture(Request $request, $albumId, $pictureId)
+    public function createToPicture(ComplaintCreateRequest $request, $albumId, $pictureId)
     {
         $user = Auth::user();
         $album = Album::findOrFail($albumId);
@@ -51,7 +52,7 @@ class ComplaintController extends Controller
         return response()->json()->setStatusCode(204);
     }
 
-    public function createToAlbum(Request $request, $albumId)
+    public function createToAlbum(ComplaintCreateRequest $request, $albumId)
     {
         $user = Auth::user();
 

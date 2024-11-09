@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Album\AlbumCreateRequest;
+use App\Http\Requests\Api\Album\AlbumUpdateRequest;
 use App\Http\Resources\AlbumResource;
 use App\Models\Album;
 use App\Models\AlbumAccess;
@@ -25,7 +27,7 @@ class AlbumController extends Controller
         ]);
     }
 
-    public function create(Request $request) // TODO: Проверять валидность
+    public function create(AlbumCreateRequest $request)
     {
         $user = Auth::user();
         $name      = $request->input('name');
@@ -70,7 +72,7 @@ class AlbumController extends Controller
         ], 201);
     }
 
-    public function edit(Request $request, $albumId)
+    public function edit(AlbumUpdateRequest $request, $albumId)
     {
         $album = Album::findOrFail($albumId)->update($request->all()); // TODO: Проверять валидность и брать валидные
         return response(['album' => $album]);
