@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 
 class CheckAlbumAccess
 {
-
     public function handle(Request $request, Closure $next)
     {
         $user = $request->user();
@@ -26,7 +25,7 @@ class CheckAlbumAccess
         if (
             $request->isMethod('GET') &&
             AlbumAccess
-            ::where('album_id', $albumId)
+            ::where('album_id', $album->id)
             ->where('user_id' , $user->id)
             ->exists()
         ) return $next($request);

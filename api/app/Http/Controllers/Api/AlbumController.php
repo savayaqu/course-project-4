@@ -35,7 +35,7 @@ class AlbumController extends Controller
         if ($existAlbum)
             return response([
                 'message' => 'Album with this path already exists',
-                'album' => $existAlbum
+                'album' => AlbumResource::make($existAlbum)
             ], 409);
 
         // Проверка, существует ли альбом с таким именем и модифицируем имя если да
@@ -62,14 +62,19 @@ class AlbumController extends Controller
         // Формирование ответа
         return response([
             'message' => 'Album created',
-            'album' => $newAlbum
+            'album' => AlbumResource::make($newAlbum)
         ], 201);
+    }
+
+    public function show(Album $album)
+    {
+        return response(['album' => AlbumResource::make($album)]);
     }
 
     public function update(AlbumUpdateRequest $request, Album $album)
     {
         $album->update($request->validated());
-        return response(['album' => $album]);
+        return response(['album' => AlbumResource::make($album)]);
     }
 
     public function destroy(Album $album)
