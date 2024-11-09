@@ -66,17 +66,16 @@ class AlbumController extends Controller
         ], 201);
     }
 
-    public function edit(AlbumUpdateRequest $request, $albumId)
+    public function update(AlbumUpdateRequest $request, Album $album)
     {
-        $album = Album::findOrFail($albumId)->update($request->all()); // TODO: Проверять валидность и брать валидные
+        $album->update($request->validated());
         return response(['album' => $album]);
     }
 
-    public function destroy($albumId)
+    public function destroy(Album $album)
     {
-        $album = Album::findOrFail($albumId);
         $user = Auth::user();
-        Storage::deleteDirectory("users/$user->login/albums/$albumId");
+        Storage::deleteDirectory("users/$user->login/albums/$album->id");
         $album->delete();
         return response(['message' => 'Album deleted']);
     }

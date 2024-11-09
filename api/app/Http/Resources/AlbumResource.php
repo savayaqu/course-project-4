@@ -13,6 +13,7 @@ class AlbumResource extends JsonResource
         $array = [
             'id'   => $this->id,
             'name' => $this->name,
+            'pictures' => $this->pictures()->take(4)->get()
         ];
         if ($this->user_id !== Auth::user()->id) {
             $array['owner'] = UserPublicResource::make($this->user);
