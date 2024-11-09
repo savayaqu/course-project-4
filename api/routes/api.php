@@ -1,18 +1,18 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\InvitationController;
-use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AlbumController;
-use App\Http\Controllers\Api\PictureController;
-use App\Http\Controllers\Api\ComplaintController;
-use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\AccessController;
+use App\Http\Controllers\Api\AlbumController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ComplaintController;
+use App\Http\Controllers\Api\InvitationController;
+use App\Http\Controllers\Api\PictureController;
+use App\Http\Controllers\Api\TagController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WarningController;
 use App\Http\Middleware\CheckAlbumAccess;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\SignCheck;
+use Illuminate\Support\Facades\Route;
 
 Route
 ::controller(AuthController::class)

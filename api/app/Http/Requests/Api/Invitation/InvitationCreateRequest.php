@@ -11,7 +11,7 @@ class InvitationCreateRequest extends ApiRequest
     {
         return [
             'expires_at_integer' => 'nullable|integer|min:1|required_without:expires_at_date',
-            'expires_at_date' => 'nullable|date|after:now|required_without:expires_at_integer',
+            'expires_at_date' => 'nullable|date_format:Y-m-d H:i:s|after:now|required_without:expires_at_integer',
             'joinLimit' => 'nullable|integer|min:1',
         ];
     }

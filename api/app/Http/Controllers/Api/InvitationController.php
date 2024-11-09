@@ -62,6 +62,10 @@ class InvitationController extends Controller
             $invitation::where('link', $code)->delete();
             throw new ApiException('Invitation expired', 409);
         }
+        if($invitation->join_limit == 0)
+        {
+            throw new ApiException('Invitation expired', 409);
+        }
         if (AlbumAccess::where('user_id', $user->id)->where('album_id', $invitation->album_id)->first()) throw new ApiException('Already exist', 409);
         AlbumAccess::create([
             'user_id' => $user->id,
