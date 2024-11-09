@@ -39,7 +39,6 @@ Route
             $album->post  ('', 'update');   // Изменение информации об СВОЁМ альбоме
             $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
             $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома / у СЕБЯ с ЧУЖОГО альбома
-            $album->delete('invite'         , [InvitationController::class, 'destroy'      ]);  // Удалить код приглашения на СВОЁМ альбоме
             $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
             $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum'])   // Создание жалобы на ЧУЖОЙ альбом
                   ->withoutMiddleware(CheckAlbumAccess::class);
@@ -81,12 +80,13 @@ Route
     ->group(function ($invitations) {           // [ПРИГЛАШЕНИЯ]
         $invitations->get('album', 'album');    // Просмотр содержимого альбома по приглашению
         $invitations->get('join' , 'join');     // Присоединиться к альбому (добавление доступа)
+        $invitations->delete(''  , 'destroy');  // Удалить СВОЙ код приглашения
     });
     $authorized
     ->controller(AccessController::class)
     ->prefix('accesses')
-    ->group(function ($accesses) {  // [ДОСТУПЫ]
-        $accesses->get('', 'all');  // Список выданных доступов (и приглашений?)
+    ->group(function ($accesses) {    // [ДОСТУПЫ]
+        $accesses->get('', 'index');  // Список выданных доступов и приглашений
     });
     $authorized
     ->prefix('tags')
