@@ -53,10 +53,10 @@ Route
                 ->group(function ($picture) {           // [КАРТИНКА]
                     $picture->get   ('', 'info');       // Получение информации об картинке
                     $picture->delete('', 'destroy');    // Удаление СВОЕЙ картинки
-                    $picture->withoutMiddleware(CheckAlbumAccess::class)
-                            ->post('complaint', [ComplaintController::class, 'createToPicture']);   // Создание жалобы на ЧУЖУЮ картинку
+                    $picture->post('complaint', [ComplaintController::class, 'createToPicture']) // Создание жалобы на ЧУЖУЮ картинку
+                            ->withoutMiddleware(CheckAlbumAccess::class);
                     $picture
-                    ->withoutMiddleware('auth:sanctum')
+                    ->withoutMiddleware(['auth:sanctum', CheckAlbumAccess::class])
                     ->middleware(SignCheck::class)
                     ->group(function ($pictureBySign) {                     // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
                         $pictureBySign->get('download'    , 'download');    // Скачивание картинки
