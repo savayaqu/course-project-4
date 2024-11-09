@@ -10,7 +10,7 @@ class PictureCreateRequest extends ApiRequest
     {
         return [
             'pictures' => 'required|array|min:1',
-            'pictures.*' => 'required|file|mimes:jpeg,jpg,png,gif'
+            //'pictures.*' => 'required|file|mimes:jpeg,jpg,png,gif'
         ];
     }
 }

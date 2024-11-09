@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use Illuminate\Validation\ValidationException;
 class PictureController extends Controller
 {
     public function thumbnail($album_id, $picture_id, $size, Request $request)
@@ -120,33 +121,60 @@ class PictureController extends Controller
         $album = Album::findOrFail($album_id);
 
         $path = 'users/'.$user->login.'/albums/'.$album->id.'/pictures/';
-        $responses = [];
-        foreach ($files as $file) {
-            $filename = $file->getClientOriginalName();
-            $pictureHash = hash('xxh3', Storage::path($path.$filename));
+        $responses = [
+            'successful' => [],
+            'errored' => [],
+        ];
 
-            $picture = Picture::where('album_id', $album_id)->where('hash', $pictureHash)->first();
-            if ($picture) {
-                $responses['errored'][] = [
+        // Обрабатываем файлы по одному
+        foreach ($files as $index => $file) {
+            try {
+                // Попробуем валидацию для каждого файла
+                $request->validate([
+                    'pictures.' . $index => 'required|file|mimes:jpeg,jpg,png,gif',
+                ]);
+
+                $filename = $file->getClientOriginalName();
+                $pictureHash = hash('xxh3', Storage::path($path.$filename));
+
+                $picture = Picture::where('album_id', $album_id)->where('hash', $pictureHash)->first();
+                if ($picture) {
+                    $responses['errored'][] = [
+                        'name' => $filename,
+                        'message' => 'already exist in this album'
+                    ];
+                    continue;
+                }
+
+                $file->storeAs($path, $filename);
+                $sizes = getimagesize(Storage::path($path.$filename));
+
+                $pictureDB = Picture::create([
                     'name' => $filename,
-                    'message' => 'already exist in this album'
-                ];
-                continue;
-            }
-            $file->storeAs($path, $filename);
-            $sizes = getimagesize(Storage::path($path.$filename));
+                    'hash' => $pictureHash,
+                    'date' => Carbon::createFromTimestamp(Storage::lastModified($path.$filename)),
+                    'size' => Storage::size($path.$filename),
+                    'width' => $sizes[0],
+                    'height' => $sizes[1],
+                    'album_id' => $album_id,
+                ]);
+                $responses['successful'][] = $pictureDB;
+            } catch (ValidationException $e) {
+                // Получаем ошибки и добавляем их в список ошибок
+                $errors = $e->errors();
+                $fileErrors = $errors['pictures.' . $index] ?? []; // Получаем ошибки для текущего файла
 
-            $pictureDB = Picture::create([
-                'name' => $filename,
-                'hash' => $pictureHash,
-                'date' => Carbon::createFromTimestamp(Storage::lastModified($path.$filename)),
-                'size' => Storage::size($path.$filename),
-                'width' => $sizes[0],
-                'height' => $sizes[1],
-                'album_id' => $album_id,
-            ]);
-            $responses['successful'][] = $pictureDB;
+                foreach ($fileErrors as $message) {
+                    $responses['errored'][] = [
+                        'name' => $file->getClientOriginalName(),
+                        'message' => $message,
+                    ];
+                }
+            }
         }
+
         return response($responses);
     }
+
+
 }
