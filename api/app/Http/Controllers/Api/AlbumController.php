@@ -16,8 +16,27 @@ class AlbumController extends Controller
     {
         $user = Auth::user();
         return response([
-            'own'        => AlbumResource::collection($user->albums),
-            'accessible' => AlbumResource::collection($user->albumsViaAccess),
+            'own' => AlbumResource::collection($user
+                ->albums()
+                ->withCount([
+                    'pictures',
+                    'invitations',
+                    'usersViaAccess',
+                ])
+                ->with([
+                    'pictures' => fn ($query) => $query->limit(4),
+                ])
+                ->get()),
+            'accessible' => AlbumResource::collection($user
+                ->albumsViaAccess()
+                ->withCount([
+                    'pictures',
+                ])
+                ->with([
+                    'pictures' => fn ($query) => $query->limit(4),
+                    'user',
+                ])
+                ->get()),
         ]);
     }
 
@@ -70,6 +89,12 @@ class AlbumController extends Controller
 
     public function show(Album $album)
     {
+        $album->load([
+            'pictures' => fn ($query) => $query->limit(4),
+            'invitations',
+            'usersViaAccess',
+            'user',
+        ])->loadCount(['pictures']);
         return response(['album' => AlbumResource::make($album)]);
     }
 
