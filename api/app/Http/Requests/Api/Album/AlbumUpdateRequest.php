@@ -11,7 +11,7 @@ class AlbumUpdateRequest extends ApiRequest
     {
         return [
             'name' => 'string|max:255',
-            'path' => 'string|max:255',
+            'path' => 'nullable|string|max:255',
         ];
     }
 }
