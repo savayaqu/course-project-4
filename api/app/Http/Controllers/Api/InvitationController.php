@@ -31,7 +31,7 @@ class InvitationController extends Controller
             'link' => Str::random(8)
         ]);
 
-        return response(['invitationCode' => $invitation->link], 201);
+        return response(['invitation' => InvitationResource::make($invitation)], 201);
     }
 
     public function album(Invitation $invitation)

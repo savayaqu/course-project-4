@@ -11,7 +11,10 @@ class TagCreateRequest extends ApiRequest
     {
         return [
             'value' => [
-                'required|string|min:1|max:255',
+                'required',
+                'string',
+                'min:1',
+                'max:255',
                 Rule::unique('tags', 'value')->where('user_id', auth()->id()),
             ],
         ];
