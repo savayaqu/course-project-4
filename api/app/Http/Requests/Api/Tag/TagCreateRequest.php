@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\Tag;
 
 use App\Http\Requests\Api\ApiRequest;
+use App\Models\Tag;
 use Illuminate\Validation\Rule;
 
 class TagCreateRequest extends ApiRequest
@@ -15,9 +16,9 @@ class TagCreateRequest extends ApiRequest
                 'string',
                 'min:1',
                 'max:255',
-                Rule::unique('tags', 'value')->where('user_id', auth()->id()),
+                Rule::unique(Tag::class, 'value')
+                    ->where('user_id', auth()->id()),
             ],
         ];
     }
-
 }

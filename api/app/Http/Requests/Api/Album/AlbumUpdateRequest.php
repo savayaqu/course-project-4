@@ -4,8 +4,6 @@ namespace App\Http\Requests\Api\Album;
 
 use App\Http\Requests\Api\ApiRequest;
 use App\Models\Album;
-use GuzzleHttp\Psr7\Request;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class AlbumUpdateRequest extends ApiRequest
