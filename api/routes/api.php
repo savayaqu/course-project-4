@@ -29,7 +29,7 @@ Route
     ->controller(AlbumController::class)
     ->prefix('albums')
     ->group(function ($albums) {        // [АЛЬБОМЫ]
-        $albums->post('', 'create');     // Создание ЛИЧНОГО альбома
+        $albums->post('', 'create');    // Создание ЛИЧНОГО альбома
         $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
@@ -38,9 +38,9 @@ Route
             $album->get   ('', 'show');     // Просмотр информации об альбоме
             $album->post  ('', 'update');   // Изменение информации об СВОЁМ альбоме
             $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
-            $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома / у СЕБЯ с ЧУЖОГО альбома
-            $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
-            $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum'])   // Создание жалобы на ЧУЖОЙ альбом
+            $album->delete('accesses/{user?}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома / у СЕБЯ с ЧУЖОГО альбома
+            $album->post  ('invite'          , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
+            $album->post  ('complaint'       , [ ComplaintController::class, 'createToAlbum'])   // Создание жалобы на ЧУЖОЙ альбом
                   ->withoutMiddleware(CheckAlbumAccess::class);
             $album
             ->prefix('pictures')

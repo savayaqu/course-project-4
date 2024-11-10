@@ -22,12 +22,12 @@ class InvitationController extends Controller
             $expiresDate = $request->expiresAt;
 
         else if ($request->timeLimit)
-            $expiresDate = now()->addMinutes($request->timeLimit);
+            $expiresDate = now()->addMinutes((int)$request->timeLimit);
 
         $invitation = Invitation::create([
             'expires_at' => $expiresDate ?? null,
             'album_id' => $album->id,
-            'joinLimit' => $request->joinLimit ?? null,
+            'join_limit' => $request->joinLimit ?? null,
             'link' => Str::random(8)
         ]);
 

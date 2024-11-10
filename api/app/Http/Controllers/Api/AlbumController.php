@@ -28,15 +28,17 @@ class AlbumController extends Controller
         $inputPath = $request->input('path');
 
         // Проверка, существует ли альбом с таким путём и возвращаем его если да
-        $existAlbum = Album
-            ::where('path', $inputPath)
-            ->where('user_id', $user->id)
-            ->first();
-        if ($existAlbum)
-            return response([
-                'message' => 'Album with this path already exists',
-                'album' => AlbumResource::make($existAlbum)
-            ], 409);
+        if ($inputPath) {
+            $existAlbum = Album
+                ::where('path', $inputPath)
+                ->where('user_id', $user->id)
+                ->first();
+            if ($existAlbum)
+                return response([
+                    'message' => 'Album with this path already exists',
+                    'album' => AlbumResource::make($existAlbum)
+                ], 409);
+        }
 
         // Проверка, существует ли альбом с таким именем и модифицируем имя если да
         $nameCounter = 1;

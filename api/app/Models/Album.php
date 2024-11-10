@@ -2,10 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 
 class Album extends Model
@@ -19,6 +16,10 @@ class Album extends Model
 
     public function user() {
         return $this->belongsTo(User::class);
+    }
+    public function usersViaAccess()
+    {
+        return $this->belongsToMany(User::class, 'album_accesses')->using(AlbumAccess::class);
     }
     public function pictures()
     {

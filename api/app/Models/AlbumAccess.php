@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class AlbumAccess extends Model
+class AlbumAccess extends Pivot
 {
+    protected $table = 'album_accesses';
+
     protected $fillable = [
         'album_id',
         'user_id',

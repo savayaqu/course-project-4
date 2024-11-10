@@ -21,6 +21,10 @@ class Picture extends Model
     {
         return $this->hasMany(TagPicture::class);
     }
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'tag_pictures');
+    }
     public function complaints()
     {
         return $this->hasMany(Complaint::class);

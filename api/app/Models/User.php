@@ -61,8 +61,8 @@ class User extends Model implements
         return $this->hasMany(AlbumAccess::class);
     }
     public function albumsViaAccess()
-    {   // TODO: можно избавится от модели AlbumAccess, соединив эту модель напрямую к Album модели
-        return $this->belongsToMany(Album::class, 'album_accesses');
+    {
+        return $this->belongsToMany(Album::class, 'album_accesses')->using(AlbumAccess::class);
     }
     public function tags()
     {
