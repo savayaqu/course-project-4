@@ -36,12 +36,15 @@ class SignCheck
         catch (\Exception $e) {
             throw new ForbiddenException();
         }
-
         $cacheKey = Album::signCacheKey($albumId, $userId);
-        $cachedSignExploded = explode('_', Cache::get($cacheKey));
+        $cachedSignRaw = Cache::get($cacheKey);
 
-        $cachedSign = $cachedSignExploded[0];
-        $ownerId    = $cachedSignExploded[1];
+        $cachedSign = null;
+        if ($cachedSignRaw) {
+            $cachedSignExploded = explode('_', $cachedSignRaw);
+            $cachedSign = $cachedSignExploded[0];
+            $ownerId    = $cachedSignExploded[1];
+        }
 
         if ($cachedSign !== $signCode) {
             $user = User::findOrFailCustom($userId);

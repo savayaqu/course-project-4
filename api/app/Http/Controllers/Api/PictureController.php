@@ -169,8 +169,16 @@ class PictureController extends Controller
                     [$albumId, $pictureId, $orientation, $size, 'sign' => $request->query('sign')])
                 ->header('Cache-Control', ['max-age=86400', 'private']);
 
-          //$album   = Album  ::findOrFailCustom($albumId);
-            $picture = Picture::findOrFailCustom($pictureId);
+            try {
+                $picture = Picture
+                    ::where('album_id', $albumId)
+                    ->where('id', $pictureId)
+                    ->firstOrFail();
+            }
+            catch (\Exception $e) {
+                return response(['message' => 'Picture not found'], 404)
+                    ->header('Cache-Control', ['max-age=86400', 'private']);
+            }
 
             // Редирект если изображение квадратное
             if ($picture->width === $picture->height) return redirect()
@@ -191,6 +199,7 @@ class PictureController extends Controller
                     break;
                 default:
                     $thumb->coverDown($size, $size);
+                    break;
             }
             $dirname = pathinfo($thumbPath, PATHINFO_DIRNAME);
             if (!Storage::exists($dirname))
