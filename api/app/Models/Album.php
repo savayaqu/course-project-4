@@ -47,7 +47,7 @@ class Album extends Model
     public static function signCacheKey($albumId, $userId) {
         return "signAccess:to=$albumId;for=$userId";
     }
-    public  function getSign(User $user): string {
+    public function getSign(User $user): string {
         $cacheKey = $this->signCacheKey($this->id, $user->id);
         $cachedSign = Cache::get($cacheKey);
         if ($cachedSign)

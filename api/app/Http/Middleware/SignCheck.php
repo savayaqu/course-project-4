@@ -60,7 +60,7 @@ class SignCheck
             }
 
             if ($allow)
-                Cache::put($cacheKey, $signCode . '_' . $album->user_id, 3600);
+                Cache::put($cacheKey, $signCode . '_' . $ownerId, 3600);
             else
                 throw new ForbiddenException();
         }

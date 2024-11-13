@@ -145,8 +145,6 @@ class PictureController extends Controller
 
     public function thumbnail($albumId, $pictureId, $orientation, $size, Request $request)
     {
-        // TODO: возвращать картинку из ФС (если есть) без запросов к БД — оптимизация
-
         $ownerId = $request->attributes->get('ownerId');
         $orientation = strtolower($orientation);
 
