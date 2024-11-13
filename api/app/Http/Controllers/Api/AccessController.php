@@ -16,7 +16,6 @@ class AccessController extends Controller
 {
     public function index()
     {
-        // TODO: Сделать не (accesses -> album) & (invites -> album), а albums -> (invites & accesses)
         $albums = Album::with(['albumAccesses', 'invitations'])->where('user_id', Auth::id())->get();
         $result = $albums->map(function ($album) {
            return [

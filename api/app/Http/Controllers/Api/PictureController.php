@@ -20,14 +20,32 @@ use Intervention\Image\Laravel\Facades\Image as Intervention;
 
 class PictureController extends Controller
 {
-    public function index(Album $album)
+    public function index(Request $request, Album $album)
     {
-        // TODO: Фильтрация по тегам
         $user = Auth::user();
-        $pictures = Picture
-            ::with('tags')
-            ->where('album_id', $album->id)
-            ->get();
+
+        // Получаем массив ID тегов и параметры сортировки из запроса
+        $tagIds = $request->query('tags', []); //  массив ID тегов
+        $sortField = $request->query('sort_field', 'date'); // Поле сортировки по умолчанию - дата
+        $sortOrder = $request->query('sort_order', 'asc');  // Порядок сортировки по умолчанию - по возрастанию
+
+        $picturesQuery = Picture::with('tags')
+            ->where('album_id', $album->id);
+
+        if (!empty($tagIds)) {
+            $picturesQuery->whereHas('tags', function ($query) use ($tagIds) {
+                $query->whereIn('tags.id', $tagIds);
+            });
+        }
+
+        // Применяем сортировку по указанному полю и порядку
+        $allowedSortFields = ['date', 'name', 'width', 'height', 'size']; // Разрешенные поля для сортировки
+        if (in_array($sortField, $allowedSortFields)) {
+            $picturesQuery->orderBy($sortField, $sortOrder); // Сортировка
+        }
+
+        // Получаем отфильтрованные и отсортированные изображения
+        $pictures = $picturesQuery->get();
 
         $sign = $album->getSign($user);
         return response([
@@ -35,6 +53,7 @@ class PictureController extends Controller
             'pictures' => PictureResource::collection($pictures),
         ]);
     }
+
 
     public function create(Album $album, PictureCreateRequest $request)
     {
