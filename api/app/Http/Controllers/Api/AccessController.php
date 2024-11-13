@@ -17,19 +17,14 @@ class AccessController extends Controller
     public function index()
     {
         // TODO: Сделать не (accesses -> album) & (invites -> album), а albums -> (invites & accesses)
-        $albumIds = Album
-            ::where('user_id', Auth::id())
-            ->pluck('id')
-            ->toArray();
-
-        // Поиск всех выданных доступов и созданных приглашений на СВОИ альбомы
-        $accesses    = AlbumAccess::whereIn('album_id', $albumIds)->get();
-        $invitations = Invitation ::whereIn('album_id', $albumIds)->get();
-
-        return response([
-            'accesses'    => AlbumAccessResource::collection($accesses),
-            'invitations' => InvitationResource::collection($invitations),
-        ]);
+        $albums = Album::with(['albumAccesses', 'invitations'])->where('user_id', Auth::id())->get();
+        $result = $albums->map(function ($album) {
+           return [
+               'accesses' => AlbumAccessResource::collection($album->albumAccesses),
+               'invitations' => InvitationResource::collection($album->invitations),
+           ] ;
+        });
+       return response()->json($result , 200);
     }
 
     public function destroy(Album $album, User $userId = null)
