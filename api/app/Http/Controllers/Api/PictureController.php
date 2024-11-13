@@ -20,39 +20,43 @@ use Intervention\Image\Laravel\Facades\Image as Intervention;
 
 class PictureController extends Controller
 {
-    public function index(Request $request, Album $album)
+    public function index(Album $album, Request $request)
     {
+        // Получаем ID тегов
+        $tagIds = $request->query('tags', []);
+        $sortBy = $request->query('sort_by', 'date'); // Сортировка по полю (дефолт дата)
+        $sortOrder = $request->query('sort_order', 'asc'); // Сортировка ну типа сверху или снизу (дефолт дефолт)
+
         $user = Auth::user();
 
-        // Получаем массив ID тегов и параметры сортировки из запроса
-        $tagIds = $request->query('tags', []); //  массив ID тегов
-        $sortField = $request->query('sort_field', 'date'); // Поле сортировки по умолчанию - дата
-        $sortOrder = $request->query('sort_order', 'asc');  // Порядок сортировки по умолчанию - по возрастанию
-
-        $picturesQuery = Picture::with('tags')
-            ->where('album_id', $album->id);
-
-        if (!empty($tagIds)) {
-            $picturesQuery->whereHas('tags', function ($query) use ($tagIds) {
-                $query->whereIn('tags.id', $tagIds);
-            });
+        // Проверка валидации сортировки
+        $allowedSortFields = ['date', 'name', 'width', 'height', 'size'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            throw new ApiException('Invalid sort field: ' . $sortBy, 400);
+        }
+        if (!in_array($sortOrder, ['asc', 'desc'])) {
+            throw new ApiException('Invalid sort order: ' . $sortOrder, 400);
         }
 
-        // Применяем сортировку по указанному полю и порядку
-        $allowedSortFields = ['date', 'name', 'width', 'height', 'size']; // Разрешенные поля для сортировки
-        if (in_array($sortField, $allowedSortFields)) {
-            $picturesQuery->orderBy($sortField, $sortOrder); // Сортировка
-        }
-
-        // Получаем отфильтрованные и отсортированные изображения
-        $pictures = $picturesQuery->get();
+        // Фильтрация по заданным параметрам
+        $pictures = Picture::with('tags')
+            ->where('album_id', $album->id)
+            ->whereHas('tags', function ($query) use ($tagIds) {
+                foreach ($tagIds as $tagId) {
+                    $query->where('id', $tagId);
+                }
+            }, '=', count($tagIds)) // УСловие на то, что все теги в массиве имеются у картинки
+            ->orderBy($sortBy, $sortOrder)
+            ->get();
 
         $sign = $album->getSign($user);
+
         return response([
             'sign' => $sign,
             'pictures' => PictureResource::collection($pictures),
         ]);
     }
+
 
 
     public function create(Album $album, PictureCreateRequest $request)
