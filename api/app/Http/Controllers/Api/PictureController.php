@@ -39,13 +39,24 @@ class PictureController extends Controller
         }
 
         // Фильтрация по заданным параметрам
+        if(!empty($tagIds)) {
+            $pictures = Picture::with('tags')
+                ->where('album_id', $album->id)
+                ->whereHas('tags', function ($query) use ($tagIds) {
+                    foreach ($tagIds as $tagId) {
+                        $query->where('id', $tagId);
+                    }
+                }, '=', count($tagIds)) // УСловие на то, что все теги в массиве имеются у картинки
+                ->orderBy($sortBy, $sortOrder)
+                ->get();
+        }
         $pictures = Picture::with('tags')
             ->where('album_id', $album->id)
             ->whereHas('tags', function ($query) use ($tagIds) {
                 foreach ($tagIds as $tagId) {
                     $query->where('id', $tagId);
                 }
-            }, '=', count($tagIds)) // УСловие на то, что все теги в массиве имеются у картинки
+            }) // УСловие на то, что все теги в массиве имеются у картинки
             ->orderBy($sortBy, $sortOrder)
             ->get();
 
