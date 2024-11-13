@@ -23,7 +23,7 @@ class PictureController extends Controller
     public function index(Album $album, Request $request)
     {
         // Получаем ID тегов
-        $tagIds = $request->query('tags', []);
+        $tagIds = explode(',', $request->query('tags', ''));
         $sortBy = $request->query('sort_by', 'date'); // Сортировка по полю (дефолт дата)
         $sortOrder = $request->query('sort_order', 'asc'); // Сортировка ну типа сверху или снизу (дефолт дефолт)
 
@@ -43,16 +43,13 @@ class PictureController extends Controller
             ->where('album_id', $album->id)
             ->orderBy($sortBy, $sortOrder);
 
-        if ($tagIds)
+        if ($tagIds) {
             $query->whereHas('tags', function ($query) use ($tagIds) {
-                foreach ($tagIds as $tagId) {
-                    $query->where('id', $tagId);
-                }
-            });
+                $query->whereIn('id', $tagIds); // Фильтруем по любому из указанных тегов
+            }, '=', count($tagIds));
+        }
 
         $pictures = $query->get();
-
-        //dd($query->toRawSql(), $pictures);
 
         $sign = $album->getSign($user);
 
@@ -61,6 +58,7 @@ class PictureController extends Controller
             'pictures' => PictureResource::collection($pictures),
         ]);
     }
+
 
 
 
