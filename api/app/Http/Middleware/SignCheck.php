@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Exceptions\Api\ApiException;
+use App\Exceptions\Api\ForbiddenException;
 use App\Models\Album;
 use App\Models\User;
 use Closure;
@@ -16,32 +17,55 @@ class SignCheck
 
     public function handle(Request $request, Closure $next)
     {
-        $albumId = $request->route('album');
         $sign = $request->query('sign');
+        if (!$sign)
+            throw new ForbiddenException();
+
+        $albumId = $request->route('album');
+        $album = null;
+        if ($albumId instanceof Album) {
+            $album = $albumId;
+            $albumId = $album->id;
+        }
+
         try {
             $signExploded = explode('_', $sign);
             $userId   = $signExploded[0];
             $signCode = $signExploded[1];
         }
         catch (\Exception $e) {
-            throw new ApiException('Forbidden', 403);
+            throw new ForbiddenException();
         }
 
-        $cacheKey = "signAccess:to=$albumId;for=$userId";
-        $cachedSign = Cache::get("signAccess:to=$albumId;for=$userId");
-        if ($cachedSign !== $signCode) throw new ApiException('Forbidden', 403);
+        $cacheKey = Album::signCacheKey($albumId, $userId);
+        $cachedSignExploded = explode('_', Cache::get($cacheKey));
 
-        $user = User::findOrFailCustom($signExploded[0]);
-        $originalAlbum = Album::findOrFailCustom($albumId);
-        $originalUser = User::findOrFailCustom($originalAlbum->user_id);
-        $currentDay = date("Y-m-d");
-        $string = $user->getRememberToken() . $currentDay . $albumId;
+        $cachedSign = $cachedSignExploded[0];
+        $ownerId    = $cachedSignExploded[1];
 
-        $allow = Hash::check($string, base64_decode($signCode));
-        if ($allow)
-            Cache::put($cacheKey, $signCode, 3600);
-        //Записываем в реквест логин пользователя (автора альбома)
-        $request->login = $originalUser->login;
+        if ($cachedSign !== $signCode) {
+            $user = User::findOrFailCustom($userId);
+            if (!$album)
+                $album = Album::findOrFailCustom($albumId);
+
+            $ownerId = $album->user_id;
+
+            $string = Album::signNonHash($user, $albumId);
+
+            try {
+                $allow = Hash::check($string, base64_decode($signCode));
+            }
+            catch (\Exception $e) {
+                throw new ForbiddenException();
+            }
+
+            if ($allow)
+                Cache::put($cacheKey, $signCode . '_' . $album->user_id, 3600);
+            else
+                throw new ForbiddenException();
+        }
+
+        $request->attributes->add(['ownerId' => $ownerId]);
         return $next($request);
     }
 }

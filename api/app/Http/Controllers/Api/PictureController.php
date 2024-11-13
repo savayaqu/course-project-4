@@ -3,29 +3,156 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
+use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Picture\PictureCreateRequest;
+use App\Http\Resources\PictureResource;
 use App\Models\Album;
 use App\Models\Picture;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
-use Illuminate\Validation\ValidationException;
+use Intervention\Image\Laravel\Facades\Image as Intervention;
+
 class PictureController extends Controller
 {
-    public function thumbnail($album_id, $picture_id, $size, Request $request)
+    public function index(Album $album)
     {
-        Album::findOrFailCustom($album_id);
+        // TODO: Фильтрация по тегам
+        $user = Auth::user();
+        $pictures = Picture
+            ::with('tags')
+            ->where('album_id', $album->id)
+            ->get();
 
-        $picture = Picture::findOrFailCustom($picture_id);
+        $sign = $album->getSign($user);
+        return response([
+            'sign' => $sign,
+            'pictures' => PictureResource::collection($pictures),
+        ]);
+    }
 
-        $orientation = $picture->height > $picture->width ? 'h' : 'w';
+    public function create(Album $album, PictureCreateRequest $request)
+    {
+        $user = Auth::user();
+        $files = $request->file('pictures');
+        $pathToSave = Picture::getPathStatic($user->id, $album->id);
+        $errored = [];
+        $successful = [];
 
-        $thumbPath = "users/$request->login/thumbs/$picture->name-$orientation$size.jpg";
+        // Обрабатываем файлы по одному
+        foreach ($files as $index => $file) {
+            $filename = $file->getClientOriginalName();
+            try {
+                // Валидация mimes файла и пропускаем если не в разрешённых
+                $validator = Validator::make(['file' => $file], [
+                    'file' => 'mimes:jpeg,jpg,png,gif', // TODO: Управлять настройками
+                ]);
+                if ($validator->fails()) {
+                    $errored[] = [
+                        'name'    => $filename,
+                        'message' => 'Validation failed',
+                        'errors'  => $validator->errors()->toArray()['file'],
+                    ];
+                    continue;
+                }
+
+                // Проверка, существует ли картинка с таким хешем и пропускаем если да
+                $tmpPath = $file->getRealPath();
+                $pictureHash = hash_file('xxh3', $tmpPath);
+                $existedPictureByHash = Picture
+                    ::where('album_id', $album->id)
+                    ->where('hash', $pictureHash)
+                    ->first();
+                if ($existedPictureByHash) {
+                    $errored[] = [
+                        'name' => $filename,
+                        'message' => 'Already exist with this hash',
+                        'picture' => PictureResource::make($existedPictureByHash),
+                    ];
+                    continue;
+                }
+                // Проверка, существует ли картинка с таким именем и модифицируем имя счётчиком если да
+                $counter = 1;
+                $extension      = pathinfo($filename, PATHINFO_EXTENSION);
+                $nameWithoutExt = pathinfo($filename, PATHINFO_FILENAME);
+                $filenameValid = $filename;
+                while (Picture
+                    ::where('album_id', $album->id)
+                    ->where('name', $filenameValid)
+                    ->exists()
+                ) {
+                    $counter++;
+                    $filenameValid = "$nameWithoutExt ($counter).$extension";
+                }
+
+                // Получение размеров, пропускаем если не получилось
+                try {
+                    $sizes = getimagesize($tmpPath);
+                }
+                catch (\Exception $e) {
+                    $errored[] = [
+                        'name' => $filename,
+                        'message' => "No sizes",
+                    ];
+                    continue;
+                }
+
+                // Создаём запись в БД
+                $pictureDB = Picture::create([
+                    'name' => $filenameValid,
+                    'hash' => $pictureHash,
+                    'date' => Carbon::createFromTimestamp(filemtime($tmpPath)), // TODO: Надо наверное в API дату отправлять
+                    'size' => $file->getSize(),
+                    'width'  => $sizes[0],
+                    'height' => $sizes[1],
+                    'album_id' => $album->id,
+                ]);
+
+                // Сохраняем в ФС
+                $file->storeAs($pathToSave, $filenameValid);
+
+                $successful[] = $pictureDB;
+            } catch (\Exception $e) {
+                // Что-то пошло не так
+                $errored[] = [
+                    'name' => $filename,
+                    'message' => "Something going wrong",
+                ];
+            }
+        }
+        return response([
+            'sign' => $album->getSign($user),
+            'successful' => $successful,
+            'errored' => $errored,
+        ]);
+    }
+
+    public function info(Album $album, Picture $picture)
+    {
+        $picture->load('tags');
+        $user = Auth::user();
+        $sign = $album->getSign($user);
+        return response()->json([
+            'sign' => $sign,
+            'picture' => PictureResource::make($picture),
+        ]);
+    }
+
+    public function thumbnail($albumId, $pictureId, $orientation, $size, Request $request)
+    {
+        // TODO: возвращать картинку из ФС (если есть) без запросов к БД — оптимизация
+
+        $ownerId = $request->attributes->get('ownerId');
+        $orientation = strtolower($orientation);
+
+        // Проверка существования в ФС с исходными данными
+        $thumbPath = Picture::getPathThumbStatic($ownerId, $albumId, $pictureId, $orientation, $size);
+
         if (!Storage::exists($thumbPath)) {
             // Проверка запрашиваемого размера и редирект, если не прошло
             $askedSize = $size;
@@ -39,142 +166,63 @@ class PictureController extends Controller
                 }
             }
             if (!$allowSize) $size = $allowedSizes[count($allowedSizes)-1];
-            if ($askedSize != $size) throw new ApiException('Allowed sizes: 144, 240, 360, 480, 720, 1080', 400);
+            if ($askedSize != $size) return redirect()
+                ->route('thumbnail',
+                    [$albumId, $pictureId, $orientation, $size, 'sign' => $request->query('sign')])
+                ->header('Cache-Control', ['max-age=86400', 'private']);
 
+          //$album   = Album  ::findOrFailCustom($albumId);
+            $picture = Picture::findOrFailCustom($pictureId);
 
-            // Проверка наличия превью в файлах x2
-            $thumbPath = "users/$request->login/thumbs/$picture->name-$orientation$size.jpg";
-            if (!Storage::exists($thumbPath)) {
-                // Создание превью
-                $imagePath = 'users/'.$request->login.'/albums/'.$album_id.'/pictures/'.$picture->name;
-                $manager = new ImageManager(new Driver());
-                $thumb = $manager->read(Storage::get($imagePath));
-                if ($orientation == 'w')
-                    $thumb->scale(width: $size);
-                else
-                    $thumb->scale(height: $size);
+            // Редирект если изображение квадратное
+            if ($picture->width === $picture->height) return redirect()
+                ->route('thumbnail',
+                    [$albumId, $pictureId, $orientation, $size, 'sign' => $request->query('sign')])
+                ->header('Cache-Control', ['max-age=86400', 'private']);
 
-                if (!Storage::exists('users/'.$request->login.'/thumbs'))
-                    Storage::makeDirectory('users/'.$request->login.'/thumbs');
+            // Создание превью
+            $picturePath = $picture->getPath($ownerId);
+            $thumb = Intervention::read(Storage::get($picturePath));
 
-                $thumb->toJpeg(90)->save(Storage::path($thumbPath));
+            switch ($orientation) {
+                case 'w':
+                    $thumb->scaleDown(width: $size);
+                    break;
+                case 'h':
+                    $thumb->scaleDown(height: $size);
+                    break;
+                default:
+                    $thumb->coverDown($size, $size);
             }
+            $dirname = pathinfo($thumbPath, PATHINFO_DIRNAME);
+            if (!Storage::exists($dirname))
+                Storage::makeDirectory($dirname);
+
+            $thumb
+                ->toJpeg(90)
+                ->save(Storage::path($thumbPath));
         }
-        return response()->file(Storage::path($thumbPath));
+        return response()->file(Storage::path($thumbPath), ['Cache-Control' => ['max-age=86400', 'private']]);
     }
 
-    public function destroy($album_id, $picture_id)
+    public function original($albumId, Picture $picture, Request $request)
     {
-        $user = Auth::user();
-        Album::findOrFailCustom($album_id);
-        $picture = Picture::findOrFailCustom($picture_id)->where('album_id', $album_id)->first();
-        $path = 'users/' . $user->login . '/albums/' . $album_id . '/pictures/' . $picture->name;
-        if(Storage::exists($path))
-        {
-           Storage::delete($path);
-        }
-        $picture->delete();
-        return response()->json()->setStatusCode(204);
-
-    }
-
-    public function info($album_id, $picture_id)
-    {
-        $picture = Picture::findOrFailCustom($picture_id)->where('album_id', $album_id)->first();
-        return response()->json($picture);
-    }
-
-    public function index(Request $request, $album_id)
-    {
-        $user = Auth::user();
-        $album = Album::findOrFailCustom($album_id);
-        $pictures = Picture::without('album')->where('album_id', $album->id)->get();
-        if($pictures->isEmpty())
-        {
-            throw new ApiException('Картинки в альбоме не найдены', 404);
-        }
-        $sign = Album::getSign($user, $album_id);
-        return response()->json([ 'sign' => $sign,'pictures' => $pictures]);
-    }
-
-    public function original($album_id, $picture_id, Request $request)
-    {
-        $album = Album::findOrFailCustom($album_id);
-        $picture = Picture::findOrFailCustom($picture_id)->where('album_id', $album_id)->first();
-        $path = Storage::path('users/'.$request->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
+        $ownerId = $request->attributes->get('ownerId');
+        $path = Storage::path($picture->getPath($ownerId));
         return response()->file($path);
     }
 
-    public function download($album_id, $picture_id, Request $request)
+    public function download($albumId, Picture $picture, Request $request)
     {
-
-        $album = Album::findOrFailCustom($album_id)->first();
-        $picture = Picture::findOrFailCustom($picture_id);
-        $path = Storage::path('users/'.$request->login.'/albums/'.$album->id.'/pictures/'.$picture->name);
+        $ownerId = $request->attributes->get('ownerId');
+        $path = Storage::path($picture->getPath($ownerId));
         return response()->download($path, $picture->name);
     }
 
-    public function create(PictureCreateRequest $request, $album_id)
+    public function destroy(Album $album, Picture $picture)
     {
-        $user = Auth::user();
-        $files = $request->file('pictures');
-        $album = Album::findOrFailCustom($album_id);
-
-        $path = 'users/'.$user->login.'/albums/'.$album->id.'/pictures/';
-        $responses = [
-            'successful' => [],
-            'errored' => [],
-        ];
-
-        // Обрабатываем файлы по одному
-        foreach ($files as $index => $file) {
-            try {
-                // Попробуем валидацию для каждого файла
-                $request->validate([
-                    'pictures.' . $index => 'required|file|mimes:jpeg,jpg,png,gif',
-                ]);
-
-                $filename = $file->getClientOriginalName();
-                $pictureHash = hash('xxh3', Storage::path($path.$filename));
-
-                $picture = Picture::where('album_id', $album_id)->where('hash', $pictureHash)->first();
-                if ($picture) {
-                    $responses['errored'][] = [
-                        'name' => $filename,
-                        'message' => 'already exist in this album'
-                    ];
-                    continue;
-                }
-
-                $file->storeAs($path, $filename);
-                $sizes = getimagesize(Storage::path($path.$filename));
-
-                $pictureDB = Picture::create([
-                    'name' => $filename,
-                    'hash' => $pictureHash,
-                    'date' => Carbon::createFromTimestamp(Storage::lastModified($path.$filename)),
-                    'size' => Storage::size($path.$filename),
-                    'width' => $sizes[0],
-                    'height' => $sizes[1],
-                    'album_id' => $album_id,
-                ]);
-                $responses['successful'][] = $pictureDB;
-            } catch (ValidationException $e) {
-                // Получаем ошибки и добавляем их в список ошибок
-                $errors = $e->errors();
-                $fileErrors = $errors['pictures.' . $index] ?? []; // Получаем ошибки для текущего файла
-
-                foreach ($fileErrors as $message) {
-                    $responses['errored'][] = [
-                        'name' => $file->getClientOriginalName(),
-                        'message' => $message,
-                    ];
-                }
-            }
-        }
-
-        return response($responses);
+        Storage::delete($picture->getPath($album->user_id));
+        $picture->delete();
+        return response(null, 204);
     }
-
-
 }

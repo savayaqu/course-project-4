@@ -16,7 +16,8 @@ class AlbumController extends Controller
     {
         $user = Auth::user();
         return response([
-            'own' => AlbumResource::collection($user
+            'own' => AlbumResource::collection(
+                $user
                 ->albums()
                 ->withCount([
                     'pictures',
@@ -26,8 +27,10 @@ class AlbumController extends Controller
                 ->with([
                     'pictures' => fn ($query) => $query->limit(4),
                 ])
-                ->get()),
-            'accessible' => AlbumResource::collection($user
+                ->get()
+            ),
+            'accessible' => AlbumResource::collection(
+                $user
                 ->albumsViaAccess()
                 ->withCount([
                     'pictures',
@@ -36,7 +39,8 @@ class AlbumController extends Controller
                     'pictures' => fn ($query) => $query->limit(4),
                     'user',
                 ])
-                ->get()),
+                ->get()
+            ),
         ]);
     }
 
@@ -59,24 +63,24 @@ class AlbumController extends Controller
                 ], 409);
         }
 
-        // Проверка, существует ли альбом с таким именем и модифицируем имя если да
+        // Проверка, существует ли альбом с таким именем и модифицируем имя счётчиком если да
         $nameCounter = 1;
         $originalName = $name;
         while (Album
             ::where('name', $name)
             ->where('user_id', $user->id)
             ->exists()
-        ) $name = $originalName . ++$nameCounter;
+        ) $name = "$originalName (". ++$nameCounter .')';
 
         // Создание нового альбома с уникальным именем
         $newAlbum = Album::create([
             'name' => $name,
             'path' => $inputPath,
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         // Создание пустой директории
-        $path = "users/$user->login/albums/$newAlbum->id";
+        $path = $newAlbum->getPath();
         Storage::deleteDirectory($path);
         Storage::  makeDirectory($path);
 
@@ -89,11 +93,15 @@ class AlbumController extends Controller
 
     public function show(Album $album)
     {
+        $user = Auth::user();
+        if ($user->user_id === $user->id)
+            $relations = ['invitations', 'usersViaAccess'];
+        else
+            $relations = ['user'];
+
         $album->load([
             'pictures' => fn ($query) => $query->limit(4),
-            'invitations',
-            'usersViaAccess',
-            'user',
+            ...$relations,
         ])->loadCount(['pictures']);
         return response(['album' => AlbumResource::make($album)]);
     }
@@ -106,8 +114,7 @@ class AlbumController extends Controller
 
     public function destroy(Album $album)
     {
-        $user = Auth::user();
-        Storage::deleteDirectory("users/$user->login/albums/$album->id");
+        Storage::deleteDirectory($album->getPath());
         $album->delete();
         return response(['message' => 'Album deleted']);
     }

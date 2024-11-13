@@ -13,72 +13,50 @@ class Album extends Model
       'user_id'
     ];
 
-
     public function user() {
         return $this->belongsTo(User::class);
     }
-    public function usersViaAccess()
-    {
+    public function usersViaAccess() {
         return $this->belongsToMany(User::class, 'album_accesses')->using(AlbumAccess::class);
     }
-    public function pictures()
-    {
+    public function pictures() {
         return $this->hasMany(Picture::class);
     }
-    public function albumAccesses()
-    {
+    public function albumAccesses() {
         return $this->hasMany(AlbumAccess::class);
     }
-    public function invitations()
-    {
+    public function invitations() {
         return $this->hasMany(Invitation::class);
     }
-    public function complaints()
-    {
+    public function complaints() {
         return $this->hasMany(Complaint::class);
     }
 
-    public static function getSign(User $user, $albumId): string {
-        $cacheKey = "signAccess:to=$albumId;for=$user->id";
-        $cachedSign = Cache::get($cacheKey);
-        if ($cachedSign) return $user->id .'_'. $cachedSign;
-
-        $currentDay = date("Y-m-d");
-        $userToken = $user->getRememberToken();
-
-        $string = $userToken . $currentDay . $albumId;
-        $signCode = base64_encode(Hash::make($string));
-
-        Cache::put($cacheKey, $signCode, 3600);
-        return $user->id .'_'. $signCode;
+    public static function getPathStatic($userId, $albumId): string {
+        return "albums/$userId/$albumId";
+    }
+    public function getPath(): string {
+        return $this->getPathStatic($this->user_id, $this->id);
     }
 
-    public static function checkSign($albumId, $sign)
-    {
-        try {
-            $signExploded = explode('_', $sign);
-            $userId   = $signExploded[0];
-            $signCode = $signExploded[1];
-        }
-        catch (\Exception $e) {
-            return false;
-        }
-
-        $cacheKey = "signAccess:to=$albumId;for=$userId";
-        $cachedSign = Cache::get("signAccess:to=$albumId;for=$userId");
-        if ($cachedSign !== $signCode) return false;
-
-        $user = User::find($signExploded[0]);
-        if (!$user)
-            return false;
-
+    public static function signNonHash(User $user, $albumId) {
         $currentDay = date("Y-m-d");
-        $string = $user->getRememberToken() . $currentDay . $albumId;
+        $userToken = $user->tokens[0]->token;
+        return $userToken . $currentDay . $albumId;
+    }
+    public static function signCacheKey($albumId, $userId) {
+        return "signAccess:to=$albumId;for=$userId";
+    }
+    public  function getSign(User $user): string {
+        $cacheKey = $this->signCacheKey($this->id, $user->id);
+        $cachedSign = Cache::get($cacheKey);
+        if ($cachedSign)
+            return $user->id .'_'. $cachedSign;
 
-        $allow = Hash::check($string, base64_decode($signCode));
-        if ($allow)
-            Cache::put($cacheKey, $signCode, 3600);
+        $string = Album::signNonHash($user, $this->id);
+        $signCode = base64_encode(Hash::make($string));
 
-        return $user->login;
+        Cache::put($cacheKey, $signCode . '_' . $this->user_id, 3600);
+        return $user->id .'_'. $signCode;
     }
 }

@@ -58,10 +58,14 @@ Route
                     $picture
                     ->withoutMiddleware(['auth:sanctum', CheckAlbumAccess::class])
                     ->middleware(SignCheck::class)
-                    ->group(function ($pictureBySign) {                     // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
-                        $pictureBySign->get('download'    , 'download');    // Скачивание картинки
-                        $pictureBySign->get('original'    , 'original');    // Отображение картинки
-                        $pictureBySign->get('thumb/{size}', 'thumbnail');   // Отображение превью картинки заданного размера
+                    ->group(function ($pictureBySign) {                           // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
+                        $pictureBySign->get('download'          , 'download');    // Скачивание картинки
+                        $pictureBySign->get('original'          , 'original');    // Отображение картинки
+                        $pictureBySign->get('thumb/{orient}{px}', 'thumbnail')    // Отображение превью картинки заданного размера
+                            ->name('thumbnail')
+                            ->where('orient' , '[qwhQWH]')
+                            ->where('px', '[0-9]+')
+                            ->withoutMiddleware("throttle:api");
                     });
                     $picture
                     ->prefix('tags')

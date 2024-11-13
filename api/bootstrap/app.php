@@ -1,9 +1,9 @@
 <?php
 
+use App\Exceptions\Api\UnauthorizedException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Exceptions\Api\ApiException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,10 +12,9 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         apiPrefix: 'api',
-
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->redirectGuestsTo(fn() => throw new ApiException('Ошибка авторизации', 401));
+        $middleware->redirectGuestsTo(fn() => throw new UnauthorizedException());
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
