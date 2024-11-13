@@ -27,8 +27,11 @@ class AccessController extends Controller
        return response()->json($result , 200);
     }
 
-    public function destroy(Album $album, User $userId = null)
+    public function destroy(Album $album, $userId = null)
     {
+        if ($userId)
+            User::findOrFailCustom($userId);
+
         $albumAccess = AlbumAccess
             ::where('album_id', $album->id)
             ->where('user_id', $userId ?? Auth::id())

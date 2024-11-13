@@ -15,13 +15,13 @@ return new class extends Migration
             $table->unique(['user_id','name']);
             $table->unique(['user_id', 'path']);
             $table->unique(['user_id', 'id']);
-            $table->foreignId('user_id')->constrained('users');
+            $table->foreignId('user_id')->constrained();
             $table->timestamps();
         });
         Schema::create('album_accesses', function (Blueprint $table) {
-           $table->primary(['album_id','user_id']);
-           $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
-           $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->primary(['album_id','user_id']);
+            $table->foreignId('album_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id' )->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }
