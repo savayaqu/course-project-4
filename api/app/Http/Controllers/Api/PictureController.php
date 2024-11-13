@@ -23,25 +23,26 @@ class PictureController extends Controller
     public function index(Album $album, Request $request)
     {
         // Получаем ID тегов
-        $tagIds = explode(',', $request->query('tags', ''));
-        $sortBy = $request->query('sort_by', 'date'); // Сортировка по полю (дефолт дата)
-        $sortOrder = $request->query('sort_order', 'asc'); // Сортировка ну типа сверху или снизу (дефолт дефолт)
+        $tagIds = null;
+        $tagsString = $request->tags;
+        if ($tagsString)
+            $tagIds = explode(',', $tagsString);
+
+        $sortBy = $request->query('sort', 'date');   // Сортировка по полю (по умолчанию дата)
+        $orderBy  = $request->has('reverse') ? 'desc' : 'asc'; // Направление сортировки
 
         $user = Auth::user();
 
         // Проверка валидации сортировки
         $allowedSortFields = ['date', 'name', 'width', 'height', 'size'];
-        if (!in_array($sortBy, $allowedSortFields)) {
-            throw new ApiException('Invalid sort field: ' . $sortBy, 400);
-        }
-        if (!in_array($sortOrder, ['asc', 'desc'])) {
-            throw new ApiException('Invalid sort order: ' . $sortOrder, 400);
-        }
+        if (!in_array($sortBy, $allowedSortFields))
+            throw new ApiException('Sort must be of the following types: ' . join(', ', $allowedSortFields), 400);
+
 
         // Фильтрация по заданным параметрам
         $query = Picture::with('tags')
             ->where('album_id', $album->id)
-            ->orderBy($sortBy, $sortOrder);
+            ->orderBy($sortBy, $orderBy);
 
         if ($tagIds) {
             $query->whereHas('tags', function ($query) use ($tagIds) {
