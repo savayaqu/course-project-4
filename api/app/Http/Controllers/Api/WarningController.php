@@ -16,6 +16,7 @@ class WarningController extends Controller
             'user_id' => $user->id,
             'comment' => $request->comment
         ]);
+        // TODO: Блокировать пользователя при достижении максимального числа (по настройкам) предупреждений
         return response(['warning' => WarningResource::make($warning)], 201);
     }
 
