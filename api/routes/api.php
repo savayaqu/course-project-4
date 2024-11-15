@@ -38,7 +38,8 @@ Route
             $album->get   ('', 'show');     // Просмотр информации об альбоме
             $album->post  ('', 'update');   // Изменение информации об СВОЁМ альбоме
             $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
-            $album->delete('accesses/'      , [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя у СЕБЯ с ЧУЖОГО альбома
+            $album->delete('accesses'       , [    AccessController::class, 'destroy'      ])   // Убрать доступ у пользователя у СЕБЯ с ЧУЖОГО альбома
+                ->withoutMiddleware(CheckAlbumAccess::class);
             $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома
             $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
             $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum'])   // Создание жалобы на ЧУЖОЙ альбом
@@ -110,17 +111,22 @@ Route
     $authorized
     ->prefix('complaints')
     ->controller(ComplaintController::class)
-    ->group(function ($complaints) {                    // [ЖАЛОБЫ]
-        $complaints->get('', 'all');                    // Просмотр всех жалоб
-        $complaints->delete('{complaint}', 'destroy');  // Удаление своей жалобы
+    ->group(function ($complaints) {       // [ЖАЛОБЫ]
+        $complaints->get   ('', 'index');  // Просмотр ВСЕХ жалоб (админ) / СВОИХ жалоб
+        $complaints
+        ->prefix('{complaint}')
+        ->group(function ($complaint) {                                              // [ЖАЛОБА]
+            $complaint->post  ('', 'edit')->middleware(CheckRole::class . ':admin'); // Изменение жалобы // TODO: Изменять статус / либо сделать действие (роут) для отклонение/принятия всех жалоб на пользователе
+            $complaint->delete('', 'destroy');                                       // Удаление СВОЕЙ жалобы
+        });
     });
     $authorized
     ->prefix('users')
     ->controller(UserController::class)
     ->group(function ($users) {                                             // [ПОЛЬЗОВАТЕЛИ]
         $users->get ('', 'index')->middleware(CheckRole::class . ':admin'); // Список пользователей
-        $users->get ('me', 'self');                                         // Получение СЕБЯ
-        $users->post('me', 'selfEdit');                                     // Редактирование СЕБЯ
+        $users->get ('me', 'showSelf');                                     // Получение СЕБЯ
+        $users->post('me', 'editSelf');                                     // Редактирование СЕБЯ
         $users
         ->prefix('{user}')
         ->middleware(CheckRole::class . ':admin')

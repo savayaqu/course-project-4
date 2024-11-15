@@ -5,38 +5,54 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\User\UserSelfUpdateRequest;
 use App\Http\Requests\Api\User\UserUpdateRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function show($userId)
-    {
-        return response()->json(User::findOrFailCustom($userId), 200);
-    }
-    public function edit(UserUpdateRequest $request, $userId)
-    {
-        $data = array_filter($request->all(), function ($value) {
-            return !is_null($value) && $value !== '';
-        });
-
-        User::findOrFailCustom($userId)->update($data);
-        return response()->json(User::findOrFailCustom($userId), 200);
-    }
     public function index()
     {
-        return response()->json(User::all())->setStatusCode(200);
+        $users = User::with([
+            'role', 'warnings', 'complaintsAbout', /**/ 'albumsViaAccess', 'tags', 'complaintsFrom', 'albums', 'pictures',
+        ])->withCount([
+            'albumsViaAccess', 'tags', 'complaintsFrom', 'albums', 'pictures',
+        ])->get();
+
+        return response(['users' => UserResource::collection($users)]);
     }
-    public function self()
+
+    public function show(User $user)
     {
-        return response()->json(Auth::user())->setStatusCode(200);
+        $user->load([
+            'role', 'warnings', 'complaintsAbout', 'complaintsFrom',
+        ])->loadCount([
+            'albums',  'pictures'
+        ]);
+        return response(['user' => UserResource::make($user)]);
     }
-    public function selfEdit(UserSelfUpdateRequest $request)
+
+    public function showSelf()
     {
-        $data = array_filter($request->all(), function ($value) {
-            return !is_null($value) && $value !== '';
-        });
-        Auth::user()->update($data);
-        return response()->json(Auth::user())->setStatusCode(200);
+        $user = Auth::user();
+        $user->load([
+            'role', 'warnings', 'complaintsFrom',
+        ])->loadCount([
+            'albums', 'pictures', 'complaintsFrom',
+        ]);
+        return response(['user' => UserResource::make($user)]);
+    }
+
+    public function edit(UserUpdateRequest $request, User $user)
+    {
+        $user->update($request->validated());
+        return response(['user' => UserResource::make($user)]);
+    }
+
+    public function editSelf(UserSelfUpdateRequest $request)
+    {
+        $user = Auth::user();
+        $user->update($request->validated());
+        return response(['user' => UserResource::make($user)]);
     }
 }

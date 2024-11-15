@@ -11,7 +11,7 @@ class AlbumAccessResource extends JsonResource
     {
         return [
             'album' => AlbumResource::make($this->album),
-            'user' => UserPublicResource::make($this->user),
+            'user'  =>  UserResource::make($this->user),
         ];
     }
 }

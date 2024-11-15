@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\Api\NotFoundException;
+use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\AlbumAccessResource;
-use App\Http\Resources\InvitationResource;
+use App\Http\Resources\AlbumResource;
 use App\Models\Album;
-use App\Models\AlbumAccess;
-use App\Models\Invitation;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,31 +13,24 @@ class AccessController extends Controller
 {
     public function index()
     {
-        $albums = Album::with(['albumAccesses', 'invitations'])->where('user_id', Auth::id())->get();
-        $result = $albums->map(function ($album) {
-           return [
-               'accesses' => AlbumAccessResource::collection($album->albumAccesses),
-               'invitations' => InvitationResource::collection($album->invitations),
-           ] ;
-        });
-       return response()->json($result , 200);
+        $user = Auth::user();
+        $albumsOwned = $user->albums()->with(['invitations', 'usersViaAccess'])->get();
+        $albums = $albumsOwned->filter(fn($album) =>
+            $album->invitations   ->isNotEmpty() ||
+            $album->usersViaAccess->isNotEmpty()
+        );
+        return response(['albums' => AlbumResource::collection($albums)]);
     }
 
-    public function destroy(Album $album, $userId = null)
+    public function destroy(Album $album, User $user = null)
     {
-        if ($userId)
-            User::findOrFailCustom($userId);
+        if ($user === null)
+            $user = Auth::user();
 
-        $albumAccess = AlbumAccess
-            ::where('album_id', $album->id)
-            ->where('user_id', $userId ?? Auth::id())
-            ->first();
+        else if ($user->id !== $album->user_id)
+            throw new ForbiddenException();
 
-        if(!$albumAccess)
-            throw new NotFoundException(AlbumAccess::class);
-
-        $albumAccess->delete();
-
+        $album->usersViaAccess()->detach($user->id);
         return response(null, 204);
     }
 }

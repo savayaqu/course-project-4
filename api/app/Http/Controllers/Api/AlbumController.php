@@ -91,7 +91,7 @@ class AlbumController extends Controller
     public function show(Album $album)
     {
         $user = Auth::user();
-        if ($user->user_id === $user->id)
+        if ($album->user_id === $user?->id)
             $relations = ['invitations', 'usersViaAccess'];
         else
             $relations = ['user'];

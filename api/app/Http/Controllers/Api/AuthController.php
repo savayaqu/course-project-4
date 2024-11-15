@@ -6,6 +6,7 @@ use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Auth\LoginRequest;
 use App\Http\Requests\Api\Auth\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,23 +20,27 @@ class AuthController extends Controller
             throw new ApiException('Invalid credentials', 401);
 
         $user = Auth::user();
-        $token = $user->createToken('remember_token')->plainTextToken;
+        $user->load('role');
+
+        $token = $user->createToken('api_token')->plainTextToken;
         return response([
-            'success' => true,
             'token' => $token,
-            'user' => $user,
+            'user' => UserResource::make($user),
         ]);
     }
 
     public function register(RegisterRequest $request)
     {
         $roleId = Role::firstOrCreate(['code' =>'user'])->id;
-        $user = User::create([...$request->validated(), 'role_id' => $roleId]);
-        $token = $user->createToken('remember_token')->plainTextToken;
+        $user = User::create([
+            ...$request->validated(),
+            'role_id' => $roleId
+        ]);
+
+        $token = $user->createToken('api_token')->plainTextToken;
         return response([
-            'success' => true,
             'token' => $token,
-            'user' => $user,
+            'user' => UserResource::make($user),
         ], 201);
     }
 
