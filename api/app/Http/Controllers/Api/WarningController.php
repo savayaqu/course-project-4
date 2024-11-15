@@ -3,26 +3,25 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\WarningResource;
 use App\Models\User;
 use App\Models\Warning;
 use Illuminate\Http\Request;
 
 class WarningController extends Controller
 {
-    public function create(Request $request, $userId)
+    public function create(Request $request, User $user)
     {
-        User::findOrFailCustom($userId);
         $warning = Warning::create([
-           'user_id' => $userId,
-           'comment' => $request->comment
+            'user_id' => $user->id,
+            'comment' => $request->comment
         ]);
-        return response()->json($warning)->setStatusCode(201);
+        return response(['warning' => WarningResource::make($warning)], 201);
     }
-    public function destroy($userId, $warningId)
-    {
-        User::findOrFailCustom($userId);
-        Warning::findOrFailCustom($warningId)->delete();
-        return response()->json()->setStatusCode(204);
 
+    public function destroy(User $user, Warning $warning)
+    {
+        $warning->delete();
+        return response(null, 204);
     }
 }
