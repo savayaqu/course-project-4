@@ -40,37 +40,32 @@ class User extends Model implements
             'password' => 'hashed',
         ];
     }
-    public function codeRole(array $role)
-    {
-        return in_array($this->role->code, $role);
-    }
-    public function role()
-    {
+
+    public function role() {
         return $this->belongsTo(Role::class);
     }
-    public function albums()
-    {
+    public function albums() {
         return $this->hasMany(Album::class);
     }
-    public function complaints()
-    {
-        return $this->hasMany(Complaint::class);
+    public function pictures() {
+        return $this->hasManyThrough(Album::class, Picture::class, 'album_id', 'user_id');
     }
-    public function albumAccesses()
-    {
+    public function complaintsFrom() {
+        return $this->hasMany(Complaint::class, 'from_user_id');
+    }
+    public function complaintsAbout() {
+        return $this->hasMany(Complaint::class, 'about_user_id');
+    }
+    public function albumAccesses() {
         return $this->hasMany(AlbumAccess::class);
     }
-    public function albumsViaAccess()
-    {
+    public function albumsViaAccess() {
         return $this->belongsToMany(Album::class, 'album_accesses')->using(AlbumAccess::class);
     }
-    public function tags()
-    {
+    public function tags() {
         return $this->hasMany(Tag::class);
     }
-    public function warnings()
-    {
+    public function warnings() {
         return $this->hasMany(Warning::class);
     }
-
 }

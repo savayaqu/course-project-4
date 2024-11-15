@@ -10,12 +10,12 @@ return new class extends Migration
     {
         Schema::create('complaints', function (Blueprint $table) {
             $table->id();
-            $table->string('description')->nullable();
-            $table->foreignId('album_id')->nullable()->constrained()->nullOnDelete();
+            $table->string   ('description')->nullable();
+            $table->boolean  ('status')->nullable()->default(null);
+            $table->foreignId('album_id'  )->nullable()->constrained()->nullOnDelete();
             $table->foreignId('picture_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('from_user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->foreignId('about_user_id')->nullable()->constrained('users')->cascadeOnDelete();
-            $table->boolean('status')->nullable()->default(null);
+            $table->foreignId('from_user_id' )->constrained('users')->cascadeOnDelete();
+            $table->foreignId('about_user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('complaint_type_id')->constrained('complaint_types');
             $table->timestamps();
         });

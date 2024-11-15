@@ -4,10 +4,12 @@ namespace App\Models;
 
 class Warning extends Model
 {
-    protected $fillable = ['comment', 'user_id'];
+    protected $fillable = [
+        'comment',
+        'user_id',
+    ];
 
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class);
     }
 }

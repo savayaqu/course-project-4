@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
-
 class Picture extends Model
 {
     protected $fillable = [
-      'name',
-      'hash',
-      'date',
-      'size',
-      'width',
-      'height',
-      'album_id'
+        'name',
+        'hash',
+        'date',
+        'size',
+        'width',
+        'height',
+        'album_id',
     ];
 
     public static function getPathStatic($userId, $albumId, $name = null): string {

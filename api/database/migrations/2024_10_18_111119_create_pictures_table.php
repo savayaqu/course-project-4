@@ -10,16 +10,17 @@ return new class extends Migration
     {
         Schema::create('pictures', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('hash');
-            $table->dateTime('date');
+            $table->string    ('name');
+            $table->string    ('hash');
+            $table->dateTime  ('date');
+            $table->bigInteger('size');
+            $table->integer   ('width');
+            $table->integer   ('height');
+            $table->foreignId ('album_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
             $table->unique(['album_id', 'name']);
             $table->unique(['album_id', 'hash']);
-            $table->bigInteger('size');
-            $table->integer('width');
-            $table->integer('height');
-            $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
-            $table->timestamps();
         });
     }
 

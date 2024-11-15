@@ -9,7 +9,7 @@ class ComplaintCreateRequest extends ApiRequest
     {
         return [
             'description' => 'required|string|min:1|max:255',
-            'type_id'     => 'required|integer|exists:complaint_types,id',
+            'typeId'      => 'required|integer|exists:complaint_types,id',
         ];
     }
 }

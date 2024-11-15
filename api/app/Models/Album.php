@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Hash;
 class Album extends Model
 {
     protected $fillable = [
-      'name',
-      'path',
-      'user_id'
+        'name',
+        'path',
+        'user_id',
     ];
 
     public function user() {

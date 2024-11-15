@@ -3,10 +3,8 @@
 namespace App\Models;
 
 use App\Builders\Builder;
-use App\Exceptions\Api\ApiException;
 use App\Exceptions\Api\NotFoundException;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class Model extends EloquentModel
 {

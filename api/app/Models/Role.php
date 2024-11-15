@@ -6,8 +6,7 @@ class Role extends Model
 {
     protected $fillable = ['code'];
 
-    public function users()
-    {
+    public function users() {
         return $this->hasMany(User::class);
     }
 }

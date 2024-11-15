@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
-use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Picture\PictureCreateRequest;
 use App\Http\Resources\PictureResource;
@@ -14,8 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Laravel\Facades\Image as Intervention;
 
 class PictureController extends Controller
@@ -59,9 +56,6 @@ class PictureController extends Controller
             'pictures' => PictureResource::collection($pictures),
         ]);
     }
-
-
-
 
     public function create(Album $album, PictureCreateRequest $request)
     {

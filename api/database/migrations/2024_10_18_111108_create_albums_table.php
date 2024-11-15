@@ -12,14 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('path')->nullable();
-            $table->unique(['user_id','name']);
-            $table->unique(['user_id', 'path']);
-            $table->unique(['user_id', 'id']);
             $table->foreignId('user_id')->constrained();
             $table->timestamps();
+
+            $table->unique(['user_id', 'name']);
+            $table->unique(['user_id', 'path']);
         });
         Schema::create('album_accesses', function (Blueprint $table) {
-            $table->primary(['album_id','user_id']);
+            $table->primary(['album_id', 'user_id']);
             $table->foreignId('album_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id' )->constrained()->cascadeOnDelete();
             $table->timestamps();

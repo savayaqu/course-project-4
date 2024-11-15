@@ -12,12 +12,11 @@ class AlbumAccess extends Pivot
         'album_id',
         'user_id',
     ];
-    public function album()
-    {
+
+    public function album() {
         return $this->belongsTo(Album::class);
     }
-    public function user()
-    {
+    public function user() {
         return $this->belongsTo(User::class);
     }
 }

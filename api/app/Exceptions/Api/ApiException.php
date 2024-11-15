@@ -2,9 +2,7 @@
 
 namespace App\Exceptions\Api;
 
-use Exception;
 use Illuminate\Http\Exceptions\HttpResponseException;
-
 
 class ApiException extends HttpResponseException
 {

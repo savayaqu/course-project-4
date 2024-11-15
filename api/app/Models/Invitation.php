@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Exceptions\Api\ApiException;
-use App\Exceptions\Api\NotFoundException;
 
 class Invitation extends Model
 {
@@ -11,7 +10,7 @@ class Invitation extends Model
         'link',
         'expires_at',
         'album_id',
-        'join_limit'
+        'join_limit',
     ];
 
     public function checkExpires() {

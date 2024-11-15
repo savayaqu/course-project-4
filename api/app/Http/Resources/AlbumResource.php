@@ -11,12 +11,15 @@ class AlbumResource extends JsonResource
     public function toArray(Request $request): array
     {
         $user = $request->user();
-        $userIsOwner = $this->user_id === $user->id;
+        $isOwner = $this->user_id === $user->id;
+        $isAdmin = $request->attributes->get('role') === 'admin';
         return [
             'id'    => $this->id,
             'name'  => $this->name,
-            'owner' => $this->whenLoaded('user', fn() => $this->when(!$userIsOwner, fn() => UserPublicResource::make($this->user))),
-            $this->mergeWhen($userIsOwner, [
+            'owner' => $this->whenLoaded('user',
+                fn() => $this->when(!$isOwner, fn() => UserPublicResource::make($this->user))
+            ),
+            $this->mergeWhen($isOwner || $isAdmin, [
                 'path'      => $this->whenNotNull($this->path),
                 'createdAt' => $this->created_at,
                 'grantAccessesCount' => $this->whenCounted('usersViaAccess', fn($count) => $this->when($count, $count)),

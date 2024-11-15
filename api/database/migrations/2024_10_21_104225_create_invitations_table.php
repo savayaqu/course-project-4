@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('invitations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('album_id')->constrained('albums')->cascadeOnDelete();
-            $table->string('link')->unique();
-            $table->integer('join_limit')->nullable();
-            $table->dateTime('expires_at');
+            $table->foreignId('album_id')->constrained()->cascadeOnDelete();
+            $table->string   ('link')->unique();
+            $table->integer  ('join_limit')->nullable();
+            $table->dateTime ('expires_at');
             $table->timestamps();
         });
     }

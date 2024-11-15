@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('warnings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->text('comment');
+            $table->text     ('comment');
             $table->timestamps();
         });
     }

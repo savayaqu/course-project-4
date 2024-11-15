@@ -85,10 +85,7 @@ class AlbumController extends Controller
         Storage::  makeDirectory($path);
 
         // Формирование ответа
-        return response([
-            'message' => 'Album created',
-            'album' => AlbumResource::make($newAlbum)
-        ], 201);
+        return response(['album' => AlbumResource::make($newAlbum)], 201);
     }
 
     public function show(Album $album)
