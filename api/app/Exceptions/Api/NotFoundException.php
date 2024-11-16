@@ -2,14 +2,11 @@
 
 namespace App\Exceptions\Api;
 
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-
-class NotFoundException extends HttpResponseException
+class NotFoundException extends ApiException
 {
     public function __construct($class = null)
     {
         $message = ucfirst(($class ? class_basename($class) . ' ' : '') . 'not found');
-        parent::__construct(throw new ApiException($message, 404));
+        parent::__construct($message, 404);
     }
 }

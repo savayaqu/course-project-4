@@ -2,14 +2,11 @@
 
 namespace App\Exceptions\Api;
 
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-
-class ForbiddenException extends HttpResponseException
+class ForbiddenException extends ApiException
 {
     public function __construct($class = null)
     {
         $message = 'Forbidden' . ($class ? ' to ' . class_basename($class) : '');
-        parent::__construct(throw new ApiException($message, 403));
+        parent::__construct($message, 403);
     }
 }

@@ -2,13 +2,10 @@
 
 namespace App\Exceptions\Api;
 
-use Illuminate\Http\Exceptions\HttpResponseException;
-
-
-class UnauthorizedException extends HttpResponseException
+class UnauthorizedException extends ApiException
 {
     public function __construct()
     {
-        parent::__construct(throw new ApiException('Unauthorized', 401));
+        parent::__construct('Unauthorized', 401);
     }
 }

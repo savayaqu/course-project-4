@@ -22,11 +22,11 @@ class ComplaintResource extends JsonResource
             'aboutUser' => $this->whenLoaded('aboutUser',
                 fn() => UserResource::make($this->aboutUser)
             ),
-            'picture' => $this->whenLoaded('picture',
-                fn() => $this->when($this->picture, fn() => PictureResource::make($this->picture))
+            'picture' => $this->whenLoaded('picture', fn() =>
+                $this->when($this->picture, fn() => PictureResource::make($this->picture))
             ),
-            'album' => $this->whenLoaded('album',
-                fn() => $this->when($this->album, fn() => AlbumResource::make($this->album))
+            'album' => $this->whenLoaded('album', fn() =>
+                $this->when($this->album, fn() => AlbumResource::make($this->album))
             ),
         ];
     }

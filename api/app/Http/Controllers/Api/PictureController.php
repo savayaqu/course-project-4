@@ -9,19 +9,23 @@ use App\Http\Resources\PictureResource;
 use App\Models\Album;
 use App\Models\Picture;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Laravel\Facades\Image as Intervention;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PictureController extends Controller
 {
-    public function index(Album $album, Request $request)
+    public function index(Request $request, Album $album): JsonResponse
     {
         // Получаем ID тегов
         $tagIds = null;
-        $tagsString = $request->tags;
+        $tagsString = $request->input('tags');
         if ($tagsString)
             $tagIds = explode(',', $tagsString);
 
@@ -51,13 +55,13 @@ class PictureController extends Controller
 
         $sign = $album->getSign($user);
 
-        return response([
+        return response()->json([
             'sign' => $sign,
             'pictures' => PictureResource::collection($pictures),
         ]);
     }
 
-    public function create(Album $album, PictureCreateRequest $request)
+    public function create(PictureCreateRequest $request, Album $album): JsonResponse
     {
         $user = Auth::user();
         $files = $request->file('pictures');
@@ -66,7 +70,7 @@ class PictureController extends Controller
         $successful = [];
 
         // Обрабатываем файлы по одному
-        foreach ($files as $index => $file) {
+        foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
@@ -115,7 +119,7 @@ class PictureController extends Controller
                 try {
                     $sizes = getimagesize($tmpPath);
                 }
-                catch (\Exception $e) {
+                catch (Exception $e) {
                     $errored[] = [
                         'name' => $filename,
                         'message' => "No sizes",
@@ -138,7 +142,7 @@ class PictureController extends Controller
                 $file->storeAs($pathToSave, $filenameValid);
 
                 $successful[] = $pictureDB;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Что-то пошло не так
                 $errored[] = [
                     'name' => $filename,
@@ -146,14 +150,14 @@ class PictureController extends Controller
                 ];
             }
         }
-        return response([
+        return response()->json([
             'sign' => $album->getSign($user),
             'successful' => $successful,
             'errored' => $errored,
         ]);
     }
 
-    public function info(Album $album, Picture $picture)
+    public function info(Album $album, Picture $picture): JsonResponse
     {
         $picture->load('tags');
         $user = Auth::user();
@@ -164,7 +168,7 @@ class PictureController extends Controller
         ]);
     }
 
-    public function thumbnail($albumId, $pictureId, $orientation, $size, Request $request)
+    public function thumbnail(Request $request, $albumId, $pictureId, $orientation, $size): BinaryFileResponse|JsonResponse|RedirectResponse
     {
         $ownerId = $request->attributes->get('ownerId');
         $orientation = strtolower($orientation);
@@ -196,8 +200,8 @@ class PictureController extends Controller
                     ->where('id', $pictureId)
                     ->firstOrFail();
             }
-            catch (\Exception $e) {
-                return response(['message' => 'Picture not found'], 404)
+            catch (Exception $e) {
+                return response()->json(['message' => 'Picture not found'], 404)
                     ->header('Cache-Control', ['max-age=86400', 'private']);
             }
 
@@ -233,24 +237,24 @@ class PictureController extends Controller
         return response()->file(Storage::path($thumbPath), ['Cache-Control' => ['max-age=86400', 'private']]);
     }
 
-    public function original($albumId, Picture $picture, Request $request)
+    public function original($albumId, Picture $picture, Request $request): BinaryFileResponse
     {
         $ownerId = $request->attributes->get('ownerId');
         $path = Storage::path($picture->getPath($ownerId));
         return response()->file($path);
     }
 
-    public function download($albumId, Picture $picture, Request $request)
+    public function download($albumId, Picture $picture, Request $request): BinaryFileResponse
     {
         $ownerId = $request->attributes->get('ownerId');
         $path = Storage::path($picture->getPath($ownerId));
         return response()->download($path, $picture->name);
     }
 
-    public function destroy(Album $album, Picture $picture)
+    public function destroy(Album $album, Picture $picture): JsonResponse
     {
         Storage::delete($picture->getPath($album->user_id));
         $picture->delete();
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 }

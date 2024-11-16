@@ -7,15 +7,16 @@ use App\Http\Requests\Api\Album\AlbumCreateRequest;
 use App\Http\Requests\Api\Album\AlbumUpdateRequest;
 use App\Http\Resources\AlbumResource;
 use App\Models\Album;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class AlbumController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
-        return response([
+        return response()->json([
             'own' => AlbumResource::collection(
                 $user
                 ->albums()
@@ -44,7 +45,7 @@ class AlbumController extends Controller
         ]);
     }
 
-    public function create(AlbumCreateRequest $request)
+    public function create(AlbumCreateRequest $request): JsonResponse
     {
         $user = Auth::user();
         $name      = $request->input('name');
@@ -57,7 +58,7 @@ class AlbumController extends Controller
                 ->where('user_id', $user->id)
                 ->first();
             if ($existAlbum)
-                return response([
+                return response()->json([
                     'message' => 'Album with this path already exists',
                     'album' => AlbumResource::make($existAlbum)
                 ], 409);
@@ -85,10 +86,10 @@ class AlbumController extends Controller
         Storage::  makeDirectory($path);
 
         // Формирование ответа
-        return response(['album' => AlbumResource::make($newAlbum)], 201);
+        return response()->json(['album' => AlbumResource::make($newAlbum)], 201);
     }
 
-    public function show(Album $album)
+    public function show(Album $album): JsonResponse
     {
         $user = Auth::user();
         if ($album->user_id === $user?->id)
@@ -100,19 +101,19 @@ class AlbumController extends Controller
             'pictures' => fn ($query) => $query->limit(4),
             ...$relations,
         ])->loadCount(['pictures']);
-        return response(['album' => AlbumResource::make($album)]);
+        return response()->json(['album' => AlbumResource::make($album)]);
     }
 
-    public function update(AlbumUpdateRequest $request, Album $album)
+    public function update(AlbumUpdateRequest $request, Album $album): JsonResponse
     {
         $album->update($request->validated());
-        return response(['album' => AlbumResource::make($album)]);
+        return response()->json(['album' => AlbumResource::make($album)]);
     }
 
-    public function destroy(Album $album)
+    public function destroy(Album $album): JsonResponse
     {
         Storage::deleteDirectory($album->getPath());
         $album->delete();
-        return response(['message' => 'Album deleted']);
+        return response()->json(['message' => 'Album deleted']);
     }
 }

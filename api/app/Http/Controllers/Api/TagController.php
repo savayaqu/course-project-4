@@ -10,11 +10,12 @@ use App\Http\Requests\Api\Tag\TagUpdateRequest;
 use App\Http\Resources\TagResource;
 use App\Models\Picture;
 use App\Models\Tag;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class TagController extends Controller
 {
-    public function attachToPicture($albumId, Picture $picture, Tag $tag)
+    public function attachToPicture($albumId, Picture $picture, Tag $tag): JsonResponse
     {
         if ($tag->user_id !== Auth::id())
             throw new ForbiddenException();
@@ -25,9 +26,9 @@ class TagController extends Controller
             ->pluck('tags.id');
 
         $picture->tags()->attach($tagIds->diff($existingIds));
-        return response(null, 204);
+        return response()->json(null, 204);
     }
-    public function detachToPicture($albumId, Picture $picture, Tag $tag)
+    public function detachToPicture($albumId, Picture $picture, Tag $tag): JsonResponse
     {
         if ($tag->user_id !== Auth::id())
             throw new ForbiddenException();
@@ -38,53 +39,54 @@ class TagController extends Controller
             ->pluck('tags.id');
 
         $picture->tags()->detach($tagIds->intersect($existingIds));
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
         $tags = Tag::where('user_id', Auth::id())->get();
-        return response(TagResource::collection($tags));
+        return response()->json(['tags' => TagResource::collection($tags)]);
     }
 
-    public function create(TagCreateRequest $request)
+    public function create(TagCreateRequest $request): JsonResponse
     {
+        $value = $request->input('value');
         $user = Auth::user();
         $existedTag = Tag
             ::where('user_id', $user->id)
-            ->where('value', $request->value)
+            ->where('value', $value)
             ->first();
         if($existedTag)
             throw new AlreadyExistsException($existedTag);
 
         $tag = Tag::create([
-           'value' => $request->value,
+           'value' => $value,
            'user_id' => $user->id
         ]);
-        return response(['tag' => TagResource::make($tag)], 201);
+        return response()->json(['tag' => TagResource::make($tag)], 201);
     }
-    public function show(Tag $tag)
+    public function show(Tag $tag): JsonResponse
     {
         if ($tag->user_id !== Auth::id())
             throw new ForbiddenException();
 
         $tag->load('pictures');
-        return response(['tag' => TagResource::make($tag)]);
+        return response()->json(['tag' => TagResource::make($tag)]);
     }
-    public function edit(Tag $tag, TagUpdateRequest $request)
+    public function edit(Tag $tag, TagUpdateRequest $request): JsonResponse
     {
         if ($tag->user_id !== Auth::id())
             throw new ForbiddenException();
 
         $tag->update($request->all());
-        return response(['tag' => TagResource::make($tag)])->setStatusCode(200);
+        return response()->json(['tag' => TagResource::make($tag)]);
     }
-    public function destroy(Tag $tag)
+    public function destroy(Tag $tag): JsonResponse
     {
         if ($tag->user_id !== Auth::id())
             throw new ForbiddenException();
 
         $tag->delete();
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 }

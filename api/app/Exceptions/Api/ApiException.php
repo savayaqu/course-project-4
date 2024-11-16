@@ -18,6 +18,6 @@ class ApiException extends HttpResponseException
         if ($data)
             array_push($body, ...$data);
 
-        parent::__construct(response($body, $code));
+        parent::__construct(response()->json($body, $code));
     }
 }

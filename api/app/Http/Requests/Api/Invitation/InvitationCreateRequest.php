@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\Invitation;
 
 use App\Http\Requests\Api\ApiRequest;
-use Carbon\Carbon;
 
 class InvitationCreateRequest extends ApiRequest
 {

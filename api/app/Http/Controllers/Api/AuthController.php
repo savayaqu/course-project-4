@@ -9,12 +9,13 @@ use App\Http\Requests\Api\Auth\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         if (!Auth::attempt($request->only('login', 'password')))
             throw new ApiException('Invalid credentials', 401);
@@ -23,13 +24,13 @@ class AuthController extends Controller
         $user->load('role');
 
         $token = $user->createToken('api_token')->plainTextToken;
-        return response([
+        return response()->json([
             'token' => $token,
             'user' => UserResource::make($user),
         ]);
     }
 
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
         $roleId = Role::firstOrCreate(['code' =>'user'])->id;
         $user = User::create([
@@ -38,15 +39,15 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('api_token')->plainTextToken;
-        return response([
+        return response()->json([
             'token' => $token,
             'user' => UserResource::make($user),
         ], 201);
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 }

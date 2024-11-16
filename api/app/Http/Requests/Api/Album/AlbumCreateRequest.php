@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\Album;
 
 use App\Http\Requests\Api\ApiRequest;
-use Illuminate\Foundation\Http\FormRequest;
 
 class AlbumCreateRequest extends ApiRequest
 {

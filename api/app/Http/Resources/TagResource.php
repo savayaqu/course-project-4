@@ -7,10 +7,9 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class TagResource extends JsonResource
 {
-
     public function toArray(Request $request): array
     {
-        $array = [
+        return [
             'id'    => $this->id,
             'value' => $this->value,
             'ownerId'       => $this->when($this->user_id !== $request->user()->id, fn() => $this->user_id),
@@ -19,6 +18,5 @@ class TagResource extends JsonResource
                 $this->when($this->pictures->isNotEmpty(), fn() => PictureResource::collection($this->pictures))
             ),
         ];
-        return $array;
     }
 }

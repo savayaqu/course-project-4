@@ -22,17 +22,17 @@ class AlbumResource extends JsonResource
                 'path'      => $this->whenNotNull($this->path),
                 'createdAt' => $this->created_at,
                 'grantAccessesCount' => $this->whenCounted('usersViaAccess', fn($count) => $this->when($count, $count)),
-                'grantAccesses'      => $this->whenLoaded ('usersViaAccess',
-                    fn() => $this->when($this->usersViaAccess->isNotEmpty(), fn() => UserResource::collection($this->usersViaAccess))
+                'grantAccesses'      => $this->whenLoaded ('usersViaAccess', fn() =>
+                    $this->when($this->usersViaAccess->isNotEmpty(), fn() => UserResource::collection($this->usersViaAccess))
                 ),
                 'invitationsCount'   => $this->whenCounted('invitations', fn($count) => $this->when($count, $count)),
-                'invitations'        => $this->whenLoaded ('invitations',
-                    fn() => $this->when($this->invitations->isNotEmpty(), fn() => InvitationResource::collection($this->invitations))
+                'invitations'        => $this->whenLoaded ('invitations', fn() =>
+                    $this->when($this->invitations->isNotEmpty(), fn() => InvitationResource::collection($this->invitations))
                 ),
             ]),
             'picturesCount' => $this->whenCounted('pictures', fn($count) => $this->when($count, $count)),
-            'picturesInfo'  => $this->whenLoaded ('pictures',
-                fn() => $this->when($this->pictures->isNotEmpty(), fn() => [
+            'picturesInfo'  => $this->whenLoaded ('pictures', fn() =>
+                $this->when($this->pictures->isNotEmpty(), fn() => [
                     'sign' => $this->getSign($user),
                     'ids' => $this->pictures->pluck('id'),
             ])),

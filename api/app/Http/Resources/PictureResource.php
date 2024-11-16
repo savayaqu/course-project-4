@@ -18,8 +18,8 @@ class PictureResource extends JsonResource
             'width'      => $this->width,
             'height'     => $this->height,
             'uploadedAt' => $this->created_at,
-            'tags'       => $this->whenLoaded('tags',
-                fn() => $this->when($this->tags->isNotEmpty(), fn() => TagResource::collection($this->tags))
+            'tags'       => $this->whenLoaded('tags', fn() =>
+                $this->when($this->tags->isNotEmpty(), fn() => TagResource::collection($this->tags))
             ),
         ];
     }

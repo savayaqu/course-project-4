@@ -10,19 +10,23 @@ use App\Http\Resources\InvitationResource;
 use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Invitation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Str;
 
 class InvitationController extends Controller
 {
-    public function create(Album $album, InvitationCreateRequest $request)
+    public function create(Album $album, InvitationCreateRequest $request): JsonResponse
     {
-        if ($request->expiresAt)
-            $expiresDate = $request->expiresAt;
+        $expiresAt = $request->input('expiresAt');
+        $timeLimit = $request->input('timeLimit');
 
-        else if ($request->timeLimit)
-            $expiresDate = now()->addMinutes((int)$request->timeLimit);
+        if ($expiresAt)
+            $expiresDate = $expiresAt;
+
+        else if ($timeLimit)
+            $expiresDate = now()->addMinutes((int)$timeLimit);
 
         $invitation = Invitation::create([
             'expires_at' => $expiresDate ?? null,
@@ -31,16 +35,17 @@ class InvitationController extends Controller
             'link' => Str::random(8)
         ]);
 
-        return response(['invitation' => InvitationResource::make($invitation)], 201);
+        return response()->json(['invitation' => InvitationResource::make($invitation)], 201);
     }
 
-    public function album(Invitation $invitation)
+    public function album(Invitation $invitation): JsonResponse
     {
         $invitation->checkExpires();
-        return response(InvitationResource::make($invitation->with(['album', 'album.user'])->first()));
+        $invitation->load(['album', 'album.user']);
+        return response()->json(InvitationResource::make($invitation));
     }
 
-    public function join(Invitation $invitation)
+    public function join(Invitation $invitation): JsonResponse
     {
         $invitation->checkExpires();
         $user = Auth::user();
@@ -67,16 +72,16 @@ class InvitationController extends Controller
             else
                 $invitation->delete();
         }
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 
-    public function destroy(Invitation $invitation)
+    public function destroy(Invitation $invitation): JsonResponse
     {
         $user = Auth::user();
         if ($user->id !== $invitation->album->user_id)
             throw new ForbiddenException();
 
         $invitation->delete();
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 }

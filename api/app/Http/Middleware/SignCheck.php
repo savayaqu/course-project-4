@@ -2,19 +2,17 @@
 
 namespace App\Http\Middleware;
 
-use App\Exceptions\Api\ApiException;
 use App\Exceptions\Api\ForbiddenException;
 use App\Models\Album;
 use App\Models\User;
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Symfony\Component\HttpFoundation\Response;
 
 class SignCheck
 {
-
     public function handle(Request $request, Closure $next)
     {
         $sign = $request->query('sign');
@@ -33,7 +31,7 @@ class SignCheck
             $userId   = $signExploded[0];
             $signCode = $signExploded[1];
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             throw new ForbiddenException();
         }
         $cacheKey = Album::signCacheKey($albumId, $userId);
@@ -58,7 +56,7 @@ class SignCheck
             try {
                 $allow = Hash::check($string, base64_decode($signCode));
             }
-            catch (\Exception $e) {
+            catch (Exception $e) {
                 throw new ForbiddenException();
             }
 

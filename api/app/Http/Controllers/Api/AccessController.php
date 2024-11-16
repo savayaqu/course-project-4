@@ -7,11 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\AlbumResource;
 use App\Models\Album;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class AccessController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $albumsOwned = $user->albums()->with(['invitations', 'usersViaAccess'])->get();
@@ -19,10 +20,10 @@ class AccessController extends Controller
             $album->invitations   ->isNotEmpty() ||
             $album->usersViaAccess->isNotEmpty()
         );
-        return response(['albums' => AlbumResource::collection($albums)]);
+        return response()->json(['albums' => AlbumResource::collection($albums)]);
     }
 
-    public function destroy(Album $album, User $user = null)
+    public function destroy(Album $album, User $user = null): JsonResponse
     {
         if ($user === null)
             $user = Auth::user();
@@ -31,6 +32,6 @@ class AccessController extends Controller
             throw new ForbiddenException();
 
         $album->usersViaAccess()->detach($user->id);
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 }

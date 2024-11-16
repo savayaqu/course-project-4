@@ -10,11 +10,12 @@ use App\Http\Resources\ComplaintResource;
 use App\Models\Album;
 use App\Models\Complaint;
 use App\Models\Picture;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ComplaintController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         $user = Auth::user();
         $query = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album']);
@@ -22,10 +23,10 @@ class ComplaintController extends Controller
         if ($user->role->code !== 'admin')
             $query = Complaint::where('from_user_id', $user->id);
 
-        return response(['complaints' => ComplaintResource::collection($query->get())]);
+        return response()->json(['complaints' => ComplaintResource::collection($query->get())]);
     }
 
-    public function createToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture)
+    public function createToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture): JsonResponse
     {
         $user = Auth::user();
         $isAccessible = $album->usersViaAccess()->where('user_id', $user->id)->exists();
@@ -41,15 +42,15 @@ class ComplaintController extends Controller
 
         Complaint::create([
             'picture_id'        => $picture->id,
-            'description'       => $request->description,
-            'complaint_type_id' => $request->typeId,
+            'description'       => $request->input('description'),
+            'complaint_type_id' => $request->input('typeId'),
             'from_user_id'      => $user->id,
             'about_user_id'     => $album->user_id,
         ]);
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 
-    public function createToAlbum(ComplaintCreateRequest $request, Album $album)
+    public function createToAlbum(ComplaintCreateRequest $request, Album $album): JsonResponse
     {
         $user = Auth::user();
         $isAccessible = $album->usersViaAccess()->where('user_id', $user->id)->exists();
@@ -65,21 +66,21 @@ class ComplaintController extends Controller
 
         Complaint::create([
             'album_id'          => $album->id,
-            'description'       => $request->description,
-            'complaint_type_id' => $request->typeId,
+            'description'       => $request->input('description'),
+            'complaint_type_id' => $request->input('typeId'),
             'from_user_id'      => $user->id,
             'about_user_id'     => $album->user_id,
         ]);
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 
-    public function destroy(Complaint $complaint)
+    public function destroy(Complaint $complaint): JsonResponse
     {
         $user = Auth::user();
         if ($complaint->from_user_id !== $user->id)
             throw new ForbiddenException();
 
         $complaint->delete();
-        return response(null, 204);
+        return response()->json(null, 204);
     }
 }
