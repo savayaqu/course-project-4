@@ -26,7 +26,7 @@ class User extends Model implements
         'login',
         'password',
         'role_id',
-        'is_banned', // TODO: Поле блокировки есть, а проверки нет
+        'is_banned',
     ];
 
     protected $hidden = [
