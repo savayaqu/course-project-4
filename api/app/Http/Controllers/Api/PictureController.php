@@ -68,14 +68,14 @@ class PictureController extends Controller
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
         $errored = [];
         $successful = [];
-        $settings = json_decode(Storage::get('settings.json'), true);
+        $settings = json_decode(Storage::get('settings.json'), true); // TODO: поменять
         // Обрабатываем файлы по одному
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
                $validator = Validator::make(['file' => $file], [
-                  'file' => 'mimes:' . implode(',', $settings['allowed_mimes'])
+                  'file' => 'mimes:' . implode(',', $settings['allowed_mimes']) // TODO: поменять
                ]);
                 if ($validator->fails()) {
                     $errored[] = [
@@ -170,8 +170,8 @@ class PictureController extends Controller
 
     public function thumbnail(Request $request, $albumId, $pictureId, $orientation, $size): BinaryFileResponse|JsonResponse|RedirectResponse
     {
-        $settings = json_decode(Storage::get('settings.json'), true);
-        $allowedSizes = $settings['allowed_sizes'] ?? [];
+        $settings = json_decode(Storage::get('settings.json'), true); // TODO: поменять
+        $allowedSizes = $settings['allowed_sizes'] ?? []; // TODO: поменять
 
         $ownerId = $request->attributes->get('ownerId');
         $orientation = strtolower($orientation);

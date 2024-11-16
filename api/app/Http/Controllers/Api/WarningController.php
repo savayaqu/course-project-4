@@ -14,12 +14,12 @@ class WarningController extends Controller
 {
     public function create(Request $request, User $user): JsonResponse
     {
-        $settings = json_decode(Storage::get('settings.json'), true);
+        $settings = json_decode(Storage::get('settings.json'), true); // TODO: поменять
         $warning = Warning::create([
             'user_id' => $user->id,
             'comment' => $request->comment
         ]);
-        if(Warning::where('user_id', $user->id)->count() >= $settings['warning_limit_for_ban'])
+        if(Warning::where('user_id', $user->id)->count() >= $settings['warning_limit_for_ban']) // TODO: поменять
         {
             $user->update(['is_banned' => true]);
         }

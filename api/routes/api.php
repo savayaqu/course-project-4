@@ -14,17 +14,17 @@ use App\Http\Middleware\CheckAlbumAccess;
 use App\Http\Middleware\CheckRole;
 use App\Http\Middleware\SignCheck;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Middleware\SanctumAuth;
 Route
 ::controller(AuthController::class)
 ->group(function ($auth) {                                          // [АВТОРИЗАЦИЯ]
     $auth->post('register', 'register');                            // Регистрация
     $auth->post('login'   , 'login');                               // Авторизация
-    $auth->post('logout'  , 'logout')->middleware('auth:sanctum');  // Выход (удаление токена)
+    $auth->post('logout'  , 'logout')->middleware(SanctumAuth::class);  // Выход (удаление токена)
 });
 
 Route
-::middleware('auth:sanctum')
+::middleware(SanctumAuth::class)
 ->group(function ($authorized) { // [АВТОРИЗОВАННЫЕ ФУНКЦИИ]
     $authorized
     ->controller(AlbumController::class)
@@ -59,7 +59,7 @@ Route
                     $picture->post('complaint', [ComplaintController::class, 'createToPicture']) // Создание жалобы на ЧУЖУЮ картинку
                             ->withoutMiddleware(CheckAlbumAccess::class);
                     $picture
-                    ->withoutMiddleware(['auth:sanctum', CheckAlbumAccess::class])
+                    ->withoutMiddleware([SanctumAuth::class, CheckAlbumAccess::class])
                     ->middleware(SignCheck::class)
                     ->group(function ($pictureBySign) {                           // [ФАЙЛЫ КАРТИНКИ ПО СИГНАТУРЕ]
                         $pictureBySign->get('download'          , 'download');    // Скачивание картинки
@@ -144,7 +144,7 @@ Route
         });
 
     });
-
+    // TODO: поменять settings.json на работу с config и env
     // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
     Route::controller(SettingsController::class)
         ->prefix('settings')
