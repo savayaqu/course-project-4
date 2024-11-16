@@ -68,15 +68,15 @@ class PictureController extends Controller
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
         $errored = [];
         $successful = [];
-
+        $settings = json_decode(Storage::get('settings.json'), true);
         // Обрабатываем файлы по одному
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
-                $validator = Validator::make(['file' => $file], [
-                    'file' => 'mimes:jpeg,jpg,png,gif', // TODO: Управлять настройками
-                ]);
+               $validator = Validator::make(['file' => $file], [
+                  'file' => 'mimes:' . implode(',', $settings['allowed_mimes'])
+               ]);
                 if ($validator->fails()) {
                     $errored[] = [
                         'name'    => $filename,
@@ -170,6 +170,9 @@ class PictureController extends Controller
 
     public function thumbnail(Request $request, $albumId, $pictureId, $orientation, $size): BinaryFileResponse|JsonResponse|RedirectResponse
     {
+        $settings = json_decode(Storage::get('settings.json'), true);
+        $allowedSizes = $settings['allowed_sizes'] ?? [];
+
         $ownerId = $request->attributes->get('ownerId');
         $orientation = strtolower($orientation);
 
@@ -179,7 +182,6 @@ class PictureController extends Controller
         if (!Storage::exists($thumbPath)) {
             // Проверка запрашиваемого размера и редирект, если не прошло
             $askedSize = $size;
-            $allowedSizes = [144, 240, 360, 480, 720, 1080]; // TODO: Управлять настройками
             $allowSize = false;
             foreach ($allowedSizes as $allowedSize) {
                 if ($size <= $allowedSize) {
