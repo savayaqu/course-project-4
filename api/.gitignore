@@ -21,3 +21,5 @@ yarn-error.log
 /.vscode
 /.vs
 /.zed
+/_ide_helper*
+/.phpstorm.meta.php
