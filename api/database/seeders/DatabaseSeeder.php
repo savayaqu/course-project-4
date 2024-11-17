@@ -8,33 +8,27 @@ use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        Cache::flush();
-        Storage::deleteDirectory('albums');
-        $role_admin = Role::create([
-            'code' => 'admin',
-        ]);
-        Role::create([
-            'code' => 'user',
-        ]);
+        $roleAdminId = Role::firstOrCreate(['code' => 'admin']);
+        $roleUserId  = Role::firstOrCreate(['code' => 'user' ])->id;
 
+        $genPass = Str::password(16);
+        Log::info("Password for admin: $genPass");
         User::create([
-            'name'       => 'Администратор',
-            'login'      => 'admin'        ,
-            'password'   => 'Admin123!'    ,
-            'role_id'    => $role_admin->id,
-        ]);
-        ComplaintType::create([
-           'name' => 'Детская порнография'
-        ]);
-        ComplaintType::create([
-            'name' => 'Расчленёнка'
+            'name'       => 'Administrator',
+            'login'      => 'admin',
+            'password'   => $genPass,
+            'role_id'    => $roleAdminId,
         ]);
 
+        ComplaintType::firstOrCreate(['name' => 'Детская порнография']);
+        ComplaintType::firstOrCreate(['name' => 'Расчленёнка']);
     }
 }

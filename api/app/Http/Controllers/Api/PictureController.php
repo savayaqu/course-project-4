@@ -119,7 +119,7 @@ class PictureController extends Controller
                 try {
                     $sizes = getimagesize($tmpPath);
                 }
-                catch (Exception $e) {
+                catch (Exception) {
                     $errored[] = [
                         'name' => $filename,
                         'message' => "No sizes",
@@ -142,7 +142,7 @@ class PictureController extends Controller
                 $file->storeAs($pathToSave, $filenameValid);
 
                 $successful[] = $pictureDB;
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // Что-то пошло не так
                 $errored[] = [
                     'name' => $filename,
@@ -202,7 +202,7 @@ class PictureController extends Controller
                     ->where('id', $pictureId)
                     ->firstOrFail();
             }
-            catch (Exception $e) {
+            catch (Exception) {
                 return response()->json(['message' => 'Picture not found'], 404)
                     ->header('Cache-Control', ['max-age=86400', 'private']);
             }
@@ -236,7 +236,7 @@ class PictureController extends Controller
                 ->toJpeg(90)
                 ->save(Storage::path($thumbPath));
         }
-        return response()->file(Storage::path($thumbPath), ['Cache-Control' => ['max-age=86400', 'private']]);
+        return response()->file(Storage::path($thumbPath), ['Cache-Control' => 'max-age=86400, private']);
     }
 
     public function original($albumId, Picture $picture, Request $request): BinaryFileResponse

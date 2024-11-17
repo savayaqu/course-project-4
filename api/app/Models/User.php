@@ -34,10 +34,15 @@ class User extends Model implements
         'remember_token',
     ];
 
+    protected $attributes = [
+        'is_banned' => false,
+    ];
+
     protected function casts(): array
     {
         return [
             'password' => 'hashed',
+            'is_banned' => 'boolean'
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\Api\ApiException;
 use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AlbumResource;
@@ -27,6 +28,9 @@ class AccessController extends Controller
     {
         if ($user === null)
             $user = Auth::user();
+
+        if ($user->id === $album->user_id)
+            throw new ApiException('You are owner', 409);
 
         else if ($user->id !== $album->user_id)
             throw new ForbiddenException();

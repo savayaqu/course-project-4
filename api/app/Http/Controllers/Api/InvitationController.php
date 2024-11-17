@@ -40,14 +40,14 @@ class InvitationController extends Controller
 
     public function album(Invitation $invitation): JsonResponse
     {
-        $invitation->checkExpires();
+        $invitation->failOnExpires();
         $invitation->load(['album', 'album.user']);
         return response()->json(InvitationResource::make($invitation));
     }
 
     public function join(Invitation $invitation): JsonResponse
     {
-        $invitation->checkExpires();
+        $invitation->failOnExpires();
         $user = Auth::user();
 
         if ($user->id === $invitation->album->user_id)

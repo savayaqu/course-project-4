@@ -31,7 +31,7 @@ class SignCheck
             $userId   = $signExploded[0];
             $signCode = $signExploded[1];
         }
-        catch (Exception $e) {
+        catch (Exception) {
             throw new ForbiddenException();
         }
         $cacheKey = Album::signCacheKey($albumId, $userId);
@@ -56,7 +56,7 @@ class SignCheck
             try {
                 $allow = Hash::check($string, base64_decode($signCode));
             }
-            catch (Exception $e) {
+            catch (Exception) {
                 throw new ForbiddenException();
             }
 

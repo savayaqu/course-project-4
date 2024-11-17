@@ -13,6 +13,34 @@ class Album extends Model
         'user_id',
     ];
 
+    public static function getPathStatic($userId, $albumId): string {
+        return "albums/$userId/$albumId";
+    }
+    public function getPath(): string {
+        return $this->getPathStatic($this->user_id, $this->id);
+    }
+
+    public static function signNonHash(User $user, $albumId): string {
+        $currentDay = date("Y-m-d");
+        $userToken = $user->tokens[0]->token;
+        return $userToken . $currentDay . $albumId;
+    }
+    public static function signCacheKey($albumId, $userId): string {
+        return "signAccess:to=$albumId;for=$userId";
+    }
+    public function getSign(User $user): string {
+        $cacheKey = static::signCacheKey($this->id, $user->id);
+        $cachedSign = Cache::get($cacheKey);
+        if ($cachedSign)
+            return $user->id .'_'. $cachedSign;
+
+        $string = static::signNonHash($user, $this->id);
+        $signCode = base64_encode(Hash::make($string));
+
+        Cache::put($cacheKey, $signCode . '_' . $this->user_id, 3600);
+        return $user->id .'_'. $signCode;
+    }
+
     public function user() {
         return $this->belongsTo(User::class);
     }
@@ -30,33 +58,5 @@ class Album extends Model
     }
     public function complaints() {
         return $this->hasMany(Complaint::class);
-    }
-
-    public static function getPathStatic($userId, $albumId): string {
-        return "albums/$userId/$albumId";
-    }
-    public function getPath(): string {
-        return $this->getPathStatic($this->user_id, $this->id);
-    }
-
-    public static function signNonHash(User $user, $albumId) {
-        $currentDay = date("Y-m-d");
-        $userToken = $user->tokens[0]->token;
-        return $userToken . $currentDay . $albumId;
-    }
-    public static function signCacheKey($albumId, $userId) {
-        return "signAccess:to=$albumId;for=$userId";
-    }
-    public function getSign(User $user): string {
-        $cacheKey = $this->signCacheKey($this->id, $user->id);
-        $cachedSign = Cache::get($cacheKey);
-        if ($cachedSign)
-            return $user->id .'_'. $cachedSign;
-
-        $string = Album::signNonHash($user, $this->id);
-        $signCode = base64_encode(Hash::make($string));
-
-        Cache::put($cacheKey, $signCode . '_' . $this->user_id, 3600);
-        return $user->id .'_'. $signCode;
     }
 }

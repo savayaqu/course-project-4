@@ -4,8 +4,9 @@ namespace App\Exceptions\Api;
 
 class UnauthorizedException extends ApiException
 {
-    public function __construct()
+    public function __construct($message = null)
     {
-        parent::__construct('Unauthorized', 401);
+        $message ??= 'Unauthorized';
+        parent::__construct($message, 401);
     }
 }

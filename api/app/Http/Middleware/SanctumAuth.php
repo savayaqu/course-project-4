@@ -16,13 +16,13 @@ class SanctumAuth
     public function handle(Request $request, Closure $next): Response
     {
         $user = Auth::guard('sanctum')->user();
-        if (!$user) {
+        if (!$user)
             throw new UnauthorizedException();
-        }
-        if ($user->is_banned) {
-            throw new ApiException('Your account is banned.', 403);
-        }
 
+        if ($user->is_banned)
+            throw new ForbiddenException('Your account is banned');
+
+        Auth::setUser($user);
         return $next($request);
     }
 }

@@ -13,7 +13,12 @@ class Invitation extends Model
         'join_limit',
     ];
 
-    public function checkExpires() {
+    public function getRouteKeyName() {
+        return 'link';
+    }
+
+    public function failOnExpires(): void
+    {
         if (now()->greaterThan($this->expires_at)) {
             $this->delete();
             throw new ApiException('Invitation expired', 409);
@@ -27,9 +32,5 @@ class Invitation extends Model
 
     public function album() {
         return $this->belongsTo(Album::class);
-    }
-
-    public function getRouteKeyName() {
-        return 'link';
     }
 }
