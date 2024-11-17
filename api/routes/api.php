@@ -144,8 +144,7 @@ Route
         });
 
     });
-    // TODO: поменять settings.json на работу с config и env
-    // TODO: Общая информация / настройки (разрешённые размеры превью, возможные типы жалоб, ?размер хранилища...) — SettingsController
+    // TODO: Общая информация / настройки (разрешённые размеры превью, размер хранилища...) — SettingsController
     Route::controller(SettingsController::class)
         ->prefix('settings')
         ->middleware(CheckRole::class . ':admin')

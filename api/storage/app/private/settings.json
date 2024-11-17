@@ -1,7 +1,0 @@
-{
-    "allowed_mimes": ["jpeg", "jpg", "png", "gif"],
-    "allowed_sizes": [144, 240, 360, 480, 720, 1080],
-    "complaint_types": ["spam", "inappropriate", "copyright"],
-    "storage_limit": 10240,
-    "warning_limit_for_ban": 5
-}

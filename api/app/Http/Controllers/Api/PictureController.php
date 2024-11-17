@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Laravel\Facades\Image as Intervention;
@@ -21,6 +22,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PictureController extends Controller
 {
+
     public function index(Request $request, Album $album): JsonResponse
     {
         // Получаем ID тегов
@@ -66,16 +68,28 @@ class PictureController extends Controller
         $user = Auth::user();
         $files = $request->file('pictures');
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
-        $errored = [];
+
+
+        $currentFolderSize = Album::getFolderSize("albums/$user->id");
+        $maxStorageSize = config('settings.storage_size');
+        // Подсчитываем общий размер загружаемых файлов
+        $totalUploadSize = array_sum(array_map(fn($file) => $file->getSize(), $files));
+                                                                                            //TODO: По идеи можно сделать проверку по файлам и некоторые можно загрузить, но мне лень это делать
+        // Проверяем, превышает ли размер лимит
+        if ($currentFolderSize + $totalUploadSize >= $maxStorageSize) {
+            return response()->json(['error' => 'Storage limit reached'], 409);
+        }        $errored = [];
+
+
+
         $successful = [];
-        $settings = json_decode(Storage::get('settings.json'), true); // TODO: поменять
         // Обрабатываем файлы по одному
         foreach ($files as $file) {
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
                $validator = Validator::make(['file' => $file], [
-                  'file' => 'mimes:' . implode(',', $settings['allowed_mimes']) // TODO: поменять
+                   'file' => 'mimes:' . implode(',', config('settings.allowed_mimes'))
                ]);
                 if ($validator->fails()) {
                     $errored[] = [
@@ -170,8 +184,7 @@ class PictureController extends Controller
 
     public function thumbnail(Request $request, $albumId, $pictureId, $orientation, $size): BinaryFileResponse|JsonResponse|RedirectResponse
     {
-        $settings = json_decode(Storage::get('settings.json'), true); // TODO: поменять
-        $allowedSizes = $settings['allowed_sizes'] ?? []; // TODO: поменять
+        $allowedSizes = config('settings.allowed_sizes');
 
         $ownerId = $request->attributes->get('ownerId');
         $orientation = strtolower($orientation);
