@@ -5,11 +5,8 @@ namespace Database\Seeders;
 use App\Models\ComplaintType;
 use App\Models\Role;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -18,17 +15,47 @@ class DatabaseSeeder extends Seeder
     {
         $roleAdminId = Role::firstOrCreate(['code' => 'admin']);
         $roleUserId  = Role::firstOrCreate(['code' => 'user' ])->id;
-
-        $genPass = Str::password(16);
-        Log::info("Password for admin: $genPass");
-        User::create([
+        $this->command->option('Do you wish to continue?', true);
+        $admin = User
+            ::where('login', 'admin')
+            ->first();
+        if ($admin) {
+            $changePass = $this->command->confirm('Do you want change password for admin?', true);
+            if ($changePass) $admin->update([
+                'password' => $this->askOrGenPassword(),
+                'role_id' => $roleAdminId
+            ]);
+        }
+        else User::create([
             'name'       => 'Administrator',
             'login'      => 'admin',
-            'password'   => $genPass,
+            'password'   => $this->askOrGenPassword(),
             'role_id'    => $roleAdminId,
         ]);
 
         ComplaintType::firstOrCreate(['name' => 'Детская порнография']);
         ComplaintType::firstOrCreate(['name' => 'Расчленёнка']);
+    }
+
+    private function askOrGenPassword()
+    {
+        $password = $this->command->secret('Enter the admin password (leave blank to generate a random password)');
+
+        if (empty($password)) {
+            $password = Str::password(16);
+
+            $choice = $this->command->choice(
+                'How do you want to handle the generated password?',
+                ['Output to screen', 'Save to log', 'Both'],
+                0
+            );
+
+            if ($choice === 'Save to log' || $choice === 'Both')
+                Log::info("Admin user created with password: $password");
+
+            if ($choice === 'Output to screen' || $choice === 'Both')
+                $this->command->info("Admin password: $password");
+        }
+        return $password;
     }
 }
