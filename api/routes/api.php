@@ -6,15 +6,16 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ComplaintController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\PictureController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WarningController;
-use App\Http\Controllers\SettingsController;
 use App\Http\Middleware\CheckAlbumAccess;
 use App\Http\Middleware\CheckRole;
+use App\Http\Middleware\SanctumAuth;
 use App\Http\Middleware\SignCheck;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\SanctumAuth;
+
 Route
 ::controller(AuthController::class)
 ->group(function ($auth) {                                          // [АВТОРИЗАЦИЯ]
@@ -145,11 +146,12 @@ Route
 
     });
     // TODO: Общая информация / настройки (разрешённые размеры превью, размер хранилища...) — SettingsController
-    Route::controller(SettingsController::class)
-        ->prefix('settings')
-        ->middleware(CheckRole::class . ':admin')
-        ->group(function ($settings) {      // [НАСТРОЙКИ]
-        $settings->get('', 'index');        // Получение всех настроек
-        $settings->post('', 'edit');        // Изменение настроек
+    $authorized
+    ->controller(SettingsController::class)
+    ->prefix('settings')
+    ->middleware(CheckRole::class . ':admin')
+    ->group(function ($settings) {      // [НАСТРОЙКИ]
+        $settings->get('', 'index');    // Получение всех настроек
+        $settings->post('', 'edit');    // Изменение настроек
     });
 });
