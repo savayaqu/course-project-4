@@ -115,6 +115,9 @@ Route
     ->controller(ComplaintController::class)
     ->group(function ($complaints) {       // [ЖАЛОБЫ]
         $complaints->get   ('', 'index');  // Просмотр ВСЕХ жалоб (админ) / СВОИХ жалоб
+        $complaints->post('', 'createType')->middleware(CheckRole::class . ':admin'); //Создание новых типов жалоб //TODO:
+        $complaints->post('', 'editType')->middleware(CheckRole::class . ':admin'); //Создание новых типов жалоб //TODO:
+
         $complaints
         ->prefix('{complaint}')
         ->group(function ($complaint) {                                              // [ЖАЛОБА]
