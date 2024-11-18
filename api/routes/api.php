@@ -145,7 +145,6 @@ Route
         });
 
     });
-    // TODO: Общая информация / настройки (разрешённые размеры превью, размер хранилища...) — SettingsController
     $authorized
     ->controller(SettingsController::class)
     ->prefix('settings')
