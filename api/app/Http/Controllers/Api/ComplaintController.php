@@ -83,4 +83,8 @@ class ComplaintController extends Controller
         $complaint->delete();
         return response()->json(null, 204);
     }
+    public function edit()
+    {
+
+    }
 }
