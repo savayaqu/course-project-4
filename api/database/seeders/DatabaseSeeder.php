@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $roleAdminId = Role::firstOrCreate(['code' => 'admin']);
         $roleAdminId = Role::firstOrCreate(['code' => 'admin'])->id;
         $roleUserId  = Role::firstOrCreate(['code' => 'user' ])->id;
         $admin = User
