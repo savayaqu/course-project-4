@@ -11,44 +11,61 @@ class LogRequest
 {
     public function handle(Request $request, Closure $next)
     {
-        $method = strtoupper($request->getMethod());
-        if (in_array($method, ['GET', 'PUT', 'PATCH', 'POST', 'DELETE']))
-            DB::enableQueryLog();
-
+        try {
+            $method = strtoupper($request->getMethod());
+            if (in_array($method, ['GET', 'PUT', 'PATCH', 'POST', 'DELETE']))
+                DB::enableQueryLog();
+        }
+        catch (\Exception $e) {
+            Log::error($e);
+        }
         return $next($request);
     }
 
     public function terminate(Request $request, $response)
     {
-        $method = strtoupper($request->getMethod());
-        if (!in_array($method, ['GET', 'PUT', 'PATCH', 'POST', 'DELETE']))
-            return;
-        $method = str_pad($method, 6, ' ');
+        try {
+            $method = strtoupper($request->getMethod());
+            if (!in_array($method, ['GET', 'PUT', 'PATCH', 'POST', 'DELETE']))
+                return;
+            $method = str_pad($method, 6, ' ');
 
-        $dbQueries = collect(DB::getQueryLog());
-        $dbQueryStrings = [];
-        foreach ($dbQueries as $dbQuery) $dbQueryStrings[] =
-            str_replace('?', $dbQuery['bindings'][0] ?? '?', $dbQuery['query']) . ";\n";
+            $dbQueries = collect(DB::getQueryLog());
+            $dbQueryStrings = [];
+            foreach ($dbQueries as $dbQuery) {
+                $query = $dbQuery['query'];
+                $bindings = $dbQuery['bindings'];
 
-        $code = $response->getStatusCode();
-        $sign = $response->isSuccessful() ? "🟢" : "🔴";
+                // Заменяем вопросительные знаки на значения параметров
+                foreach ($bindings as $binding)
+                    $query = preg_replace('/\?/', "'" . addslashes($binding) . "'", $query, 1);
 
-        $uri    = $request->getPathInfo();
-        $origin = $request->headers->get('origin') ?? "NO_ORIGIN";
-        $userId = $request->user()?->id ??
-            ($request->has('sign')
-                ? explode('_', $request->sign)[0]
-                : "GUEST  ");
+                $dbQueryStrings[] = $query . ";\n";
+            }
 
-        if (is_numeric($userId))
-            $userId = str_pad($userId, 7, '0', STR_PAD_LEFT);
+            $code = $response->getStatusCode();
+            $sign = $response->isSuccessful() ? "🟢" : "🔴";
 
-        $reqQuery = $request->getQueryString();
-        $message = "$sign $code $method 👤$userId $origin $uri"
-            . ($reqQuery ? "?$reqQuery" : '')
-            . (!empty($dbQueryStrings) ? "\n" : '')
-            . implode('', $dbQueryStrings);
+            $uri = $request->getPathInfo();
+            $origin = $request->headers->get('origin') ?? "NO_ORIGIN";
+            $userId = $request->user()?->id ??
+                ($request->has('sign')
+                    ? explode('_', $request->sign)[0]
+                    : "GUEST  ");
 
-        Log::channel('http-request')->log('info', $message);
+            if (is_numeric($userId))
+                $userId = str_pad($userId, 7, '0', STR_PAD_LEFT);
+
+            $reqQuery = $request->getQueryString();
+            $message = "$sign $code $method 👤$userId $origin $uri"
+                . ($reqQuery ? "?$reqQuery" : '')
+                . (!empty($dbQueryStrings) ? "\n" : '')
+                . implode('', $dbQueryStrings);
+
+            Log::channel('http-request')->log('info', $message);
+        }
+        catch (\Exception $e) {
+            Log::error($e);
+        }
     }
 }
