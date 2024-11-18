@@ -66,10 +66,13 @@ class PictureController extends Controller
     public function create(PictureCreateRequest $request, Album $album): JsonResponse
     {
         $user = Auth::user();
-        $files = $request->file('pictures');
+        $pictures = $request->pictures;
+        //$files = $request->file('pictures.*.file');
+        //dd($files);
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
+        $errored = [];
 
-
+        /*
         $currentFolderSize = Album::getFolderSize("albums/$user->id");
         $maxStorageSize = config('settings.storage_size');
         // Подсчитываем общий размер загружаемых файлов
@@ -78,18 +81,19 @@ class PictureController extends Controller
         // Проверяем, превышает ли размер лимит
         if ($currentFolderSize + $totalUploadSize >= $maxStorageSize) {
             return response()->json(['error' => 'Storage limit reached'], 409);
-        }        $errored = [];
-
-
+        }
+        */
 
         $successful = [];
         // Обрабатываем файлы по одному
-        foreach ($files as $file) {
+        foreach ($pictures as $key => $pictureInRequests) {
+            $file = $request->file("pictures.$key.file");
+            $date = $pictureInRequests['date'];
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
-               $validator = Validator::make(['file' => $file], [
-                   'file' => 'mimes:' . implode(',', config('settings.allowed_mimes'))
+               $validator = Validator::make($pictureInRequests, [
+                   'file' => 'mimes:' . implode(',', config('settings.allowed_mimes')),
                ]);
                 if ($validator->fails()) {
                     $errored[] = [
@@ -145,7 +149,7 @@ class PictureController extends Controller
                 $pictureDB = Picture::create([
                     'name' => $filenameValid,
                     'hash' => $pictureHash,
-                    'date' => Carbon::createFromTimestamp(filemtime($tmpPath)), // TODO: Надо наверное в API дату отправлять
+                    'date' => $date,
                     'size' => $file->getSize(),
                     'width'  => $sizes[0],
                     'height' => $sizes[1],
