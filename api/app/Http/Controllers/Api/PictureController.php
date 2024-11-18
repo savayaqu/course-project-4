@@ -67,13 +67,10 @@ class PictureController extends Controller
     {
         $user = Auth::user();
         $pictures = $request->pictures;
-        //$files = $request->file('pictures.*.file');
-        //dd($files);
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
 
         // Получаем сколько сейчас весит альбом и какой лимит сервера по загрузкам
         $currentStorageSize = $user->pictures()->sum('size');
-        dd($currentStorageSize, $user->pictures()->get(), $user->pictures()->sum('size'));
         $maxStorageSize = config('settings.storage_size');
 
         // Массивы для ответа
