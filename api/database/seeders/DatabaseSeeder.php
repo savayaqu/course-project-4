@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
         $roleAdminId = Role::firstOrCreate(['code' => 'admin']);
         $roleAdminId = Role::firstOrCreate(['code' => 'admin'])->id;
         $roleUserId  = Role::firstOrCreate(['code' => 'user' ])->id;
-        $this->command->option('Do you wish to continue?', true);
         $admin = User
             ::where('login', 'admin')
             ->first();
