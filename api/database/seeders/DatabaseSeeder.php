@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $roleAdminId = Role::firstOrCreate(['code' => 'admin']);
+        $roleAdminId = Role::firstOrCreate(['code' => 'admin'])->id;
         $roleUserId  = Role::firstOrCreate(['code' => 'user' ])->id;
         $this->command->option('Do you wish to continue?', true);
         $admin = User
@@ -37,7 +38,7 @@ class DatabaseSeeder extends Seeder
         ComplaintType::firstOrCreate(['name' => 'Расчленёнка']);
     }
 
-    private function askOrGenPassword()
+    private function askOrGenPassword(): string
     {
         $password = $this->command->secret('Enter the admin password (leave blank to generate a random password)');
 
