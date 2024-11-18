@@ -12,23 +12,6 @@ class Album extends Model
         'path',
         'user_id',
     ];
-    public static function getFolderSize(string $folderPath): int
-    {
-        // Получаем полный путь до директории в файловой системе
-        $realPath = storage_path("app/{$folderPath}");
-
-        // Проверяем, существует ли папка
-        if (!is_dir($realPath)) {
-            return 0;
-        }
-
-        // Выполняем команду du для получения размера директории
-        $size = shell_exec("du -sb {$realPath} | cut -f1");
-
-        // Убеждаемся, что результат преобразуется в число
-        return (int) $size;
-    }
-
 
     public static function getPathStatic($userId, $albumId): string {
         return "albums/$userId/$albumId";

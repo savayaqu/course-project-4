@@ -70,21 +70,16 @@ class PictureController extends Controller
         //$files = $request->file('pictures.*.file');
         //dd($files);
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
-        $errored = [];
 
-        /*
-        $currentFolderSize = Album::getFolderSize("albums/$user->id");
+        // Получаем сколько сейчас весит альбом и какой лимит сервера по загрузкам
+        $currentStorageSize = $user->pictures()->sum('size');
+        dd($currentStorageSize, $user->pictures()->get(), $user->pictures()->sum('size'));
         $maxStorageSize = config('settings.storage_size');
-        // Подсчитываем общий размер загружаемых файлов
-        $totalUploadSize = array_sum(array_map(fn($file) => $file->getSize(), $files));
-                                                                                            //TODO: По идеи можно сделать проверку по файлам и некоторые можно загрузить, но мне лень это делать
-        // Проверяем, превышает ли размер лимит
-        if ($currentFolderSize + $totalUploadSize >= $maxStorageSize) {
-            return response()->json(['error' => 'Storage limit reached'], 409);
-        }
-        */
 
+        // Массивы для ответа
+        $errored = [];
         $successful = [];
+
         // Обрабатываем файлы по одному
         foreach ($pictures as $key => $pictureInRequests) {
             $file = $request->file("pictures.$key.file");
@@ -92,9 +87,9 @@ class PictureController extends Controller
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
-               $validator = Validator::make($pictureInRequests, [
-                   'file' => 'mimes:' . implode(',', config('settings.allowed_mimes')),
-               ]);
+                $validator = Validator::make($pictureInRequests, [
+                    'file' => 'mimes:' . implode(',', config('settings.allowed_mimes')),
+                ]);
                 if ($validator->fails()) {
                     $errored[] = [
                         'name'    => $filename,
@@ -104,12 +99,22 @@ class PictureController extends Controller
                     continue;
                 }
 
+                // Проверяем, превышает ли размер лимит
+                $filesize = $file->getSize();
+                if ($currentStorageSize + $filesize >= $maxStorageSize) {
+                    $errored[] = [
+                        'name'    => $filename,
+                        'message' => 'Storage limit reached',
+                    ];
+                    continue;
+                }
+
                 // Проверка, существует ли картинка с таким хешем и пропускаем если да
                 $tmpPath = $file->getRealPath();
-                $pictureHash = hash_file('xxh3', $tmpPath);
+                $hash = hash_file('xxh3', $tmpPath);
                 $existedPictureByHash = Picture
                     ::where('album_id', $album->id)
-                    ->where('hash', $pictureHash)
+                    ->where('hash', $hash)
                     ->first();
                 if ($existedPictureByHash) {
                     $errored[] = [
@@ -135,7 +140,7 @@ class PictureController extends Controller
 
                 // Получение размеров, пропускаем если не получилось
                 try {
-                    $sizes = getimagesize($tmpPath);
+                    $imagesizes = getimagesize($tmpPath);
                 }
                 catch (Exception) {
                     $errored[] = [
@@ -147,13 +152,13 @@ class PictureController extends Controller
 
                 // Создаём запись в БД
                 $pictureDB = Picture::create([
-                    'name' => $filenameValid,
-                    'hash' => $pictureHash,
-                    'date' => $date,
-                    'size' => $file->getSize(),
-                    'width'  => $sizes[0],
-                    'height' => $sizes[1],
-                    'album_id' => $album->id,
+                    'name'      => $filenameValid,
+                    'hash'      => $hash,
+                    'date'      => $date,
+                    'size'      => $filesize,
+                    'width'     => $imagesizes[0],
+                    'height'    => $imagesizes[1],
+                    'album_id'  => $album->id,
                 ]);
 
                 // Сохраняем в ФС

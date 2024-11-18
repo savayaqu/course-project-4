@@ -53,7 +53,7 @@ class User extends Model implements
         return $this->hasMany(Album::class);
     }
     public function pictures() {
-        return $this->hasManyThrough(Album::class, Picture::class, 'album_id', 'user_id');
+        return $this->hasManyThrough(Picture::class, Album::class, 'user_id', 'album_id');
     }
     public function complaintsFrom() {
         return $this->hasMany(Complaint::class, 'from_user_id');
