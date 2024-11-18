@@ -69,18 +69,18 @@ class PictureController extends Controller
         $pictures = $request->pictures;
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
 
-        // Получаем сколько сейчас весит альбом и какой лимит сервера по загрузкам
+        // Получаем сколько сейчас весят пользовательские картинки и какой лимит сервера по загрузкам
         $currentStorageSize = $user->pictures()->sum('size');
         $maxStorageSize = config('settings.storage_size');
 
         // Массивы для ответа
-        $errored = [];
+        $errored    = [];
         $successful = [];
 
         // Обрабатываем файлы по одному
         foreach ($pictures as $key => $pictureInRequests) {
             $file = $request->file("pictures.$key.file");
-            $date = $pictureInRequests['date'];
+            $date = $pictureInRequests['date'] ?? now();
             $filename = $file->getClientOriginalName();
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых

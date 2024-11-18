@@ -11,7 +11,7 @@ class PictureCreateRequest extends ApiRequest
         return [
             'pictures'        => 'required|array|min:1',
             'pictures.*.file' => 'required|file',
-            'pictures.*.date' => 'required|date',
+            'pictures.*.date' => 'nullable|date',
         ];
     }
 }

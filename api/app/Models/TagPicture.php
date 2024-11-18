@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-class TagPicture extends Model
+use Illuminate\Database\Eloquent\Relations\Pivot;
+
+class TagPicture extends Pivot
 {
+    protected $table = 'tag_pictures';
+
     protected $fillable = [
         'tag_id',
         'picture_id',

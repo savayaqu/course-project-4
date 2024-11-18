@@ -53,7 +53,12 @@ class User extends Model implements
         return $this->hasMany(Album::class);
     }
     public function pictures() {
-        return $this->hasManyThrough(Picture::class, Album::class, 'user_id', 'album_id');
+        return $this->hasManyThrough(
+            Picture::class,
+            Album::class,
+            'user_id',
+            'album_id'
+        );
     }
     public function complaintsFrom() {
         return $this->hasMany(Complaint::class, 'from_user_id');
@@ -65,7 +70,8 @@ class User extends Model implements
         return $this->hasMany(AlbumAccess::class);
     }
     public function albumsViaAccess() {
-        return $this->belongsToMany(Album::class, 'album_accesses')->using(AlbumAccess::class);
+        return $this->belongsToMany(Album::class, AlbumAccess::class)
+            ->using(AlbumAccess::class);
     }
     public function tags() {
         return $this->hasMany(Tag::class);

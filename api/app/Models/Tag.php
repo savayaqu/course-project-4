@@ -8,6 +8,7 @@ class Tag extends Model
         'value',
         'user_id',
     ];
+
     public function user() {
         return $this->belongsTo(User::class);
     }
@@ -15,6 +16,6 @@ class Tag extends Model
         return $this->hasMany(TagPicture::class);
     }
     public function pictures() {
-        return $this->belongsToMany(Picture::class, 'tag_pictures');
+        return $this->belongsToMany(Picture::class, TagPicture::class)->using(TagPicture::class);
     }
 }

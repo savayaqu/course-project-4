@@ -115,14 +115,20 @@ Route
     ->controller(ComplaintController::class)
     ->group(function ($complaints) {       // [ЖАЛОБЫ]
         $complaints->get   ('', 'index');  // Просмотр ВСЕХ жалоб (админ) / СВОИХ жалоб
-        $complaints->post('', 'createType')->middleware(CheckRole::class . ':admin'); //Создание новых типов жалоб //TODO:
-        $complaints->post('', 'editType')->middleware(CheckRole::class . ':admin'); //Создание новых типов жалоб //TODO:
-
         $complaints
         ->prefix('{complaint}')
-        ->group(function ($complaint) {                                              // [ЖАЛОБА]
-            $complaint->post  ('', 'edit')->middleware(CheckRole::class . ':admin'); // Изменение жалобы // TODO: Изменять статус / либо сделать действие (роут) для отклонение/принятия всех жалоб на пользователе
-            $complaint->delete('', 'destroy');                                       // Удаление СВОЕЙ жалобы
+        ->group(function ($complaint) {        // [ЖАЛОБА]
+            $complaint->delete('', 'destroy'); // Удаление СВОЕЙ жалобы
+            $complaint->post  ('', 'edit')     // Изменение жалобы
+                ->middleware(CheckRole::class . ':admin'); // TODO: Изменять статус / либо сделать действие (роут) для отклонение/принятия всех жалоб на пользователе
+        });
+        $complaints
+        ->prefix('types')
+        ->controller(ComplaintTypeController::class)
+        ->middleware(CheckRole::class . ':admin')
+        ->group(function ($complaintTypes) {
+            $complaintTypes->post(''               , 'store'); // Создание новых типов жалоб //TODO:
+            $complaintTypes->post('{complaintType}', 'update');   // Создание новых типов жалоб //TODO:
         });
     });
     $authorized
@@ -153,7 +159,13 @@ Route
     ->prefix('settings')
     ->middleware(CheckRole::class . ':admin')
     ->group(function ($settings) {      // [НАСТРОЙКИ]
-        $settings->get('', 'index');    // Получение всех настроек
+        $settings->get ('', 'index');   // Получение всех настроек
         $settings->post('', 'edit');    // Изменение настроек
     });
 });
+
+//TODO: публичный роут для получение публичных настроек (кешируются для оптимизации):
+// макс размер бесплатного хранилища
+// статус загрузки картинок на сервер кем либо (если общее хранилище почти заполнено)
+// типы жалоб
+// какие размеры превью можно запросить
