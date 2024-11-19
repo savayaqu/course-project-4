@@ -22,7 +22,7 @@ class AlbumPolicy
         $role = Role::findOrFailCustom($user->role_id);
         if ($role->code == 'admin') {
             // Проверяем, есть ли жалоба на этого пользователя, помимо отклоненных
-            $complaintExists = Complaint::where('about_user_id', $album->user_id)->where('status', '=',null) // Все нерассмотренные жалобы
+            $complaintExists = Complaint::where('about_user_id', $album->user_id)->where('status', '=',null)->where('album_id', '=', $album->id) // Все нерассмотренные жалобы
                 ->exists();
 
             // Если жалоба существует, разрешаем просмотр альбома
