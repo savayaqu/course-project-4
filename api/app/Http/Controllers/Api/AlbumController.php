@@ -16,6 +16,7 @@ class AlbumController extends Controller
     public function index(): JsonResponse
     {
         $user = Auth::user();
+        dd($user);
         return response()->json([
             'own' => AlbumResource::collection(
                 $user

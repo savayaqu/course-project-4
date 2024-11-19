@@ -7,6 +7,7 @@ use App\Models\Album;
 use App\Models\AlbumAccess;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class CheckAlbumAccess
 {
@@ -29,7 +30,10 @@ class CheckAlbumAccess
             ->where('user_id' , $user->id)
             ->exists()
         ) return $next($request);
-
+        // Проверяем доступ через политику
+        if (Gate::allows('view-album', $album)) {
+            return $next($request);
+        }
         // Незваных отбрасываем
         throw new ForbiddenException();
     }
