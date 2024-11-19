@@ -53,13 +53,20 @@ class PictureController extends Controller
             }, '=', count($tagIds));
         }
 
-        $pictures = $query->get();
+        $limit = intval($request->limit);
+        if (!$limit)
+            $limit = 30;
+
+        $picturesPage = $query->paginate($limit);
 
         $sign = $album->getSign($user);
 
         return response()->json([
-            'sign' => $sign,
-            'pictures' => PictureResource::collection($pictures),
+            'sign'     => $sign,
+            'page'     => $picturesPage->currentPage(),
+            'perPage'  => $picturesPage->perPage(),
+            'total'    => $picturesPage->total(),
+            'pictures' => PictureResource::collection($picturesPage->items()),
         ]);
     }
 
