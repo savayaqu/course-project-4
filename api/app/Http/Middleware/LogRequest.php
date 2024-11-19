@@ -30,7 +30,7 @@ class LogRequest
                 return;
             $method = str_pad($method, 6, ' ');
 
-            $dbQueries = collect(DB::getQueryLog());
+            $dbQueries = DB::getQueryLog();
             $dbQueryStrings = [];
             foreach ($dbQueries as $dbQuery) {
                 $query = $dbQuery['query'];

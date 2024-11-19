@@ -114,29 +114,29 @@ Route
     $authorized
     ->prefix('complaints')
     ->controller(ComplaintController::class)
-    ->group(function ($complaints) {       // [ЖАЛОБЫ]
-        $complaints->get   ('', 'index');  // Просмотр ВСЕХ жалоб (админ) / СВОИХ жалоб
+    ->group(function ($complaints) {  // [ЖАЛОБЫ]
+        $complaints
+        ->prefix('types')
+        ->controller(ComplaintTypeController::class)
+        ->middleware(CheckRole::class . ':admin')
+        ->group(function ($complaintTypes) {        // [ТИПЫ ЖАЛОБЫ]
+            $complaintTypes->post('', 'store');     // Создание новых типов жалоб
+            $complaintTypes->get ('', 'index')      // Просмотр всех типов жалоб
+            ->withoutMiddleware(CheckRole::class . ':admin');
+            $complaintTypes
+            ->prefix('{complaintType}')
+            ->group(function ($complaintType) {          // [ТИП ЖАЛОБЫ]
+                $complaintType->post  ('', 'update');    // Редактирование типа жалоб
+                $complaintType->delete('', 'destroy');   // Удаление типа жалоб
+            });
+        });
+        $complaints->get('', 'index');  // Просмотр ВСЕХ жалоб (админ) / СВОИХ жалоб
         $complaints
         ->prefix('{complaint}')
         ->group(function ($complaint) {        // [ЖАЛОБА]
             $complaint->delete('', 'destroy'); // Удаление СВОЕЙ жалобы
             $complaint->post  ('', 'edit')     // Изменение жалобы
                 ->middleware(CheckRole::class . ':admin');
-        });
-        $complaints
-        ->prefix('types')
-        ->controller(ComplaintTypeController::class)
-        ->middleware(CheckRole::class . ':admin')
-        ->group(function ($complaintTypes) {
-            $complaintTypes->get('', 'index')->withoutMiddleware(CheckRole::class . ':admin');     // Просмотр всех типов жалоб
-            $complaintTypes->post('', 'store');    // Создание новых типов жалоб
-            $complaintTypes
-                ->prefix('{complaintType}')
-                ->group(function ($complaintType) {
-                    $complaintType->post('', 'update');      // Обновление новых типов жалоб
-                    $complaintType->delete('', 'destroy');   // Удаление типов жалоб
-            });
-
         });
     });
     $authorized
