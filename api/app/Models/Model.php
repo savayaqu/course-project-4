@@ -37,7 +37,7 @@ class Model extends EloquentModel
         $model = parent::resolveRouteBinding($value, $field);
 
         if (!$model)
-            throw new NotFoundException(self::class);
+            throw new NotFoundException($this->class);
 
         return $model;
     }
