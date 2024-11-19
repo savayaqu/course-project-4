@@ -6,6 +6,7 @@ use App\Exceptions\Api\ApiException;
 use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Complaint\ComplaintCreateRequest;
+use App\Http\Requests\Api\Complaint\ComplaintUpdateRequest;
 use App\Http\Resources\ComplaintResource;
 use App\Models\Album;
 use App\Models\Complaint;
@@ -83,8 +84,16 @@ class ComplaintController extends Controller
         $complaint->delete();
         return response()->json(null, 204);
     }
-    public function edit()
+    public function edit(Complaint $complaint, ComplaintUpdateRequest $request): JsonResponse
     {
-
+        $complaints = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album'])
+            ->where('about_user_id', $complaint->about_user_id)
+            ->where('album_id', $complaint->album_id)
+            ->orWhere('picture_id', $complaint->picture_id)->get();
+        foreach ($complaints as $complaint) {
+            $complaint->status = $request->input('status');
+            $complaint->save();
+        }
+        return response()->json(['complaints' => ComplaintResource::collection($complaints)]);
     }
 }

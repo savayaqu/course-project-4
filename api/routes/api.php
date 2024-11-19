@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AccessController;
 use App\Http\Controllers\Api\AlbumController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ComplaintController;
+use App\Http\Controllers\Api\ComplaintTypeController;
 use App\Http\Controllers\Api\InvitationController;
 use App\Http\Controllers\Api\PictureController;
 use App\Http\Controllers\Api\SettingsController;
@@ -120,15 +121,22 @@ Route
         ->group(function ($complaint) {        // [ЖАЛОБА]
             $complaint->delete('', 'destroy'); // Удаление СВОЕЙ жалобы
             $complaint->post  ('', 'edit')     // Изменение жалобы
-                ->middleware(CheckRole::class . ':admin'); // TODO: Изменять статус / либо сделать действие (роут) для отклонение/принятия всех жалоб на пользователе
+                ->middleware(CheckRole::class . ':admin');
         });
         $complaints
         ->prefix('types')
         ->controller(ComplaintTypeController::class)
         ->middleware(CheckRole::class . ':admin')
         ->group(function ($complaintTypes) {
-            $complaintTypes->post(''               , 'store'); // Создание новых типов жалоб //TODO:
-            $complaintTypes->post('{complaintType}', 'update');   // Создание новых типов жалоб //TODO:
+            $complaintTypes->get('', 'index')->withoutMiddleware(CheckRole::class . ':admin');     // Просмотр всех типов жалоб
+            $complaintTypes->post('', 'store');    // Создание новых типов жалоб
+            $complaintTypes
+                ->prefix('{complaintType}')
+                ->group(function ($complaintType) {
+                    $complaintType->post('', 'update');      // Обновление новых типов жалоб
+                    $complaintType->delete('', 'destroy');   // Удаление типов жалоб
+            });
+
         });
     });
     $authorized
