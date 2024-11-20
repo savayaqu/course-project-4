@@ -4,14 +4,41 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Models\ComplaintType;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
 {
+    public function public(Request $request)
+    {
+        $settings = Cache::remember('public_settings', now()->addMinutes(10), function () {
 
+            return  [
+               'max_free_storage_size' => config('settings.storage_size') . ' byte',
+               'allowed_preview_sizes' => config('settings.allowed_sizes'),
+               'allowed_image_mimes' => config('settings.allowed_mimes'),
+                'complaint_types' => ComplaintType::all()
+
+            ];
+
+        });
+        // если авторизован то выдать состояние памяти?
+        if($user = Auth::user())
+        {
+            $settings['max_free_storage_size'] = [
+                'current_storage_size' => $user_storage = $user->pictures()->sum('size'),
+                'max_free_storage_size' => $free_storage = config('settings.storage_size') . ' byte',
+                'percentage_used' => $free_storage > 0 ? round(($user_storage / $free_storage) * 100, 2) : 0,
+                'storage_status' => $free_storage > 0 && $user_storage >= $free_storage ? 'exceeded' : 'available',
+            ];
+        }
+        return response()->json($settings)->header('Cache-Control', 'public, max-age=' . (30 * 24 * 60 * 60)); // 30 дней
+    }
     // Получение всех настроек
     public function index()
     {
