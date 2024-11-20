@@ -29,5 +29,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // Определяем доступ через Gate
         Gate::define('view-album', [AlbumPolicy::class, 'view']);
+        // Альбомы только для чтения
+
     }
 }
