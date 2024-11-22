@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Cacheables\SpaceInfo;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Picture\PictureCreateRequest;
 use App\Http\Resources\PictureResource;
 use App\Models\Album;
 use App\Models\Picture;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Laravel\Facades\Image as Intervention;
@@ -22,7 +21,6 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class PictureController extends Controller
 {
-
     public function index(Request $request, Album $album): JsonResponse
     {
         // Получаем ID тегов
@@ -75,6 +73,10 @@ class PictureController extends Controller
         $user = Auth::user();
         $pictures = $request->pictures;
         $pathToSave = Picture::getPathStatic($user->id, $album->id);
+
+        $spaceInfo = SpaceInfo::getCached();
+        if ($spaceInfo->usedPercent >= config('settings.upload_disable_percentage'))
+            throw new ApiException('Server in read-only mode', 400);
 
         // Получаем сколько сейчас весят пользовательские картинки и какой лимит сервера по загрузкам
         $currentStorageSize = $user->pictures()->sum('size');

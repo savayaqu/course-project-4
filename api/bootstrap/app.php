@@ -20,8 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(LogRequest::class);
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('disk:manage')->everyMinute()->runInBackground();
-        })
+        $schedule->command('disk:check')->everyTenMinutes();
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

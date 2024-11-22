@@ -17,14 +17,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Получение ответа\r",
-									"const response = pm.response.json()\r",
-									"\r",
-									"// Проверка, если ли токен в ответе\r",
-									"if (response.token) {\r",
-									"    // Запись токена в env\r",
-									"    pm.environment.set('token', response.token)\r",
-									"}"
+									"pm.environment.set('token', pm.response.json().token)"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -79,14 +72,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Получение ответа\r",
-									"const response = pm.response.json()\r",
-									"\r",
-									"// Проверка, если ли токен в ответе\r",
-									"if (response.token) {\r",
-									"    // Запись токена в env\r",
-									"    pm.environment.set('token', response.token)\r",
-									"}"
+									"pm.environment.set('token', pm.response.json().token)"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -142,14 +128,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Получение ответа\r",
-									"const response = pm.response.json()\r",
-									"\r",
-									"// Проверка, если ли токен в ответе\r",
-									"if (response.token) {\r",
-									"    // Запись токена в env\r",
-									"    pm.environment.set('token', response.token)\r",
-									"}"
+									"pm.environment.set('token', pm.response.json().token)"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -220,16 +199,6 @@
 					"response": []
 				}
 			],
-			"auth": {
-				"type": "bearer",
-				"bearer": [
-					{
-						"key": "token",
-						"value": "{{token}}",
-						"type": "string"
-					}
-				]
-			},
 			"event": [
 				{
 					"listen": "prerequest",
@@ -259,6 +228,16 @@
 				{
 					"name": "✅Создание альбома",
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
@@ -302,6 +281,24 @@
 							],
 							"path": [
 								"albums"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "✅Инфо об альбоме",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api}}/albums/{{album}}",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}"
 							]
 						}
 					},
@@ -370,6 +367,18 @@
 					"item": [
 						{
 							"name": "✅Создание кода приглашения",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.environment.set('invitationCode', pm.response.json().invitation.code)"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "POST",
 								"header": [],
@@ -379,19 +388,19 @@
 										{
 											"key": "timeLimit",
 											"value": "60",
-											"description": "['integer', 'min:1'] В минутах, По умолчанию на день",
-											"type": "text"
-										},
-										{
-											"key": "usersLimit",
-											"value": "1",
-											"description": "['integer', 'min:1'] По умолчанию бесконечно",
+											"description": "['integer', 'min:1'] В минутах, По умолчанию бессрочно",
 											"type": "text"
 										},
 										{
 											"key": "joinLimit",
 											"value": "1",
 											"description": "['integer', 'min:1'] По умолчанию бесконечно",
+											"type": "text"
+										},
+										{
+											"key": "expiresAt",
+											"value": "2024-12-30 20:50:00",
+											"description": "['date', 'after:now'] По умолчанию бессрочно",
 											"type": "text",
 											"disabled": true
 										}
@@ -421,14 +430,13 @@
 									"formdata": []
 								},
 								"url": {
-									"raw": "{{api}}/albums/{{album}}/invite",
+									"raw": "{{api}}/invitation/{{invitationCode}}",
 									"host": [
 										"{{api}}"
 									],
 									"path": [
-										"albums",
-										"{{album}}",
-										"invite"
+										"invitation",
+										"{{invitationCode}}"
 									]
 								}
 							},
@@ -513,7 +521,7 @@
 					"response": []
 				},
 				{
-					"name": "✅Отзыв доступа",
+					"name": "✅Отзыв доступа для пользователя",
 					"request": {
 						"method": "DELETE",
 						"header": [],
@@ -535,6 +543,29 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "✅Отзыв доступа на себе",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{api}}/albums/{{album}}/accesses",
+							"host": [
+								"{{api}}"
+							],
+							"path": [
+								"albums",
+								"{{album}}",
+								"accesses"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -550,10 +581,25 @@
 							"mode": "formdata",
 							"formdata": [
 								{
-									"key": "pictures[]",
+									"key": "pictures[0][file]",
 									"description": "['required', 'array', 'min:1'];   'pictures.*' => ['file', 'mimes:jpeg,png,jpg,gif']",
 									"type": "file",
-									"src": "postman-cloud:///1eede4e1-85cb-4bd0-9c5b-0ff92e52b86c"
+									"src": "postman-cloud:///1eeda5f0-fa23-4120-8c0e-496cc59263b5"
+								},
+								{
+									"key": "pictures[0][date]",
+									"value": "2001-01-01",
+									"type": "text"
+								},
+								{
+									"key": "pictures[1][file]",
+									"type": "file",
+									"src": "postman-cloud:///1eeda5f0-fa98-4420-abb7-360bfd79346f"
+								},
+								{
+									"key": "pictures[1][date]",
+									"value": "2002-02-02",
+									"type": "text"
 								}
 							]
 						},
@@ -578,14 +624,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Получение ответа\r",
-									"const response = pm.response.json()\r",
-									"\r",
-									"// Проверка, если ли сигнатура в ответе\r",
-									"if (response.sign) {\r",
-									"    // Запись сигнатуры в env\r",
-									"    pm.environment.set('sign', response.sign)\r",
-									"}"
+									"pm.environment.set('sign', pm.response.json().sign)"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -596,7 +635,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{api}}/albums/{{album}}/pictures",
+							"raw": "{{api}}/albums/{{album}}/pictures?sort=width&reverse",
 							"host": [
 								"{{api}}"
 							],
@@ -604,6 +643,21 @@
 								"albums",
 								"{{album}}",
 								"pictures"
+							],
+							"query": [
+								{
+									"key": "tags",
+									"value": "1,2",
+									"disabled": true
+								},
+								{
+									"key": "sort",
+									"value": "width"
+								},
+								{
+									"key": "reverse",
+									"value": null
+								}
 							]
 						}
 					},
@@ -643,7 +697,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/thumb/{{size}}?sign={{sign}}",
+							"raw": "{{api}}/albums/{{album}}/pictures/{{picture}}/thumb/{{orientation}}{{size}}?sign={{sign}}",
 							"host": [
 								"{{api}}"
 							],
@@ -653,7 +707,7 @@
 								"pictures",
 								"{{picture}}",
 								"thumb",
-								"{{size}}"
+								"{{orientation}}{{size}}"
 							],
 							"query": [
 								{
@@ -932,7 +986,7 @@
 					"response": []
 				},
 				{
-					"name": "?? ✅Просмотр информации о теге (прикреплённые картинки)",
+					"name": "✅Просмотр информации о теге (прикреплённые картинки)",
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -969,7 +1023,7 @@
 									"type": "text"
 								},
 								{
-									"key": "type_id",
+									"key": "typeId",
 									"value": "1",
 									"description": "['required', 'integer', 'exists:complaint_types,id']",
 									"type": "text"
@@ -1243,24 +1297,27 @@
 									"key": "name",
 									"value": "",
 									"description": "['string', 'max:255', 'min:2']",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "login",
 									"value": "",
 									"description": "['string', 'max:64', 'min:2', 'regex:/^[a-zA-Z0-9_-]+$/', 'unique:users']",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "password",
 									"value": "",
 									"description": "['string', 'max:255', 'min:8', \n'regex:/[a-z]/',\n'regex:/[A-Z]/',\n'regex:/[0-9]/',\n'regex:/[@$!%*#?&.,<>_-]/']",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
-									"key": "role",
+									"key": "role_id",
 									"value": "",
-									"description": "['string', 'exists:roles,code']",
+									"description": "['integer', 'exists:roles,id']",
 									"type": "text"
 								},
 								{
@@ -1320,7 +1377,7 @@
 							"response": []
 						},
 						{
-							"name": "Получение настроек",
+							"name": "✅Получение настроек",
 							"protocolProfileBehavior": {
 								"disableBodyPruning": true
 							},
@@ -1439,6 +1496,12 @@
 		{
 			"key": "api",
 			"value": "http://api/api",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "api",
+			"value": "http://pics/api",
 			"type": "string"
 		}
 	]

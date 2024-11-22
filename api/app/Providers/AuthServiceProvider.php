@@ -28,8 +28,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies(); // Регистрируем политики
 
         // Определяем доступ через Gate
-        Gate::define('view-album', [AlbumPolicy::class, 'view']);
+        Gate::define('view-album-if', [AlbumPolicy::class, 'view']);
         // Альбомы только для чтения
-
     }
 }

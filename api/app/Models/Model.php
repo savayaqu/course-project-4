@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  * @mixin Eloquent
  * @mixin Builder
  */
-class Model extends EloquentModel
+abstract class Model extends EloquentModel
 {
     use HasAttributes;
 

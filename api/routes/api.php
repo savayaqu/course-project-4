@@ -160,7 +160,6 @@ Route
                 $warnings->delete('{warning}', 'destroy');  // Удаление предупреждения
             });
         });
-
     });
     $authorized
     ->controller(SettingsController::class)
@@ -171,7 +170,5 @@ Route
         $settings->post('', 'edit');    // Изменение настроек
     });
 });
-Route::get('settings/public', [SettingsController::class, 'public']); // Публичные настройки
-//TODO: публичный роут для получение публичных настроек (кешируются для оптимизации):
-// статус загрузки картинок на сервер кем либо (если общее хранилище почти заполнено)
+Route::get('', [SettingsController::class, 'public'])->middleware('cache.headers:public;max_age=2628000;etag'); // Публичные настройки
 

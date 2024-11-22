@@ -15,9 +15,9 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         $users = User::with([
-            'role', 'warnings', 'complaintsAbout', /**/ 'albumsViaAccess', 'tags', 'complaintsFrom', 'albums', 'pictures',
+            'role', 'warnings', 'complaintsAbout',
         ])->withCount([
-            'albumsViaAccess', 'tags', 'complaintsFrom', 'albums', 'pictures',
+            'tags', 'albums', 'pictures', 'albumsViaAccess', 'complaintsFrom',
         ])->get();
 
         return response()->json(['users' => UserResource::collection($users)]);
@@ -28,7 +28,7 @@ class UserController extends Controller
         $user->load([
             'role', 'warnings', 'complaintsAbout', 'complaintsFrom',
         ])->loadCount([
-            'albums',  'pictures'
+            'tags', 'albums',  'pictures', 'albumsViaAccess',
         ]);
         return response()->json(['user' => UserResource::make($user)]);
     }
@@ -39,7 +39,7 @@ class UserController extends Controller
         $user->load([
             'role', 'warnings', 'complaintsFrom',
         ])->loadCount([
-            'albums', 'pictures', 'complaintsFrom',
+            'tags', 'albums', 'pictures', 'albumsViaAccess',
         ]);
         return response()->json(['user' => UserResource::make($user)]);
     }

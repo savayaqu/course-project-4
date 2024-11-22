@@ -30,10 +30,11 @@ class CheckAlbumAccess
             ->where('user_id' , $user->id)
             ->exists()
         ) return $next($request);
-        // Проверяем доступ через политику
-        if (Gate::allows('view-album', $album)) {
+
+        // Впускаем админа если есть жалоба
+        if (Gate::allows('view-album', $album))
             return $next($request);
-        }
+
         // Незваных отбрасываем
         throw new ForbiddenException();
     }
