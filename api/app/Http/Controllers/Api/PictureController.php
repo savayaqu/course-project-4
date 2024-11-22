@@ -68,7 +68,7 @@ class PictureController extends Controller
         ]);
     }
 
-    public function create(PictureCreateRequest $request, Album $album): JsonResponse
+    public function store(PictureCreateRequest $request, Album $album): JsonResponse
     {
         $user = Auth::user();
         $pictures = $request->pictures;

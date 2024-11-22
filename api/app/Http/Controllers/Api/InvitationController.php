@@ -17,7 +17,7 @@ use Illuminate\Support\Str;
 
 class InvitationController extends Controller
 {
-    public function create(Album $album, InvitationCreateRequest $request): JsonResponse
+    public function store(Album $album, InvitationCreateRequest $request): JsonResponse
     {
         $expiresAt = $request->input('expiresAt');
         $timeLimit = $request->input('timeLimit');

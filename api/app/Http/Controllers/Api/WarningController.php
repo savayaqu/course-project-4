@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class WarningController extends Controller
 {
-    public function create(Request $request, User $user): JsonResponse
+    public function store(Request $request, User $user): JsonResponse
     {
         if(Warning::where('user_id', $user->id)->count() >= config('settings.warning_limit_for_ban'))
         {

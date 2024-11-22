@@ -45,7 +45,7 @@ class AlbumController extends Controller
         ]);
     }
 
-    public function create(AlbumCreateRequest $request): JsonResponse
+    public function store(AlbumCreateRequest $request): JsonResponse
     {
         $user = Auth::user();
         $name      = $request->input('name');

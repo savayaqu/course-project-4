@@ -48,7 +48,7 @@ class TagController extends Controller
         return response()->json(['tags' => TagResource::collection($tags)]);
     }
 
-    public function create(TagCreateRequest $request): JsonResponse
+    public function store(TagCreateRequest $request): JsonResponse
     {
         $value = $request->input('value');
         $user = Auth::user();

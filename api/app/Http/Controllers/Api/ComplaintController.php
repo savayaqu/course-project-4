@@ -27,7 +27,7 @@ class ComplaintController extends Controller
         return response()->json(['complaints' => ComplaintResource::collection($query->get())]);
     }
 
-    public function createToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture): JsonResponse
+    public function storeToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture): JsonResponse
     {
         $user = Auth::user();
         $isAccessible = $album->usersViaAccess()->where('user_id', $user->id)->exists();
@@ -51,7 +51,7 @@ class ComplaintController extends Controller
         return response()->json(null, 204);
     }
 
-    public function createToAlbum(ComplaintCreateRequest $request, Album $album): JsonResponse
+    public function storeToAlbum(ComplaintCreateRequest $request, Album $album): JsonResponse
     {
         $user = Auth::user();
         $isAccessible = $album->usersViaAccess()->where('user_id', $user->id)->exists();

@@ -19,10 +19,11 @@ use Illuminate\Support\Facades\Route;
 
 Route
 ::controller(AuthController::class)
-->group(function ($auth) {                                          // [АВТОРИЗАЦИЯ]
-    $auth->post('register', 'register');                            // Регистрация
-    $auth->post('login'   , 'login');                               // Авторизация
-    $auth->post('logout'  , 'logout')->middleware(SanctumAuth::class);  // Выход (удаление токена)
+->group(function ($auth) {                  // [АВТОРИЗАЦИЯ]
+    $auth->post('register', 'register');    // Регистрация
+    $auth->post('login'   , 'login');       // Авторизация
+    $auth->post('logout'  , 'logout')       // Выход (удаление токена)
+        ->middleware(SanctumAuth::class);
 });
 
 Route
@@ -32,7 +33,7 @@ Route
     ->controller(AlbumController::class)
     ->prefix('albums')
     ->group(function ($albums) {        // [АЛЬБОМЫ]
-        $albums->post('', 'create');    // Создание ЛИЧНОГО альбома
+        $albums->post('', 'store');     // Создание ЛИЧНОГО альбома
         $albums->get ('', 'index');     // Просмотр всех ЛИЧНЫХ и ДОСТУПНЫХ ЧУЖИХ альбомов
         $albums
         ->prefix('{album}')
@@ -41,24 +42,24 @@ Route
             $album->get   ('', 'show');     // Просмотр информации об альбоме
             $album->post  ('', 'update');   // Изменение информации об СВОЁМ альбоме
             $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
-            $album->delete('accesses'       , [    AccessController::class, 'destroy'      ])   // Убрать доступ у пользователя у СЕБЯ с ЧУЖОГО альбома
+            $album->delete('accesses'       , [    AccessController::class, 'destroy'     ])    // Убрать доступ у пользователя у СЕБЯ с ЧУЖОГО альбома
                 ->withoutMiddleware(CheckAlbumAccess::class);
-            $album->delete('accesses/{user}', [    AccessController::class, 'destroy'      ]);  // Убрать доступ у пользователя со СВОЕГО альбома
-            $album->post  ('invite'         , [InvitationController::class, 'create'       ]);  // Генерировать код приглашения на СВОЙ альбом
-            $album->post  ('complaint'      , [ ComplaintController::class, 'createToAlbum'])   // Создание жалобы на ЧУЖОЙ альбом
-                  ->withoutMiddleware(CheckAlbumAccess::class);
+            $album->delete('accesses/{user}', [    AccessController::class, 'destroy'     ]);   // Убрать доступ у пользователя со СВОЕГО альбома
+            $album->post  ('invite'         , [InvitationController::class, 'store'       ]);   // Генерировать код приглашения на СВОЙ альбом
+            $album->post  ('complaint'      , [ ComplaintController::class, 'storeToAlbum'])    // Создание жалобы на ЧУЖОЙ альбом
+                ->withoutMiddleware(CheckAlbumAccess::class);
             $album
             ->prefix('pictures')
             ->controller(PictureController::class)
             ->group(function ($albumPictures) {     // [КАРТИНКИ В АЛЬБОМЕ]
                 $albumPictures->get ('', 'index');  // Список картинок в альбоме (с выдачей сигнатуры доступа)
-                $albumPictures->post('', 'create'); // Загрузка картинок на сервер
+                $albumPictures->post('', 'store');  // Загрузка картинок на сервер
                 $albumPictures
                 ->prefix('{picture}')
                 ->group(function ($picture) {           // [КАРТИНКА]
                     $picture->get   ('', 'info');       // Получение информации об картинке
                     $picture->delete('', 'destroy');    // Удаление СВОЕЙ картинки
-                    $picture->post('complaint', [ComplaintController::class, 'createToPicture']) // Создание жалобы на ЧУЖУЮ картинку
+                    $picture->post('complaint', [ComplaintController::class, 'storeToPicture']) // Создание жалобы на ЧУЖУЮ картинку
                             ->withoutMiddleware(CheckAlbumAccess::class);
                     $picture
                     ->withoutMiddleware([SanctumAuth::class, CheckAlbumAccess::class])
@@ -101,13 +102,13 @@ Route
     ->prefix('tags')
     ->controller(TagController::class)
     ->group(function ($tags) {      // [ТЕГИ]
-        $tags->post('', 'create');  // Создание ЛИЧНОГО тега
+        $tags->post('', 'store');   // Создание ЛИЧНОГО тега
         $tags->get ('', 'index');   // Просмотр ЛИЧНЫХ тегов
         $tags
         ->prefix('{tag}')
         ->group(function ($tag) {           // [ТЕГ]
             $tag->get   ('', 'show');       // Просмотр информации о теге (прикреплённые картинки)
-            $tag->post  ('', 'update');       // Изменение ЛИЧНОГО тега
+            $tag->post  ('', 'update');     // Изменение ЛИЧНОГО тега
             $tag->delete('', 'destroy');    // Удаление ЛИЧНОГО тега
         });
     });
@@ -157,7 +158,7 @@ Route
             ->prefix('warnings')
             ->controller(WarningController::class)
             ->group(function ($warnings) {                  // [ПРЕДУПРЕЖДЕНИЯ]
-                $warnings->post  (''         , 'create');   // Создание предупреждения
+                $warnings->post  (''         , 'store');    // Создание предупреждения
                 $warnings->delete('{warning}', 'destroy');  // Удаление предупреждения
             });
         });
