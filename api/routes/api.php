@@ -107,7 +107,7 @@ Route
         ->prefix('{tag}')
         ->group(function ($tag) {           // [ТЕГ]
             $tag->get   ('', 'show');       // Просмотр информации о теге (прикреплённые картинки)
-            $tag->post  ('', 'edit');       // Изменение ЛИЧНОГО тега
+            $tag->post  ('', 'update');       // Изменение ЛИЧНОГО тега
             $tag->delete('', 'destroy');    // Удаление ЛИЧНОГО тега
         });
     });
@@ -133,25 +133,26 @@ Route
         $complaints->get('', 'index');  // Просмотр ВСЕХ жалоб (админ) / СВОИХ жалоб
         $complaints
         ->prefix('{complaint}')
-        ->group(function ($complaint) {        // [ЖАЛОБА]
-            $complaint->delete('', 'destroy'); // Удаление СВОЕЙ жалобы
-            $complaint->post  ('', 'edit')     // Изменение жалобы
+        ->group(function ($complaint) {               // [ЖАЛОБА]
+            $complaint->delete('', 'destroy');        // Удаление СВОЕЙ жалобы
+            $complaint->post  ('', 'updateBatch')     // Изменение жалобы
                 ->middleware(CheckRole::class . ':admin');
         });
     });
     $authorized
     ->prefix('users')
     ->controller(UserController::class)
-    ->group(function ($users) {                                             // [ПОЛЬЗОВАТЕЛИ]
-        $users->get ('', 'index')->middleware(CheckRole::class . ':admin'); // Список пользователей
-        $users->get ('me', 'showSelf');                                     // Получение СЕБЯ
-        $users->post('me', 'editSelf');                                     // Редактирование СЕБЯ
+    ->group(function ($users) {             // [ПОЛЬЗОВАТЕЛИ]
+        $users->get ('me', 'showSelf');     // Получение СЕБЯ
+        $users->post('me', 'updateSelf');   // Редактирование СЕБЯ
+        $users->get ('', 'index')           // Список пользователей
+            ->middleware(CheckRole::class . ':admin');
         $users
         ->prefix('{user}')
         ->middleware(CheckRole::class . ':admin')
         ->group(function ($user) {       // [ПОЛЬЗОВАТЕЛЬ]
             $user->get ('', 'show');     // Получение пользователя
-            $user->post('', 'edit');     // Редактирование пользователя
+            $user->post('', 'update');   // Редактирование пользователя
             $user
             ->prefix('warnings')
             ->controller(WarningController::class)
@@ -170,5 +171,6 @@ Route
         $settings->post('', 'edit');    // Изменение настроек
     });
 });
-Route::get('', [SettingsController::class, 'public'])->middleware('cache.headers:public;max_age=2628000;etag'); // Публичные настройки
+Route::get('', [SettingsController::class, 'public'])
+    ->middleware('cache.headers:public;max_age=2628000;etag'); // Публичные настройки
 

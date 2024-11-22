@@ -44,13 +44,13 @@ class UserController extends Controller
         return response()->json(['user' => UserResource::make($user)]);
     }
 
-    public function edit(UserUpdateRequest $request, User $user): JsonResponse
+    public function update(UserUpdateRequest $request, User $user): JsonResponse
     {
         $user->update($request->validated());
         return response()->json(['user' => UserResource::make($user)]);
     }
 
-    public function editSelf(UserSelfUpdateRequest $request): JsonResponse
+    public function updateSelf(UserSelfUpdateRequest $request): JsonResponse
     {
         $user = Auth::user();
         $user->update($request->validated());

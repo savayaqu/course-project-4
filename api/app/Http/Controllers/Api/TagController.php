@@ -73,7 +73,7 @@ class TagController extends Controller
         $tag->load('pictures');
         return response()->json(['tag' => TagResource::make($tag)]);
     }
-    public function edit(Tag $tag, TagUpdateRequest $request): JsonResponse
+    public function update(Tag $tag, TagUpdateRequest $request): JsonResponse
     {
         if ($tag->user_id !== Auth::id())
             throw new ForbiddenException();

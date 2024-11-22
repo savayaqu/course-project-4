@@ -75,6 +75,20 @@ class ComplaintController extends Controller
         return response()->json(null, 204);
     }
 
+    public function updateBatch(Complaint $complaint, ComplaintUpdateRequest $request): JsonResponse
+    {
+        $complaints = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album'])
+            ->where('about_user_id', $complaint->about_user_id)
+            ->where('album_id'     , $complaint->album_id)
+            ->orWhere('picture_id' , $complaint->picture_id)
+            ->get();
+        foreach ($complaints as $complaint) {
+            $complaint->status = $request->input('status');
+            $complaint->save();
+        }
+        return response()->json(['complaints' => ComplaintResource::collection($complaints)]);
+    }
+
     public function destroy(Complaint $complaint): JsonResponse
     {
         $user = Auth::user();
@@ -83,17 +97,5 @@ class ComplaintController extends Controller
 
         $complaint->delete();
         return response()->json(null, 204);
-    }
-    public function edit(Complaint $complaint, ComplaintUpdateRequest $request): JsonResponse
-    {
-        $complaints = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album'])
-            ->where('about_user_id', $complaint->about_user_id)
-            ->where('album_id', $complaint->album_id)
-            ->orWhere('picture_id', $complaint->picture_id)->get();
-        foreach ($complaints as $complaint) {
-            $complaint->status = $request->input('status');
-            $complaint->save();
-        }
-        return response()->json(['complaints' => ComplaintResource::collection($complaints)]);
     }
 }
