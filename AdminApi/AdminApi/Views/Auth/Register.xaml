@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="AdminApi.Views.Auth.Register"
+             Title="Register">
+
+    <StackLayout Padding="20">
+
+        <Entry x:Name="SurnameEntry" Placeholder="Введите фамилию"></Entry>
+
+        <Entry x:Name="NameEntry" Placeholder="Введите имя"></Entry>
+
+        <Entry x:Name="PatronymicEntry" Placeholder="Введите отчество"></Entry>
+
+        <StackLayout Orientation="Horizontal">
+            <Label Text="Выберите пол: " VerticalOptions="Center"></Label>
+            <RadioButton x:Name="MaleRadioButton" GroupName="sex" IsChecked="True" Content="Мужской"></RadioButton>
+            <RadioButton x:Name="FemaleRadioButton" GroupName="sex" Content="Женский"></RadioButton>
+        </StackLayout>
+
+        <StackLayout Orientation="Horizontal">
+            <Label Text="Выберите дату рождения: " VerticalOptions="Center"></Label>
+            <DatePicker x:Name="BirthdayPicker"></DatePicker>
+        </StackLayout>
+
+        <Entry x:Name="EmailEntry" Placeholder="Введети почту" Keyboard="Email"></Entry>
+
+        <Entry x:Name="PasswordEntry" Placeholder="Введите пароль" IsPassword="True"></Entry>
+        
+        <Entry x:Name="ConfirmPasswordEntry" Placeholder="Подтвердите пароль" IsPassword="True"></Entry>
+
+        <Entry x:Name="NicknameEntry" Placeholder="Введите никнейм"></Entry>
+
+        <Button Text="Выберите аватар" Clicked="OnSelectAvatarClicked" BackgroundColor="Green"></Button>
+
+        <Entry x:Name="PhoneEntry" Placeholder="Введите телефон" Keyboard="Telephone"></Entry>
+
+        <Button Text="Зарегистрироваться" Clicked="OnRegisterButtonClicked"></Button>
+
+
+    </StackLayout>
+
+</ContentPage>

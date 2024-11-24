@@ -1,0 +1,2 @@
+RewriteEngine on
+RewriteRule ^(.*)$ /picsync/api/public/

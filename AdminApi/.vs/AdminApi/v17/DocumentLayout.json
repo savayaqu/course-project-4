@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\OSPanel\\domains\\AdminApi\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|c:\\ospanel\\domains\\adminapi\\adminapi\\views\\auth\\login.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|solutionrelative:adminapi\\views\\auth\\login.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|c:\\ospanel\\domains\\adminapi\\adminapi\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|solutionrelative:adminapi\\models\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|c:\\ospanel\\domains\\adminapi\\adminapi\\models\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|solutionrelative:adminapi\\models\\authresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|c:\\ospanel\\domains\\adminapi\\adminapi\\views\\auth\\login.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{423CAD92-D55B-481E-A462-472CE8F26E77}|AdminApi\\AdminApi.csproj|solutionrelative:adminapi\\views\\auth\\login.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Models\\User.cs",
+              "RelativeDocumentMoniker": "AdminApi\\Models\\User.cs",
+              "ToolTip": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Models\\User.cs",
+              "RelativeToolTip": "AdminApi\\Models\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-24T14:23:54.161Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AuthResponse.cs",
+              "DocumentMoniker": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Models\\AuthResponse.cs",
+              "RelativeDocumentMoniker": "AdminApi\\Models\\AuthResponse.cs",
+              "ToolTip": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Models\\AuthResponse.cs",
+              "RelativeToolTip": "AdminApi\\Models\\AuthResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAABRAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-24T14:14:07.555Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Login.xaml",
+              "DocumentMoniker": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Views\\Auth\\Login.xaml",
+              "RelativeDocumentMoniker": "AdminApi\\Views\\Auth\\Login.xaml",
+              "ToolTip": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Views\\Auth\\Login.xaml",
+              "RelativeToolTip": "AdminApi\\Views\\Auth\\Login.xaml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2024-11-24T14:04:18.96Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Login.xaml.cs",
+              "DocumentMoniker": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Views\\Auth\\Login.xaml.cs",
+              "RelativeDocumentMoniker": "AdminApi\\Views\\Auth\\Login.xaml.cs",
+              "ToolTip": "C:\\OSPanel\\domains\\AdminApi\\AdminApi\\Views\\Auth\\Login.xaml.cs",
+              "RelativeToolTip": "AdminApi\\Views\\Auth\\Login.xaml.cs",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAwwEYAAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-11-24T13:55:55.351Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
