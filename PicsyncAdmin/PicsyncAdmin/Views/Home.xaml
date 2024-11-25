@@ -7,7 +7,7 @@
         <!-- Верхняя часть страницы -->
         <StackLayout Orientation="Horizontal" Padding="20" VerticalOptions="Start">
             <Label x:Name="LoginHome" VerticalOptions="Center" FontAttributes="Bold" FontSize="20"></Label>
-            
+            <Button x:Name="LogoutButton" Text="Logout" Clicked="LogoutButton_Clicked"></Button>
         </StackLayout>
     </VerticalStackLayout>
 </ContentPage>

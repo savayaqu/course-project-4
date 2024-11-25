@@ -4,90 +4,95 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Net.Http.Headers;
 using PicsyncAdmin.Resources;
+using Microsoft.Win32;
+using System.Net.Http.Json;
 
 namespace PicsyncAdmin.Views.Auth;
 
 public partial class Login : ContentPage
 {
-    // Инициализация HTTP клиента
+    // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ HTTP РєР»РёРµРЅС‚Р°
     private readonly HttpClient _httpClient = new HttpClient();
 
     public Login()
     {
         InitializeComponent();
     }
-    // Аутентификация
+
+    // РџРµСЂРµС…РѕРґ РЅР° СЃС‚СЂР°РЅРёС†Сѓ СЂРµРіРёСЃС‚СЂР°С†РёРё
+
+    //private async void OnRegisterTapped(object sender, EventArgs e)
+    //{
+    //   await Navigation.PushAsync(new Register());
+    //}
+
+    // РђСѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ
     private async void OnLoginButtonClicked(object sender, EventArgs e)
     {
-        // Получение логина и пароля из формы
+        // РџРѕР»СѓС‡РµРЅРёРµ Р»РѕРіРёРЅР° Рё РїР°СЂРѕР»СЏ РёР· С„РѕСЂРјС‹
         string login = LoginEntry.Text;
         string password = PasswordEntry.Text;
 
         if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
         {
-            await DisplayAlert("Ошибка", "Введите логин и пароль", "OK");
+            await DisplayAlert("РћС€РёР±РєР°", "Р’РІРµРґРёС‚Рµ Р»РѕРіРёРЅ Рё РїР°СЂРѕР»СЊ", "OK");
             return;
         }
 
         var loginResponse = await AuthenticateUserAsync(login, password);
         if (loginResponse != null)
         {
-            // Сохранение токена в SecureStorage
+            // РЎРѕС…СЂР°РЅРµРЅРёРµ С‚РѕРєРµРЅР° РІ SecureStorage
             await SecureStorage.SetAsync("auth_token", loginResponse.Token);
 
-            // Установка заголовка Authorization
+            // РЈСЃС‚Р°РЅРѕРІРєР° Р·Р°РіРѕР»РѕРІРєР° Authorization
             await SetAuthorizationHeader();
 
-            // Переход на страницу Home с данными пользователя
+            // РџРµСЂРµС…РѕРґ РЅР° СЃС‚СЂР°РЅРёС†Сѓ Home СЃ РґР°РЅРЅС‹РјРё РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
             await Navigation.PushAsync(new Home(loginResponse.User, loginResponse.Token));
         }
     }
 
-    // Аутентификация пользователя
+    // РђСѓС‚РµРЅС‚РёС„РёРєР°С†РёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
     private async Task<AuthResponse> AuthenticateUserAsync(string login, string password)
     {
-        // Формирование тела для отправки
+        // Р¤РѕСЂРјРёСЂРѕРІР°РЅРёРµ С‚РµР»Р° РґР»СЏ РѕС‚РїСЂР°РІРєРё
         var loginData = new { login, password };
         var jsonContent = new StringContent(JsonSerializer.Serialize(loginData), Encoding.UTF8, "application/json");
 
         try
         {
-            // Отправка POST-запроса на сервер
-            //HttpResponseMessage response = await _httpClient.PostAsync("https://savayaqu.ddns.net/picsync/api/login", jsonContent);
+            // РћС‚РїСЂР°РІРєР° POST-Р·Р°РїСЂРѕСЃР° РЅР° СЃРµСЂРІРµСЂ
             HttpResponseMessage response = await _httpClient.PostAsync(new API_URL("login"), jsonContent);
 
-            // Проверка кода ответа
+            // РџСЂРѕРІРµСЂРєР° РєРѕРґР° РѕС‚РІРµС‚Р°
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonSerializer.Deserialize<AuthResponse>(content);
-                if (result?.Token != null && result.User.Role == "admin")
+
+                if (result?.Token != null)
                 {
-                    return result; // Возвращаем данные пользователя и токен
+                    return result; // Р’РѕР·РІСЂР°С‰Р°РµРј РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ Рё С‚РѕРєРµРЅ
                 }
-                else
-                {
-                    await DisplayAlert("Ошибка входа", "Вы не являетесь администратором", "OK");
-                }
-        
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                await DisplayAlert("Ошибка входа", "Неправильный логин или пароль", "OK");
+                await DisplayAlert("РћС€РёР±РєР° РІС…РѕРґР°", "РќРµРїСЂР°РІРёР»СЊРЅС‹Р№ Р»РѕРіРёРЅ РёР»Рё РїР°СЂРѕР»СЊ", "OK");
             }
             else
             {
-                await DisplayAlert("Ошибка", "Произошла ошибка на сервере", "OK");
+                await DisplayAlert("РћС€РёР±РєР°", "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РЅР° СЃРµСЂРІРµСЂРµ", "OK");
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Ошибка сети", ex.Message, "OK");
+            await DisplayAlert("РћС€РёР±РєР° СЃРµС‚Рё", ex.Message, "OK");
         }
         return null;
     }
 
-    // Установка заголовка Authorization
+    // РЈСЃС‚Р°РЅРѕРІРєР° Р·Р°РіРѕР»РѕРІРєР° Authorization
     private async Task SetAuthorizationHeader()
     {
         var token = await SecureStorage.GetAsync("auth_token");
