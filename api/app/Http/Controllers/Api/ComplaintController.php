@@ -20,7 +20,6 @@ class ComplaintController extends Controller
     {
         $user = Auth::user();
         $query = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album']);
-
         if ($user->role->code !== 'admin')
             $query = Complaint::where('from_user_id', $user->id);
 

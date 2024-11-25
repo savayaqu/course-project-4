@@ -42,12 +42,6 @@ public partial class Login : ContentPage
         var loginResponse = await AuthenticateUserAsync(login, password);
         if (loginResponse != null)
         {
-            // Сохранение токена в SecureStorage
-            await SecureStorage.SetAsync("auth_token", loginResponse.Token);
-
-            // Установка заголовка Authorization
-            await SetAuthorizationHeader();
-
             // Переход на страницу Home с данными пользователя
             await Navigation.PushAsync(new Home(loginResponse.User, loginResponse.Token));
         }
@@ -90,15 +84,5 @@ public partial class Login : ContentPage
             await DisplayAlert("Ошибка сети", ex.Message, "OK");
         }
         return null;
-    }
-
-    // Установка заголовка Authorization
-    private async Task SetAuthorizationHeader()
-    {
-        var token = await SecureStorage.GetAsync("auth_token");
-        if (!string.IsNullOrEmpty(token))
-        {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
     }
 }

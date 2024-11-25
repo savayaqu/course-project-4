@@ -1,8 +1,8 @@
+using PicsyncAdmin.Methods;
 using PicsyncAdmin.Models;
-using PicsyncAdmin.Resources;
 using PicsyncAdmin.Views.Auth;
-using System.Net;
-using System.Net.Http;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace PicsyncAdmin.Views;
 
@@ -10,6 +10,7 @@ public partial class Home : ContentPage
 {
 	private User _user;
 	private string _token;
+    public ObservableCollection<Complaint> Complaints { get; set; } = new();
     private readonly HttpClient _httpClient = new HttpClient();
 
     public Home(User user, string token)
@@ -18,49 +19,47 @@ public partial class Home : ContentPage
 		_user = user;
 		_token = token;
 
-		//Устанавливаем аватар и никнейм
-		LoginHome.Text = _user.Login;
-
+        // Привязка данных к списку
+        BindingContext = this;
+        // Загружаем жалобы
+        LoadComplaints();
     }
 
-    private async void LogoutButton_Clicked(object sender, EventArgs e)
+    private async void LoadComplaints()
     {
-        await Logout();
+        var complaints = await MethodComplaint.LoadComplaints(_token);
 
-    }
-    private async Task Logout()
-    {
-
-        // Проверка токена перед отправкой запроса
-        string token = _token;
-        if (string.IsNullOrEmpty(token))
+        if (complaints.Any())
         {
-            await DisplayAlert("Ошибка", "Токен не найден. Возможно, вы уже вышли из системы.", "OK");
-            return;
-        }
-        // Добавляем токен в заголовок Authorization
-        _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-        await DisplayAlert("dff", "sd", "dfg");
-
-        // Отправка POST-запроса на сервер
-        HttpResponseMessage response = await _httpClient.PostAsync(new API_URL("logout"), null);
-
-        // Проверка кода ответа
-        if (response.IsSuccessStatusCode)
-        {
-
-            await DisplayAlert("Выход", "Вы успешно вышли из системы", "OK");
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            // Возврат на корневую страницу
-            await Navigation.PushAsync(new Login());
-        }
-        else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-        {
-            await DisplayAlert("Ошибка", "Сессия недействительна. Пожалуйста, войдите снова.", "OK");
+            // Assign the complaints to the ObservableCollection
+            Complaints.Clear();
+            foreach (var complaint in complaints)
+            {
+                Complaints.Add(complaint);
+                Debug.WriteLine(complaint);
+            }
+            // For debugging, you can log the number of complaints
+            Debug.WriteLine($"Received {complaints.Count} complaints");
         }
         else
         {
-            await DisplayAlert("Ошибка", $"Произошла ошибка на сервере: {response.StatusCode}", "OK");
+            await DisplayAlert("Ошибка", "Не удалось загрузить жалобы", "OK");
         }
-    }           
+    }
+
+
+
+    private async void LogoutButton_Clicked(object sender, EventArgs e)
+    {
+        bool response = await MethodLogout.Logout(_user, _token);
+        if (response == true)
+        {
+            await Navigation.PushAsync(new Login());
+        }
+        else
+        {
+            await DisplayAlert("Ошибка выхода", "Пиздец", "ОК");
+        }
+    }
+            
 }

@@ -13,7 +13,7 @@ class ComplaintTypeController extends Controller
 {
     public function index(): JsonResponse
     {
-        $complaints = ComplaintType::all();
+        $complaints = ComplaintType::with('complaints')->get();
         return response()->json($complaints);
     }
 

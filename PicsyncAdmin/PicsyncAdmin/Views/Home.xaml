@@ -3,11 +3,63 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PicsyncAdmin.Views.Home"
              Title="Home">
-    <VerticalStackLayout >
+    <Grid>
         <!-- Верхняя часть страницы -->
-        <StackLayout Orientation="Horizontal" Padding="20" VerticalOptions="Start">
-            <Label x:Name="LoginHome" VerticalOptions="Center" FontAttributes="Bold" FontSize="20"></Label>
-            <Button x:Name="LogoutButton" Text="Logout" Clicked="LogoutButton_Clicked"></Button>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Шапка -->
+        <StackLayout Orientation="Horizontal" Padding="10, 20" Grid.Row="0" BackgroundColor="#f0f0f0">
+            <Label x:Name="LoginHome"
+                   VerticalOptions="Center"
+                   FontAttributes="Bold"
+                   FontSize="20"
+                   HorizontalOptions="StartAndExpand" />
+            <Button x:Name="LogoutButton"
+                    Text="Logout"
+                    Clicked="LogoutButton_Clicked"
+                    HorizontalOptions="End"
+                    BackgroundColor="Red"
+                    TextColor="White"
+                    Padding="10,5" />
         </StackLayout>
-    </VerticalStackLayout>
+
+        <!-- Содержимое -->
+        <ScrollView Grid.Row="1" Padding="10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label Text="Жалобы"
+                       FontAttributes="Bold"
+                       FontSize="24"
+                       Grid.Row="0"
+                       Margin="0,10,0,10" />
+
+                <!-- Таблица -->
+                <CollectionView Grid.Row="1" ItemsSource="{Binding Complaints}" BackgroundColor="#f8f8f8">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            
+                            <Grid Padding="10" ColumnSpacing="5" RowSpacing="5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Label Text="{Binding Type}" Grid.Column="0" />
+                                <Label Text="{Binding Status}" Grid.Column="1" />
+                                <Label Text="{Binding AboutUser.Name}" Grid.Column="2" />
+                                <Label Text="{Binding FromUser}" Grid.Column="3" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+        </ScrollView>
+    </Grid>
 </ContentPage>
