@@ -95,7 +95,7 @@ class PictureController extends Controller
             try {
                 // Валидация mimes файла и пропускаем если не в разрешённых
                 $validator = Validator::make($pictureInRequests, [
-                    'file' => 'mimes:' . implode(',', config('settings.allowed_mimes')),
+                    'file' => 'mimes:' . implode(',', config('settings.allowed_upload_mimes')),
                 ]);
                 if ($validator->fails()) {
                     $errored[] = [
@@ -200,7 +200,7 @@ class PictureController extends Controller
 
     public function thumbnail(Request $request, $albumId, $pictureId, $orientation, $size): BinaryFileResponse|JsonResponse|RedirectResponse
     {
-        $allowedSizes = config('settings.allowed_sizes');
+        $allowedSizes = config('settings.allowed_preview_sizes');
 
         $ownerId = $request->attributes->get('ownerId');
         $orientation = strtolower($orientation);
@@ -237,9 +237,9 @@ class PictureController extends Controller
             }
 
             // Редирект если изображение квадратное
-            if ($picture->width === $picture->height) return redirect()
+            if ($picture->width === $picture->height  && $orientation !== 'q') return redirect()
                 ->route('thumbnail',
-                    [$albumId, $pictureId, $orientation, $size, 'sign' => $request->query('sign')])
+                    [$albumId, $pictureId, 'q', $size, 'sign' => $request->query('sign')])
                 ->header('Cache-Control', ['max-age=86400', 'private']);
 
             // Создание превью

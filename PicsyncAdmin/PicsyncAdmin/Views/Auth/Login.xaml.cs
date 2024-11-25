@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Net.Http.Headers;
+using PicsyncAdmin.Resources;
 
 namespace PicsyncAdmin.Views.Auth;
 
@@ -52,7 +53,8 @@ public partial class Login : ContentPage
         try
         {
             // Отправка POST-запроса на сервер
-            HttpResponseMessage response = await _httpClient.PostAsync("http://savayaqu.ddns.net/picsync/api/login", jsonContent);
+            //HttpResponseMessage response = await _httpClient.PostAsync("https://savayaqu.ddns.net/picsync/api/login", jsonContent);
+            HttpResponseMessage response = await _httpClient.PostAsync(new API_URL("login"), jsonContent);
 
             // Проверка кода ответа
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
