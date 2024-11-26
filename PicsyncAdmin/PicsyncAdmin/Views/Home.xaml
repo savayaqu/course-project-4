@@ -3,39 +3,74 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PicsyncAdmin.Views.Home"
              Title="Home">
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <!-- Шапка -->
+            <RowDefinition Height="Auto" />
+            <!-- Приветствие -->
+            <RowDefinition Height="Auto" />
+            <!-- Заголовок списка жалоб -->
             <RowDefinition Height="*" />
+            <!-- Список жалоб -->
         </Grid.RowDefinitions>
 
         <!-- Шапка -->
-        <StackLayout Orientation="Horizontal" Padding="10, 20" Grid.Row="0" BackgroundColor="#f0f0f0">
-            <Label Text="{Binding UserName}"
-                   VerticalOptions="Center"
-                   FontAttributes="Bold"
-                   FontSize="20"
-                   HorizontalOptions="StartAndExpand" />
+        <Grid Grid.Row="0" Padding="10" BackgroundColor="#f0f0f0">
             <Button Text="Logout"
                     Command="{Binding LogoutCommand}"
                     HorizontalOptions="End"
-                    BackgroundColor="Red"
+                    VerticalOptions="Center"
+                    BackgroundColor="#9880E5"
                     TextColor="White"
                     Padding="10,5" />
-        </StackLayout>
+        </Grid>
 
-        <!-- Список жалоб -->
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Complaints}">
+        <!-- Приветствие -->
+        <Label Grid.Row="1"
+               Text="Добро пожаловать, {Binding UserName}"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               FontAttributes="Bold"
+               FontSize="20"
+               TextColor="Black"
+               Padding="10" />
+
+        <!-- Заголовок -->
+        <Label Grid.Row="2"
+               Text="Нерассмотренные жалобы"
+               HorizontalOptions="Center"
+               FontSize="20"
+               TextColor="#9880E5"
+               Padding="20" />
+
+        <!-- Таблица жалоб -->
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Complaints}">
+            <CollectionView.Header>
+                <!-- Заголовки столбцов -->
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="10" BackgroundColor="#f0f0f0">
+                    <Label Text="От кого" FontAttributes="Bold" />
+                    <Label Text="На кого" FontAttributes="Bold" Grid.Column="1" />
+                    <Label Text="Описание" FontAttributes="Bold" Grid.Column="2" />
+                    <Label Text="Тип" FontAttributes="Bold" Grid.Column="3" />
+                    <Label Text="Статус" FontAttributes="Bold" Grid.Column="4" />
+                    <Label Text="Название альбома" FontAttributes="Bold" Grid.Column="5" />
+                    <Label Text="Картинка" FontAttributes="Bold" Grid.Column="6" />
+                </Grid>
+            </CollectionView.Header>
+
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame Padding="10" Margin="10" BorderColor="#cccccc">
-                        <StackLayout>
-                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="18" />
-                            <Label Text="{Binding Description}" FontSize="14" />
-                            <Label Text="{Binding CreatedAt, StringFormat='Дата: {0:dd.MM.yyyy}'}" FontSize="12" />
-                        </StackLayout>
-                    </Frame>
+                    <!-- Одна строка таблицы -->
+                    <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="10" >
+                        <Label Text="{Binding FromUser.Name}" Grid.Column="0" />
+                        <Label Text="{Binding AboutUser.Name}" Grid.Column="1" />
+                        <Label Text="{Binding Description}" Grid.Column="2" />
+                        <Label Text="{Binding Type}" Grid.Column="3" />
+                        <Label Text="{Binding StatusDescription}" Grid.Column="4" />
+                        <Label Text="{Binding Album.Name}" Grid.Column="5" />
+                        <Image Source="{Binding Picture.Path}" Grid.Column="6" HeightRequest="50" />
+                    </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

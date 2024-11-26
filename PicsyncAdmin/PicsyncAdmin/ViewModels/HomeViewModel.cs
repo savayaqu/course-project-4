@@ -68,20 +68,27 @@ namespace PicsyncAdmin.ViewModels
             {
                 IsBusy = true;
 
-                // Загрузка жалоб с сервера
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+                // Установка заголовка авторизации
+                _httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
-                // Десериализация ответа, который содержит поле "complaints"
+                // Получение жалоб
                 var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL("complaints"));
 
                 if (response?.Complaints != null)
                 {
-                    // Обновляем коллекцию жалоб в главном потоке
                     Application.Current.Dispatcher.Dispatch(() =>
                     {
                         Complaints.Clear();
                         foreach (var complaint in response.Complaints)
                         {
+                            if (complaint.Picture != null)
+                            {
+                                // Генерация пути для картинки
+                                complaint.Picture.Path ??=
+                                    new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign=0");
+                                Debug.WriteLine($"Image Path: {complaint.Picture.Path}");
+                            }
                             Complaints.Add(complaint);
                         }
                     });
@@ -97,6 +104,10 @@ namespace PicsyncAdmin.ViewModels
                 IsBusy = false;
             }
         }
+
+
+
+
 
 
     }
