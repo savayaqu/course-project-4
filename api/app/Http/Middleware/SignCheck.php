@@ -17,10 +17,10 @@ class SignCheck
 {
     public function handle(Request $request, Closure $next)
     {
-
         $sign = $request->query('sign');
         if (!$sign)
             throw new ForbiddenException();
+
         $albumId = $request->route('album');
         $album = null;
         if ($albumId instanceof Album) {
@@ -33,7 +33,6 @@ class SignCheck
             $userId   = $signExploded[0];
             $signCode = $signExploded[1];
         }
-
         catch (Exception) {
             throw new ForbiddenException();
         }
