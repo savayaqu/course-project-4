@@ -5,20 +5,22 @@ namespace App\Http\Middleware;
 use App\Exceptions\Api\ForbiddenException;
 use App\Models\Album;
 use App\Models\User;
+use App\Policies\AlbumPolicy;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 
 class SignCheck
 {
     public function handle(Request $request, Closure $next)
     {
+
         $sign = $request->query('sign');
         if (!$sign)
             throw new ForbiddenException();
-
         $albumId = $request->route('album');
         $album = null;
         if ($albumId instanceof Album) {
@@ -31,6 +33,7 @@ class SignCheck
             $userId   = $signExploded[0];
             $signCode = $signExploded[1];
         }
+
         catch (Exception) {
             throw new ForbiddenException();
         }

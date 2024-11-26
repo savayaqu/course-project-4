@@ -13,6 +13,7 @@ class CheckAlbumAccess
 {
     public function handle(Request $request, Closure $next)
     {
+        dd('lol');
         $user = $request->user();
         $album = $request->route('album');
         if (!($album instanceof Album))
