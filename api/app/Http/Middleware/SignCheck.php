@@ -65,7 +65,6 @@ class SignCheck
             else
                 throw new ForbiddenException();
         }
-
         $request->attributes->add(['ownerId' => $ownerId]);
         return $next($request);
     }

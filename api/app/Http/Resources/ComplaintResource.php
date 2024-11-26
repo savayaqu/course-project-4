@@ -25,6 +25,7 @@ class ComplaintResource extends JsonResource
             'picture' => $this->whenLoaded('picture', fn() =>
                 $this->when($this->picture, fn() => PictureResource::make($this->picture))
             ),
+            //'picturePath' => $this->picture,
             'album' => $this->whenLoaded('album', fn() =>
                 $this->when($this->album, fn() => AlbumResource::make($this->album))
             ),
