@@ -5,12 +5,10 @@ namespace App\Http\Middleware;
 use App\Exceptions\Api\ForbiddenException;
 use App\Models\Album;
 use App\Models\User;
-use App\Policies\AlbumPolicy;
 use Closure;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
 
 class SignCheck
@@ -67,7 +65,6 @@ class SignCheck
             else
                 throw new ForbiddenException();
         }
-
         $request->attributes->add(['ownerId' => $ownerId]);
         return $next($request);
     }

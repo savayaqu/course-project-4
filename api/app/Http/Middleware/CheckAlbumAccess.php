@@ -8,7 +8,6 @@ use App\Models\AlbumAccess;
 use App\Models\Complaint;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 
 class CheckAlbumAccess
 {
@@ -27,9 +26,9 @@ class CheckAlbumAccess
         if (
             $request->isMethod('GET') &&
             AlbumAccess
-            ::where('album_id', $album->id)
-            ->where('user_id' , $user->id)
-            ->exists()
+                ::where('album_id', $album->id)
+                ->where('user_id' , $user->id)
+                ->exists()
         ) return $next($request);
 
         // Впускаем админа если есть жалоба

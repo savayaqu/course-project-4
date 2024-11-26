@@ -2,13 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use App\Exceptions\Api\ApiException;
 use App\Exceptions\Api\ForbiddenException;
 use App\Exceptions\Api\UnauthorizedException;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Sanctum\Guard;
 use Symfony\Component\HttpFoundation\Response;
 
 class SanctumAuth
