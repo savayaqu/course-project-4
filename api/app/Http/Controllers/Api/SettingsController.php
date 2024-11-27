@@ -45,42 +45,19 @@ class SettingsController extends Controller
         ]);
     }
 
-    public function edit(SettingsUpdateRequest $request)
+    public function update(SettingsUpdateRequest $request)
     {
         Cache::forget('public_settings');
 
         $key   = $request->key;
-        $value = $request->value; // Принимаем строку
+        $value = $request->value;
 
-        // Путь к .env файлу
-        $envPath = base_path('.env');
-
-        // Проверяем, существует ли .env файл
-        if (!File::exists($envPath))
-            throw new ApiException('Unable to update .env file', 500);
-
-        // Читаем содержимое .env файла
-        $envContent = File::get($envPath);
-
-        // Ключ для поиска
-        $key = strtoupper($key);
-
-        // Проверяем, существует ли уже эта настройка в .env
-        $pattern = "/^{$key}=(.*)$/m";
-
-        // Если строка найдена, заменяем её
-        if (preg_match($pattern, $envContent))
-            $envContent = preg_replace($pattern, "{$key}={$value}", $envContent);
-
-        // Если строки нет, добавляем её в конец
-        else
-            $envContent .= "\n{$key}={$value}";
-
-        // Записываем обновленное содержимое в .env файл
-        File::put($envPath, $envContent);
-
-        // Очистка кэша конфигурации, чтобы новые значения вступили в силу
-        Artisan::call('config:clear');
+        try {
+            envWrite($key, $value);
+        }
+        catch (\Exception) {
+            throw new ApiException('Unable to update .env file');
+        }
 
         return response()->json(['message' => 'Settings updated successfully']);
     }

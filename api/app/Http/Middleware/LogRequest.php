@@ -3,7 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -44,7 +46,13 @@ class LogRequest
             }
 
             $code = $response->getStatusCode();
-            $sign = $response->isSuccessful() ? "🟢" : "🔴";
+            $sign = $response->isRedirection()      ? "🔵" : (
+                $response->isInformational()        ? "🟣" : (
+                    $response->isSuccessful()       ? "🟢" : (
+                        $response->isClientError()  ? "🟡" : "🔴"
+                    )
+                )
+            );
 
             $uri = $request->getPathInfo();
             $origin = $request->headers->get('origin') ?? "NO_ORIGIN";

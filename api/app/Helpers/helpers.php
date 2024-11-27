@@ -1,4 +1,8 @@
 <?php
+
+use App\Exceptions\Api\ApiException;
+use Illuminate\Support\Facades\File;
+
 if (!function_exists('bytesToHuman')) {
     function bytesToHuman(int $bytes): string
     {
@@ -14,5 +18,28 @@ if (!function_exists('bytesToHuman')) {
         $formatted = number_format($bytes, 3 - strlen(floor($bytes)), '.', '');
 
         return $formatted . ' ' . $units[$pow];
+    }
+}
+
+if (!function_exists('envWrite')) {
+    function envWrite(string $key, string $value): void
+    {
+        $envPath = base_path('.env');
+        if (!File::exists($envPath))
+            throw new Exception('Unable to update .env file', 500);
+
+        $envContent = File::get($envPath);
+
+        $key = strtoupper($key);
+        $pattern = "/^{$key}=(.*)$/m";
+
+        if (preg_match($pattern, $envContent))
+            $envContent = preg_replace($pattern, "{$key}={$value}", $envContent);
+
+        else
+            $envContent .= "\n{$key}={$value}";
+
+        File::put($envPath, $envContent);
+        Artisan::call('config:clear');
     }
 }
