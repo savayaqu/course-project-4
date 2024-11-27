@@ -21,19 +21,16 @@
                     Command="{Binding LogoutCommand}"
                     HorizontalOptions="End"
                     VerticalOptions="Center"
-                    BackgroundColor="#9880E5"
-                    TextColor="White"
                     Padding="10,5" />
         </Grid>
 
         <!-- Приветствие -->
         <Label Grid.Row="1"
-               Text="Добро пожаловать, {Binding UserName}"
+               x:Name="HelloHome"
                HorizontalOptions="Center"
                VerticalOptions="Center"
                FontAttributes="Bold"
                FontSize="20"
-               TextColor="Black"
                Padding="10" />
 
         <!-- Заголовок -->
@@ -41,7 +38,6 @@
                Text="Нерассмотренные жалобы"
                HorizontalOptions="Center"
                FontSize="20"
-               TextColor="#9880E5"
                Padding="20" />
 
         <!-- Таблица жалоб -->
@@ -69,7 +65,7 @@
                         <Label Text="{Binding Type}" Grid.Column="3" />
                         <Label Text="{Binding StatusDescription}" Grid.Column="4" />
                         <Label Text="{Binding Album.Name}" Grid.Column="5" />
-                        <Image Source="{Binding Picture.Path}" Grid.Column="6" HeightRequest="50" />
+                        <Image Source="{Binding Picture.Path}" Grid.Column="6" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

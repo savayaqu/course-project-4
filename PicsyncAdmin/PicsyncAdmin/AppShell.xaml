@@ -12,5 +12,4 @@
         Title="Home"
         ContentTemplate="{DataTemplate local:Views.Auth.Login}"
         Route="Login" />
-
 </Shell>

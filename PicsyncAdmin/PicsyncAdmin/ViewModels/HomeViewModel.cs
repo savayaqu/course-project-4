@@ -21,12 +21,6 @@ namespace PicsyncAdmin.ViewModels
         public ICommand LogoutCommand { get; }
         public ICommand LoadComplaintsCommand { get; }
 
-        private string _userName;
-        public string UserName
-        {
-            get => _userName;
-            set => SetProperty(ref _userName, value);
-        }
 
         public HomeViewModel(User user, string token)
         {
@@ -34,14 +28,13 @@ namespace PicsyncAdmin.ViewModels
             _token = token;
             _httpClient = new HttpClient();
 
-            UserName = $"Welcome, {user.Name}!";
 
             // Инициализация команд
             LogoutCommand = new Command(OnLogoutClicked);
             LoadComplaintsCommand = new Command(async () => await LoadComplaintsAsync());
 
             // Переносим вызов LoadComplaintsAsync() в асинхронный метод после инициализации
-            LoadComplaintsAsync();
+            _ = LoadComplaintsAsync();
         }
 
         private async void OnLogoutClicked()
@@ -86,8 +79,7 @@ namespace PicsyncAdmin.ViewModels
                             {
                                 // Генерация пути для картинки
                                 complaint.Picture.Path ??=
-                                    new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign=0");
-                                Debug.WriteLine($"Image Path: {complaint.Picture.Path}");
+                                    new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign={complaint.Sign}");
                             }
                             Complaints.Add(complaint);
                         }
@@ -104,11 +96,5 @@ namespace PicsyncAdmin.ViewModels
                 IsBusy = false;
             }
         }
-
-
-
-
-
-
     }
 }

@@ -13,6 +13,8 @@ public partial class Home : ContentPage
     {
         InitializeComponent();
         BindingContext = new HomeViewModel(user, token);
+        Debug.WriteLine(user.Name);
+        HelloHome.Text = $"Приветствуем, {user.Name}";
     }
 
 }

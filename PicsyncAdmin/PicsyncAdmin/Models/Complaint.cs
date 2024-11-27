@@ -11,11 +11,12 @@ namespace PicsyncAdmin.Models
     public class Complaint
     {
         public ulong Id { get; set; }
-        public string Type { get; set; }
+        public required string Type { get; set; }
         public int? Status { get; set; }
-        public string Description { get; set; }
-        public User AboutUser { get; set; }
+        public string? Description { get; set; }
+        public required User AboutUser { get; set; }
         public User? FromUser { get; set; }
+        public string? Sign {  get; set; }
         public PictureComplaint? Picture { get; set; }
         public AlbumComplaint? Album { get; set; }
 
@@ -36,13 +37,13 @@ namespace PicsyncAdmin.Models
     public class AlbumComplaint
     {
         public ulong Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
     }
     public class PictureComplaint
     {
         [JsonPropertyName("id")] public ulong Id { get; set; }
-        [JsonPropertyName("name")] public string Name { get; set; }
-        [JsonPropertyName("hash")] public string Hash { get; set; }
+        [JsonPropertyName("name")] public required string Name { get; set; }
+        [JsonPropertyName("hash")] public required string Hash { get; set; }
         [JsonPropertyName("size")] public int Size { get; set; }
 
         [JsonPropertyName("date")]
@@ -53,7 +54,7 @@ namespace PicsyncAdmin.Models
         [JsonPropertyName("height")] public int Height { get; set; }
         [JsonPropertyName("uploadedAt")] public DateTime UploadedAt { get; set; }
 
-        public string Path { get; set; }
+        public string? Path { get; set; }
     }
 
 

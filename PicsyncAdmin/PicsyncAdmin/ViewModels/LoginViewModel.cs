@@ -3,14 +3,12 @@ using PicsyncAdmin.Models;
 using PicsyncAdmin.Resources;
 using PicsyncAdmin.Views;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.Storage;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -29,13 +27,35 @@ namespace PicsyncAdmin.ViewModels
             get => _password;
             set => SetProperty(ref _password, value);
         }
-
         public ICommand LoginCommand { get; }
+        public ICommand CheckTokenCommand { get; }
 
         public LoginViewModel()
         {
             LoginCommand = new Command(OnLoginClicked);
+            CheckTokenCommand = new Command(OnCheckToken);
         }
+       
+        // Логика для проверки токена и наличия пользователя
+        private async void OnCheckToken()
+        {
+            var token = await SecureStorage.GetAsync("auth_token");
+            var userJson = await SecureStorage.GetAsync("auth_user");
+
+            if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(userJson))
+            {
+                // Десериализация пользователя
+                var user = JsonSerializer.Deserialize<User>(userJson);
+
+                // Переход на главную страницу
+                await App.Current.MainPage.Navigation.PushAsync(new Home(user, token));
+            }
+            else
+            {
+                await App.Current.MainPage.DisplayAlert("Ошибка", "Срок действия токена истёк", "OK");
+            }
+        }
+
 
         private async void OnLoginClicked()
         {
@@ -48,10 +68,18 @@ namespace PicsyncAdmin.ViewModels
             var authResponse = await AuthenticateUserAsync(Login, Password);
             if (authResponse != null)
             {
+                // Сохраняем токен в защищённое хранилище
+                await SecureStorage.SetAsync("auth_token", authResponse.Token);
+
+                // Сохраняем пользователя в защищённое хранилище
+                var userJson = JsonSerializer.Serialize(authResponse.User);
+                await SecureStorage.SetAsync("auth_user", userJson);
+
                 // Переход на главную страницу
                 await App.Current.MainPage.Navigation.PushAsync(new Home(authResponse.User, authResponse.Token));
             }
         }
+
 
         private async Task<AuthResponse> AuthenticateUserAsync(string login, string password)
         {

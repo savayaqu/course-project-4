@@ -22,7 +22,12 @@ public static class MethodLogout
             if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = null;
-                return true; // Указываем, что выход успешен
+            // Удаляем токен
+            SecureStorage.Remove("auth_token");
+
+            // (Опционально) Удаляем другие данные, если они есть
+            SecureStorage.Remove("auth_user");
+            return true; // Указываем, что выход успешен
             }
             // Если произошла ошибка
             return false;
