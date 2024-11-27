@@ -22,8 +22,11 @@ class ComplaintResource extends JsonResource
             'aboutUser' => $this->whenLoaded('aboutUser',
                 fn() => UserResource::make($this->aboutUser)
             ),
-            'picture' => $this->whenLoaded('picture', fn() =>
-                $this->when($this->picture, fn() => PictureResource::make($this->picture))
+            $this->when($this->whenLoaded('picture', true, false), fn() =>
+                $this->mergeWhen($this->picture, fn() => [
+                    'picture' => PictureResource::make($this->picture),
+                    'sign' => $this->picture->album->getSign($user),
+                ])
             ),
             //'picturePath' => $this->picture,
             'album' => $this->whenLoaded('album', fn() =>
