@@ -9,12 +9,10 @@ namespace PicsyncAdmin.Views;
 
 public partial class Home : ContentPage
 {
-    public Home(User user, string token)
+    public Home()
     {
         InitializeComponent();
-        BindingContext = new HomeViewModel(user, token);
-        Debug.WriteLine(user.Name);
-        HelloHome.Text = $"Приветствуем, {user.Name}";
+       BindingContext = new HomeViewModel();
     }
 
 }

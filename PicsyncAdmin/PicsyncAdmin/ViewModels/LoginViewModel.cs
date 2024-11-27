@@ -9,11 +9,15 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Storage;
+using System.Diagnostics;
+using PicsyncAdmin.Helpers;
 
 namespace PicsyncAdmin.ViewModels
 {
     public class LoginViewModel : BaseViewModel
     {
+        private readonly User? _user = AuthSession.User;
+        private readonly string? _token = AuthSession.Token;
         private string _login;
         public string Login
         {
@@ -35,48 +39,38 @@ namespace PicsyncAdmin.ViewModels
             LoginCommand = new Command(OnLoginClicked);
             CheckTokenCommand = new Command(OnCheckToken);
         }
-       
+
         // Логика для проверки токена и наличия пользователя
-        private async void OnCheckToken()
+        public static async void OnCheckToken()
         {
-            var token = await SecureStorage.GetAsync("auth_token");
-            var userJson = await SecureStorage.GetAsync("auth_user");
-
-            if (!string.IsNullOrEmpty(token) && !string.IsNullOrEmpty(userJson))
+            if (!string.IsNullOrEmpty(AuthSession.Token) && AuthSession.User != null)
             {
-                // Десериализация пользователя
-                var user = JsonSerializer.Deserialize<User>(userJson);
-
                 // Переход на главную страницу
-                await App.Current.MainPage.Navigation.PushAsync(new Home(user, token));
+                await Shell.Current.GoToAsync("//MainPage");
             }
             else
             {
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Срок действия токена истёк", "OK");
+                await Shell.Current.GoToAsync("//Login");
             }
         }
+
 
 
         private async void OnLoginClicked()
         {
             if (string.IsNullOrEmpty(Login) || string.IsNullOrEmpty(Password))
             {
-                await App.Current.MainPage.DisplayAlert("Ошибка", "Введите логин и пароль", "OK");
+                await Shell.Current.DisplayAlert("Ошибка", "Введите логин и пароль", "OK");
                 return;
             }
 
             var authResponse = await AuthenticateUserAsync(Login, Password);
             if (authResponse != null)
             {
-                // Сохраняем токен в защищённое хранилище
-                await SecureStorage.SetAsync("auth_token", authResponse.Token);
-
-                // Сохраняем пользователя в защищённое хранилище
-                var userJson = JsonSerializer.Serialize(authResponse.User);
-                await SecureStorage.SetAsync("auth_user", userJson);
-
-                // Переход на главную страницу
-                await App.Current.MainPage.Navigation.PushAsync(new Home(authResponse.User, authResponse.Token));
+                // После успешной аутентификации сохраняем в Helpers.AuthSession юзера и токен
+                AuthSession.User = authResponse.User;
+                AuthSession.Token = authResponse.Token;
+                await Shell.Current.GoToAsync("//MainPage");
             }
         }
 
@@ -97,12 +91,12 @@ namespace PicsyncAdmin.ViewModels
                 }
                 else
                 {
-                    await App.Current.MainPage.DisplayAlert("Ошибка", "Неправильный логин или пароль", "OK");
+                    await Shell.Current.DisplayAlert("Ошибка", "Неправильный логин или пароль", "OK");
                 }
             }
             catch (Exception ex)
             {
-                await App.Current.MainPage.DisplayAlert("Ошибка сети", ex.Message, "OK");
+                await Shell.Current.DisplayAlert("Ошибка сети", ex.Message, "OK");
             }
             return null;
         }

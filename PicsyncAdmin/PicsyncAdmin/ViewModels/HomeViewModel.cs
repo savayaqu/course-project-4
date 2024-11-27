@@ -1,4 +1,5 @@
 ﻿using MvvmHelpers;
+using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Methods;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Resources;
@@ -12,8 +13,8 @@ namespace PicsyncAdmin.ViewModels
 {
     public class HomeViewModel : BaseViewModel
     {
-        private readonly User _user;
-        private readonly string _token;
+        private readonly User? _user = AuthSession.User;
+        private readonly string? _token = AuthSession.Token;
         private readonly HttpClient _httpClient;
 
         public ObservableCollection<Complaint> Complaints { get; } = new();
@@ -22,34 +23,22 @@ namespace PicsyncAdmin.ViewModels
         public ICommand LoadComplaintsCommand { get; }
 
 
-        public HomeViewModel(User user, string token)
+        public HomeViewModel()
         {
-            _user = user;
-            _token = token;
             _httpClient = new HttpClient();
-
 
             // Инициализация команд
             LogoutCommand = new Command(OnLogoutClicked);
             LoadComplaintsCommand = new Command(async () => await LoadComplaintsAsync());
-
             // Переносим вызов LoadComplaintsAsync() в асинхронный метод после инициализации
             _ = LoadComplaintsAsync();
         }
 
+        // Обработчик кнопки выхода
         private async void OnLogoutClicked()
         {
-            // Выход из аккаунта
-            bool response = await MethodLogout.Logout(_user, _token);
-            if (response)
-            {
-                // Возвращаемся на экран логина
-                await App.Current.MainPage.Navigation.PushAsync(new Login());
-            }
-            else
-            {
-                await App.Current.MainPage.DisplayAlert("Ошибка выхода", "Не удалось выйти из аккаунта", "ОК");
-            }
+            bool response = await MethodLogout.Logout(_user, _token);// Выход из аккаунта
+            await Shell.Current.GoToAsync("//LoginPage");// Возвращаемся на экран логина
         }
 
         private async Task LoadComplaintsAsync()
@@ -70,7 +59,7 @@ namespace PicsyncAdmin.ViewModels
 
                 if (response?.Complaints != null)
                 {
-                    Application.Current.Dispatcher.Dispatch(() =>
+                    Shell.Current.Dispatcher.Dispatch(() =>
                     {
                         Complaints.Clear();
                         foreach (var complaint in response.Complaints)
@@ -89,7 +78,7 @@ namespace PicsyncAdmin.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Ошибка при загрузке жалоб: {ex.Message}");
-                await App.Current.MainPage.DisplayAlert("Ошибка", $"Не удалось загрузить жалобы: {ex.Message}", "ОК");
+                await Shell.Current.DisplayAlert("Ошибка", $"Не удалось загрузить жалобы: {ex.Message}", "ОК");
             }
             finally
             {

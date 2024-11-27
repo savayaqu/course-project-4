@@ -9,7 +9,17 @@
 
     <!-- Указываем страницу входа Views.Auth.Login как главную -->
     <ShellContent
-        Title="Home"
+        Title="Авторизация"
         ContentTemplate="{DataTemplate local:Views.Auth.Login}"
-        Route="Login" />
+        Route="LoginPage" />
+    <TabBar>
+        <Tab Title="Главная" Icon="house.svg">
+            <ShellContent ContentTemplate="{DataTemplate local:Views.Home}" Route="MainPage"/>
+        </Tab>
+        <Tab Title="Профиль" Icon="user.svg">
+            <ShellContent ContentTemplate="{DataTemplate local:Views.Profile}" Route="Profile"/>
+        </Tab>
+        <Tab Title="Тема" Icon="theme.svg" />
+
+    </TabBar>
 </Shell>

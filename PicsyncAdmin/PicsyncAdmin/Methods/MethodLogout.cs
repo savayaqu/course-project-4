@@ -1,3 +1,4 @@
+using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Resources;
 using PicsyncAdmin.Views.Auth;
@@ -21,12 +22,9 @@ public static class MethodLogout
 
             if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
             {
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-            // Удаляем токен
-            SecureStorage.Remove("auth_token");
-
-            // (Опционально) Удаляем другие данные, если они есть
-            SecureStorage.Remove("auth_user");
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            // Очистка сессии (юзер и токен)
+            AuthSession.ClearSession();
             return true; // Указываем, что выход успешен
             }
             // Если произошла ошибка
