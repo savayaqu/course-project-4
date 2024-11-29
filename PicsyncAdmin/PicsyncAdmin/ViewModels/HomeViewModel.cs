@@ -1,4 +1,5 @@
-﻿using MvvmHelpers;
+﻿using Microsoft.Maui.Controls.PlatformConfiguration;
+using MvvmHelpers;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Methods;
 using PicsyncAdmin.Models;
@@ -6,6 +7,7 @@ using PicsyncAdmin.Resources;
 using PicsyncAdmin.Views.Auth;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Windows.Input;
 
@@ -26,7 +28,7 @@ namespace PicsyncAdmin.ViewModels
         public HomeViewModel()
         {
             _httpClient = new HttpClient();
-
+            LoginViewModel.OnCheckToken();
             // Инициализация команд
             LogoutCommand = new Command(OnLogoutClicked);
             LoadComplaintsCommand = new Command(async () => await LoadComplaintsAsync());
@@ -37,8 +39,14 @@ namespace PicsyncAdmin.ViewModels
         // Обработчик кнопки выхода
         private async void OnLogoutClicked()
         {
-            bool response = await MethodLogout.Logout(_user, _token);// Выход из аккаунта
-            await Shell.Current.GoToAsync("//LoginPage");// Возвращаемся на экран логина
+            // Добавляем токен в заголовок Authorization
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            // Отправка POST-запроса на сервер
+            HttpResponseMessage response = await _httpClient.PostAsync(new API_URL("logout"), null);
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+            // Очистка сессии (юзер и токен)
+            AuthSession.ClearSession();
+            await Shell.Current.GoToAsync("//LoginPage");
         }
 
         private async Task LoadComplaintsAsync()

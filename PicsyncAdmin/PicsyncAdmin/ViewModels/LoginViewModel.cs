@@ -48,10 +48,6 @@ namespace PicsyncAdmin.ViewModels
                 // Переход на главную страницу
                 await Shell.Current.GoToAsync("//MainPage");
             }
-            else
-            {
-                await Shell.Current.GoToAsync("//Login");
-            }
         }
 
 

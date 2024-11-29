@@ -16,7 +16,7 @@
         </Grid.RowDefinitions>
 
         <!-- Шапка -->
-        <Grid Grid.Row="0" Padding="10" BackgroundColor="#f0f0f0">
+        <Grid Grid.Row="0" Padding="10" >
             <Button Text="Logout"
                     Command="{Binding LogoutCommand}"
                     HorizontalOptions="End"
@@ -44,7 +44,7 @@
         <CollectionView Grid.Row="3" ItemsSource="{Binding Complaints}">
             <CollectionView.Header>
                 <!-- Заголовки столбцов -->
-                <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="10" BackgroundColor="#f0f0f0">
+                <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="10" >
                     <Label Text="От кого" FontAttributes="Bold" />
                     <Label Text="На кого" FontAttributes="Bold" Grid.Column="1" />
                     <Label Text="Описание" FontAttributes="Bold" Grid.Column="2" />
