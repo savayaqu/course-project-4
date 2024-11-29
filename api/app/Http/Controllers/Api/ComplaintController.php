@@ -13,18 +13,48 @@ use App\Models\Complaint;
 use App\Models\Picture;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $query = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album']);
-        if ($user->role->code !== 'admin')
-            $query = Complaint::where('from_user_id', $user->id);
+        $status = $request->query('status'); // Получаем параметр status из запроса
+        $sortBy = $request->query('sort', 'created_at');   // Сортировка по полю (по умолчанию дата)
+        $orderBy = $request->has('reverse') ? 'desc' : 'asc'; // Направление сортировки
+        $limit = intval($request->limit);
+        if (!$limit) {
+            $limit = 30;
+        }
+        // Проверка валидации сортировки
+        $allowedSortFields = ['id', 'description', 'status', 'album_id', 'picture_id', 'from_user_id', 'about_user_id', 'complaint_type_id', 'created_at', 'updated_at'];
+        if (!in_array($sortBy, $allowedSortFields))
+            throw new ApiException('Sort must be of the following types: ' . join(', ', $allowedSortFields), 400);
 
-        return response()->json(['complaints' => ComplaintResource::collection($query->get())]);
+        $query = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album'])
+            ->orderBy($sortBy, $orderBy);
+
+        // Фильтрация по статусу
+        if ($request->has('status')) {
+            if ($status === "null") {
+                $query->whereNull('status'); // Выбираем записи со статусом NULL
+            } else {
+                $query->where('status', $status); // Фильтруем по конкретному значению
+            }
+        }
+
+        // Ограничение для пользователей, не являющихся админами
+        if ($user->role->code !== 'admin') {
+            $query->where('from_user_id', $user->id);
+        }
+
+        $complaintsPage = $query->paginate($limit);
+
+        return response()->json(['complaints' => ComplaintResource::collection($complaintsPage->items())]);
     }
+
+
 
     public function storeToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture): JsonResponse
     {
