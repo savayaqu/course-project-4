@@ -23,12 +23,23 @@ class ComplaintController extends Controller
         $status = $request->query('status'); // Получаем параметр status из запроса
         $sortBy = $request->query('sort', 'created_at');   // Сортировка по полю (по умолчанию дата)
         $orderBy = $request->has('reverse') ? 'desc' : 'asc'; // Направление сортировки
-        $limit = intval($request->limit);
-        if (!$limit) {
+        $limit = intval($request->query('limit'));
+        if (!$limit)
             $limit = 30;
-        }
+
         // Проверка валидации сортировки
-        $allowedSortFields = ['id', 'description', 'status', 'album_id', 'picture_id', 'from_user_id', 'about_user_id', 'complaint_type_id', 'created_at', 'updated_at'];
+        $allowedSortFields = [
+            'id',
+            'description',
+            'status',
+            'album_id',
+            'picture_id',
+            'from_user_id',
+            'about_user_id',
+            'complaint_type_id',
+            'created_at',
+            'updated_at'
+        ];
         if (!in_array($sortBy, $allowedSortFields))
             throw new ApiException('Sort must be of the following types: ' . join(', ', $allowedSortFields), 400);
 
@@ -37,24 +48,27 @@ class ComplaintController extends Controller
 
         // Фильтрация по статусу
         if ($request->has('status')) {
-            if ($status === "null") {
-                $query->whereNull('status'); // Выбираем записи со статусом NULL
-            } else {
-                $query->where('status', $status); // Фильтруем по конкретному значению
-            }
+            if ($status === "null")
+                // Выбираем не рассмотренные записи
+                $query->whereNull('status');
+            else
+                // Фильтруем по конкретному значению
+                $query->where('status', $status);
         }
 
-        // Ограничение для пользователей, не являющихся админами
-        if ($user->role->code !== 'admin') {
+        // Если пользователь не админ => выводим СВОИ жалобы
+        if ($user->role->code !== 'admin')
             $query->where('from_user_id', $user->id);
-        }
 
         $complaintsPage = $query->paginate($limit);
 
-        return response()->json(['complaints' => ComplaintResource::collection($complaintsPage->items())]);
+        return response()->json([
+            'page'       => $complaintsPage->currentPage(),
+            'limit'      => $complaintsPage->perPage(),
+            'total'      => $complaintsPage->total(),
+            'complaints' => ComplaintResource::collection($complaintsPage->items())
+        ]);
     }
-
-
 
     public function storeToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture): JsonResponse
     {

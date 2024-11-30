@@ -62,7 +62,7 @@ class PictureController extends Controller
         return response()->json([
             'sign'     => $sign,
             'page'     => $picturesPage->currentPage(),
-            'perPage'  => $picturesPage->perPage(),
+            'limit'    => $picturesPage->perPage(),
             'total'    => $picturesPage->total(),
             'pictures' => PictureResource::collection($picturesPage->items()),
         ]);
