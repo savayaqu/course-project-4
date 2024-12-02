@@ -169,7 +169,7 @@ Route
     ->middleware(CheckRole::class . ':admin')
     ->group(function ($settings) {      // [НАСТРОЙКИ]
         $settings->get ('', 'index');   // Получение всех настроек
-        $settings->post('', 'edit');    // Изменение настроек
+        $settings->post('', 'update');    // Изменение настроек
     });
 });
 Route::get('', [SettingsController::class, 'public'])
