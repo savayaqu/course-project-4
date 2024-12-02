@@ -15,24 +15,11 @@
             <!-- Список жалоб -->
         </Grid.RowDefinitions>
 
-        <!-- Шапка -->
-        <Grid Grid.Row="0" Padding="10" >
-            <Button Text="Logout"
-                    Command="{Binding LogoutCommand}"
-                    HorizontalOptions="End"
-                    VerticalOptions="Center"
-                    Padding="10,5" />
-        </Grid>
-
-        <!-- Приветствие -->
-        <Label Grid.Row="1"
-               x:Name="HelloHome"
-               HorizontalOptions="Center"
-               VerticalOptions="Center"
-               FontAttributes="Bold"
-               FontSize="20"
-               Padding="10" />
-
+        <ProgressBar 
+            Progress="{Binding UsedPercent}" 
+            HorizontalOptions="FillAndExpand"
+            HeightRequest="10" />
+        <Label Text="{Binding UploadDisablePercentage}"/>
         <!-- Заголовок -->
         <Label Grid.Row="2"
                Text="Нерассмотренные жалобы"
@@ -40,33 +27,38 @@
                FontSize="20"
                Padding="20" />
 
-        <!-- Таблица жалоб -->
+        <!-- Список жалоб -->
         <CollectionView Grid.Row="3" ItemsSource="{Binding Complaints}">
-            <CollectionView.Header>
-                <!-- Заголовки столбцов -->
-                <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="10" >
-                    <Label Text="От кого" FontAttributes="Bold" />
-                    <Label Text="На кого" FontAttributes="Bold" Grid.Column="1" />
-                    <Label Text="Описание" FontAttributes="Bold" Grid.Column="2" />
-                    <Label Text="Тип" FontAttributes="Bold" Grid.Column="3" />
-                    <Label Text="Статус" FontAttributes="Bold" Grid.Column="4" />
-                    <Label Text="Название альбома" FontAttributes="Bold" Grid.Column="5" />
-                    <Label Text="Картинка" FontAttributes="Bold" Grid.Column="6" />
-                </Grid>
-            </CollectionView.Header>
-
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <!-- Одна строка таблицы -->
-                    <Grid ColumnDefinitions="*,*,*,*,*,*,*" Padding="10" >
-                        <Label Text="{Binding FromUser.Name}" Grid.Column="0" />
-                        <Label Text="{Binding AboutUser.Name}" Grid.Column="1" />
-                        <Label Text="{Binding Description}" Grid.Column="2" />
-                        <Label Text="{Binding Type}" Grid.Column="3" />
-                        <Label Text="{Binding StatusDescription}" Grid.Column="4" />
-                        <Label Text="{Binding Album.Name}" Grid.Column="5" />
-                        <Image Source="{Binding Picture.Path}" Grid.Column="6" />
-                    </Grid>
+                    <Frame Margin="5" Padding="10" BorderColor="LightGray" CornerRadius="5">
+                        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="2*,3*">
+                            <!-- Текстовая информация в столбцах -->
+                            <StackLayout Grid.Row="0" Grid.Column="0" Orientation="Vertical" Spacing="5">
+                                <Label Text="От кого:" FontAttributes="Bold" />
+                                <Label Text="{Binding FromUser.Name}" />
+                                <Label Text="На кого:" FontAttributes="Bold" Margin="0,10,0,0" />
+                                <Label Text="{Binding AboutUser.Name}" />
+                                <Label Text="Тип:" FontAttributes="Bold" Margin="0,10,0,0" />
+                                <Label Text="{Binding Type}" />
+                                <Label Text="Статус:" FontAttributes="Bold" Margin="0,10,0,0" />
+                                <Label Text="{Binding StatusDescription}" />
+                                <Label Text="Альбом:" FontAttributes="Bold" Margin="0,10,0,0" />
+                                <Label Text="{Binding Album.Name}" />
+                            </StackLayout>
+
+                            <!-- Картинка -->
+                            <Image Source="{Binding Picture.Path}" 
+                                   Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                                   HeightRequest="120" Aspect="AspectFit" 
+                                   HorizontalOptions="End" VerticalOptions="Center" Margin="10,0" />
+                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
+                                   FormattedText=""
+                                    Text="{Binding Description, StringFormat='Комментарий: {0}'}" 
+                                    FontAttributes="Italic" TextColor="Gray" 
+                                    Margin="0,10,0,0" />
+                        </Grid>
+                    </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

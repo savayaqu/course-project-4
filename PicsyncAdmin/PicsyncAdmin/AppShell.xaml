@@ -19,7 +19,5 @@
         <Tab Title="Профиль" Icon="user.svg">
             <ShellContent ContentTemplate="{DataTemplate local:Views.Profile}" Route="Profile"/>
         </Tab>
-        <Tab Title="Тема" Icon="theme.svg" />
-
     </TabBar>
 </Shell>
