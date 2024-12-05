@@ -12,25 +12,26 @@
                HorizontalOptions="Center"
                FontSize="24"
                FontAttributes="Bold"/>
-
+        <Button Text="Logout"
+        Command="{Binding LogoutCommand}"
+        HorizontalOptions="End"
+        VerticalOptions="Center"
+        Padding="10,5" />
         <!-- Отображение данных пользователя -->
-        <Label x:Name="UserNameLabel"
-               Text="User Name: John Doe"
+        <Label
+               Text="{Binding User.Name}"
                VerticalOptions="Start"
                HorizontalOptions="Center"
                FontSize="18"/>
-
-        <Label x:Name="EmailLabel"
-               Text="Email: john.doe@example.com"
-               VerticalOptions="Start"
-               HorizontalOptions="Center"
-               FontSize="18"/>
-
-        <!-- Кнопка для переключения темы -->
-        <Button Text="Switch Theme"
-                VerticalOptions="End"
+        <Label
+                Text="{Binding User.Login}"
+                VerticalOptions="Start"
                 HorizontalOptions="Center"
-                Clicked="OnToggleThemeClicked"/>
-
+                FontSize="18"/>
+        <Label
+                Text="{Binding User.Password}"
+                VerticalOptions="Start"
+                HorizontalOptions="Center"
+                FontSize="18"/>
     </VerticalStackLayout>
 </ContentPage>

@@ -1,14 +1,13 @@
-﻿using Microsoft.Maui.Controls.PlatformConfiguration;
+﻿
 using MvvmHelpers;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Methods;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Resources;
-using PicsyncAdmin.Views.Auth;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Windows.Input;
 
 namespace PicsyncAdmin.ViewModels
@@ -18,10 +17,14 @@ namespace PicsyncAdmin.ViewModels
         private readonly User? _user = AuthSession.User;
         private readonly string? _token = AuthSession.Token;
         private readonly HttpClient _httpClient;
-
+        // Привязка данных из AppSettings для UI
+        public int UsedPercent => AppSettings.UsedPercent;
+        public int UploadDisablePercentage => AppSettings.UploadDisablePercentage;
+        public long TotalSpace => AppSettings.TotalSpace;
+        public long FreeSpace => AppSettings.FreeSpace;
+        public long UsedSpace => AppSettings.UsedSpace;
         public ObservableCollection<Complaint> Complaints { get; } = new();
 
-        public ICommand LogoutCommand { get; }
         public ICommand LoadComplaintsCommand { get; }
 
 
@@ -30,24 +33,46 @@ namespace PicsyncAdmin.ViewModels
             _httpClient = new HttpClient();
             LoginViewModel.OnCheckToken();
             // Инициализация команд
-            LogoutCommand = new Command(OnLogoutClicked);
             LoadComplaintsCommand = new Command(async () => await LoadComplaintsAsync());
             // Переносим вызов LoadComplaintsAsync() в асинхронный метод после инициализации
             _ = LoadComplaintsAsync();
+            _ = LoadSettings();
+        }
+        public async Task LoadSettings()
+        {
+            try
+            {
+                var response = await _httpClient.GetStringAsync(new API_URL("/settings"));
+                var settingsResponse = JsonSerializer.Deserialize<ApiResponse>(response);
+                if (settingsResponse != null && settingsResponse.Settings != null && settingsResponse.Space != null)
+                {
+                    // Сохраняем данные в AppSettings
+                    AppSettings.UploadDisablePercentage = settingsResponse.Settings.UploadDisablePercentage;
+                    AppSettings.TotalSpace = settingsResponse.Space.Total;
+                    AppSettings.FreeSpace = settingsResponse.Space.Free;
+                    AppSettings.UsedSpace = settingsResponse.Space.Used;
+                    AppSettings.UsedPercent = settingsResponse.Space.UsedPercent;
+                }
+                else
+                {
+                    Debug.WriteLine("Ошибка при десериализации ответа или отсутствуют нужные данные.");
+                }
+
+                // Для отладки выводим полученные данные
+                Debug.WriteLine($"Settings: {settingsResponse?.Settings?.UploadDisablePercentage}");
+                Debug.WriteLine($"Space Total: {settingsResponse?.Space?.Total}");
+                Debug.WriteLine($"Space Free: {settingsResponse?.Space?.Free}");
+                Debug.WriteLine($"Space Used: {settingsResponse?.Space?.Used}");
+                Debug.WriteLine($"Space UsedPercent: {settingsResponse?.Space?.UsedPercent}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при загрузке данных настроек: {ex.Message}");
+            }
         }
 
-        // Обработчик кнопки выхода
-        private async void OnLogoutClicked()
-        {
-            // Добавляем токен в заголовок Authorization
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
-            // Отправка POST-запроса на сервер
-            HttpResponseMessage response = await _httpClient.PostAsync(new API_URL("logout"), null);
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            // Очистка сессии (юзер и токен)
-            AuthSession.ClearSession();
-            await Shell.Current.GoToAsync("//LoginPage");
-        }
+
+
 
         private async Task LoadComplaintsAsync()
         {
@@ -63,7 +88,7 @@ namespace PicsyncAdmin.ViewModels
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
                 // Получение жалоб
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL("complaints"));
+                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL("complaints?status=null"));
 
                 if (response?.Complaints != null)
                 {
@@ -85,7 +110,6 @@ namespace PicsyncAdmin.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при загрузке жалоб: {ex.Message}");
                 await Shell.Current.DisplayAlert("Ошибка", $"Не удалось загрузить жалобы: {ex.Message}", "ОК");
             }
             finally
