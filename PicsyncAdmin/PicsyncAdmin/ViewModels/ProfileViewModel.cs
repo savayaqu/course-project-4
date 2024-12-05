@@ -20,13 +20,10 @@ namespace PicsyncAdmin.ViewModels
         private readonly string? _token = AuthSession.Token;
         private readonly HttpClient _httpClient;
         public ICommand LogoutCommand { get; }
-
         public ProfileViewModel()
         {
-            Debug.WriteLine(User.Name);
             _httpClient = new HttpClient();
             LogoutCommand = new Command(OnLogoutClicked);
-
         }
         // Обработчик кнопки выхода
         private async void OnLogoutClicked()

@@ -6,14 +6,7 @@
              x:Class="PicsyncAdmin.App">
     <Application.Resources>
         <ResourceDictionary>
-            
             <converters:StatusIsNullConverter x:Key="StatusIsNullConverter"/>
-            <Color x:Key="BackgroundColorLight">#FFFFFF</Color>
-            <Color x:Key="TextColorLight">#000000</Color>
-            <Color x:Key="ButtonBackgroundColorLight">#808080</Color>
-            <Color x:Key="BackgroundColorDark">#000000</Color>
-            <Color x:Key="TextColorDark">#FFFFFF</Color>
-            <Color x:Key="ButtonBackgroundColorDark">#A9A9A9</Color>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />

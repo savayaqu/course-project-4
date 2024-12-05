@@ -33,5 +33,10 @@
                 VerticalOptions="Start"
                 HorizontalOptions="Center"
                 FontSize="18"/>
+        <Label
+        Text="{Binding TotalSpace}"
+        VerticalOptions="Start"
+        HorizontalOptions="Center"
+        FontSize="18"/>
     </VerticalStackLayout>
 </ContentPage>

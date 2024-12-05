@@ -9,8 +9,8 @@ namespace PicsyncAdmin.Methods
 {
     public class ApiResponse
     {
-        public Settings? Settings { get; set; }
-        public Space? Space { get; set; }
+        [JsonPropertyName("settings")] public Settings? Settings { get; set; }
+        [JsonPropertyName("space")] public Space? Space { get; set; }
     }
 
     public class Settings

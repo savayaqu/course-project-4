@@ -1,4 +1,5 @@
-﻿using PicsyncAdmin.Models;
+﻿using PicsyncAdmin.Helpers;
+using PicsyncAdmin.Models;
 using PicsyncAdmin.Resources;
 using PicsyncAdmin.ViewModels;
 using PicsyncAdmin.Views;
@@ -13,6 +14,7 @@ namespace PicsyncAdmin
         public App()
         {
             InitializeComponent();
+            AuthSession.LoadSession();
 
             // Назнаение AppShell в качестве главной страницы
             MainPage = new AppShell();

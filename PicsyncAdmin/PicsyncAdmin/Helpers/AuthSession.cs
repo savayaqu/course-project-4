@@ -1,9 +1,7 @@
 ﻿using PicsyncAdmin.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Maui.Storage;
+using System.Text.Json;
+using System.Diagnostics;
 
 namespace PicsyncAdmin.Helpers
 {
@@ -17,6 +15,28 @@ namespace PicsyncAdmin.Helpers
         {
             User = null;
             Token = null;
+            Preferences.Remove("User");
+            Preferences.Remove("Token");
+        }
+
+        // Метод для восстановления данных из Preferences
+        public static void LoadSession()
+        {
+            // Восстанавливаем токен
+            Token = Preferences.Get("Token", null);
+            // Восстанавливаем пользователя только если в Preferences есть данные
+            var userJson = Preferences.Get("User", null);
+            if (!string.IsNullOrEmpty(userJson))
+            {
+                try
+                {
+                    User = JsonSerializer.Deserialize<User>(userJson);
+                }
+                catch (Exception ex)
+                {
+                    ClearSession(); // Очистим сессию при ошибке
+                }
+            }
         }
     }
 }

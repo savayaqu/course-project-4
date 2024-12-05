@@ -32,25 +32,11 @@ namespace PicsyncAdmin.ViewModels
             set => SetProperty(ref _password, value);
         }
         public ICommand LoginCommand { get; }
-        public ICommand CheckTokenCommand { get; }
 
         public LoginViewModel()
         {
             LoginCommand = new Command(OnLoginClicked);
-            CheckTokenCommand = new Command(OnCheckToken);
         }
-
-        // Логика для проверки токена и наличия пользователя
-        public static async void OnCheckToken()
-        {
-            if (!string.IsNullOrEmpty(AuthSession.Token) && AuthSession.User != null)
-            {
-                // Переход на главную страницу
-                await Shell.Current.GoToAsync("//MainPage");
-            }
-        }
-
-
 
         private async void OnLoginClicked()
         {
@@ -66,10 +52,14 @@ namespace PicsyncAdmin.ViewModels
                 // После успешной аутентификации сохраняем в Helpers.AuthSession юзера и токен
                 AuthSession.User = authResponse.User;
                 AuthSession.Token = authResponse.Token;
+
+                // Сохраняем в Preferences
+                Preferences.Set("User", JsonSerializer.Serialize(authResponse.User));
+                Preferences.Set("Token", authResponse.Token);
+
                 await Shell.Current.GoToAsync("//MainPage");
             }
         }
-
 
         private async Task<AuthResponse> AuthenticateUserAsync(string login, string password)
         {
