@@ -21,6 +21,8 @@ public static class Fetch
     ) {
         setIsFetch?.Invoke(true);
         setError?.Invoke(null);
+
+        // Готовим запрос
         var request = new HttpRequestMessage(method, path);
         if (AuthData.Token != null)
             request.Headers.Add("Authorization", $"Bearer {AuthData.Token}");
@@ -39,20 +41,24 @@ public static class Fetch
             }
             else throw new ArgumentException("body should be of the type HttpContent if serialize is false");
         }
+
+        // Запрашиваем
         var response = await _httpClient.SendAsync(request);
+
+        // Обрабатываем ответ
         if (!response.IsSuccessStatusCode)
         {
             var responseJsonErr = await response.Content.ReadAsStringAsync();
-            try
-            {
+            //try
+            //{
+                Debug.WriteLine("FETCH: ERROR: Json: " + responseJsonErr);
                 var responseBodyErr = JsonSerializer.Deserialize<ErrorResponse>(responseJsonErr);
-                Debug.WriteLine("FETCH: ERROR: Obj: " + JsonSerializer.Serialize(responseBodyErr) + " Json: " + responseJsonErr);
                 setError?.Invoke(responseBodyErr?.Message);
-            }
-            catch (Exception ex)
-            {
-                setError?.Invoke(ex.Message); // FIXME: удалить
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    setError?.Invoke(ex.Message); // FIXME: удалить
+            //}
         }
         setIsFetch?.Invoke(false);
         return response;
@@ -78,48 +84,4 @@ public static class Fetch
             return (response, default(T));
         }
     }
-
-    /*
-    public static object Do(
-        HttpMethod method,
-        string path,
-        out bool isFetch,
-        out string? error,
-        dynamic? body,
-        bool serialize = false
-    ) {
-        error = null;
-        isFetch = true;
-        var response = DoAsync(method, path, body, serialize).Result;
-        isFetch = false;
-        if (!response.IsSuccessStatusCode)
-        {
-            var responseJson = response.Content.ReadAsStringAsync().Result;
-            var responseBody = JsonSerializer.Deserialize(responseJson);
-            error = responseBody?.message;
-        }
-        return response;
-    }
-
-    public static object Do<T>(
-        HttpMethod method,
-        string path,
-        out bool isFetch,
-        out string? error,
-        dynamic? body,
-        bool serialize = false
-    ) {
-        error = null;
-        isFetch = true;
-        (HttpResponseMessage response, T? responseBody) = DoAsync<T>(method, path, body, serialize).Result;
-        isFetch = false;
-        if (!response.IsSuccessStatusCode)
-        {
-            var responseJsonErr = response.Content.ReadAsStringAsync().Result;
-            var responseBodyErr = JsonSerializer.Deserialize<dynamic>(responseJsonErr);
-            error = responseBodyErr?.message;
-        }
-        return (response, responseBody);
-    }
-    */
 }

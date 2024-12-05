@@ -4,8 +4,6 @@ using PicsyncClient.Models;
 using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
-using System.Diagnostics;
-using System.Text.Json;
 
 namespace PicsyncClient.ViewModels.Auth;
 

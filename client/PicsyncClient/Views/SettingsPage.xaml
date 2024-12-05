@@ -7,6 +7,6 @@
             Text="Тут профиль и настройки"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
-        <Button Clicked="OnLogoutButtonClicked" Text="Выйти"/>
+        <Button Command="{Binding TryExitCommand}" Text="Выйти"/>
     </VerticalStackLayout>
 </ContentPage>

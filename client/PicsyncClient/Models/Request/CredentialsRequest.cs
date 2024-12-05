@@ -2,14 +2,8 @@
 
 namespace PicsyncClient.Models.Request;
 
-public class CredentialsRequest
+public class CredentialsRequest(string login, string password)
 {
-    public CredentialsRequest(string login, string password)
-    {
-        Login = login;
-        Password = password;
-    }
-
-    [JsonPropertyName("login"   )] public string Login    { get; set; }
-    [JsonPropertyName("password")] public string Password { get; set; }
+    [JsonPropertyName("login"   )] public string Login    { get; set; } = login;
+    [JsonPropertyName("password")] public string Password { get; set; } = password;
 }

@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PicsyncClient.Models;
+using ObservableDictionary;
 using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -35,7 +36,7 @@ public partial class SignupViewModel : ObservableObject
     private string? error = null;
 
     [ObservableProperty]
-    private Dictionary<string, List<string>>? badFields = null;
+    private ObservableStringDictionary<List<string>> badFields = [];
 
     [RelayCommand]
     private void GoToLogin()
@@ -46,16 +47,20 @@ public partial class SignupViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanSignup))]
     private async Task TrySignup()
     {
-        if (Password == PasswordConfirm)
+        Error = null;
+        BadFields = [];
+
+        if (Password != PasswordConfirm)
         {
-            Error = "Пароли не совпадают";
+            Error = "123Ошибка валидации данных";
+            BadFields.Add("passwordConfirm", ["Пароли не совпадают"]);
             return;
         }
         var regData = new RegisterRequest(Login, Password, Nickname);
         try
         {
             (var res, var body) = await Fetch.DoAsync<AuthResponse>(
-                HttpMethod.Post, "login",
+                HttpMethod.Post, "register",
                 isFetch => IsFetch = isFetch,
                 error   => Error   = error,
                 regData,
@@ -66,13 +71,13 @@ public partial class SignupViewModel : ObservableObject
             {
                 try
                 {
-                    var errorJson = await res.Content.ReadAsStreamAsync();
-                    BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors;
+                    Error = "Ошибка валидации данных";
+                    var errorJson = await res.Content.ReadAsStringAsync();
+                    Debug.WriteLine("ERRJSON: " + errorJson);
+                    BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
                 }
-                catch
-                {
-
-                }
+                catch {}
+                return;
             }
             else if (!res.IsSuccessStatusCode)
             {

@@ -1,4 +1,4 @@
-using PicsyncClient.Utils;
+using PicsyncClient.ViewModels.Auth;
 
 namespace PicsyncClient.Views.Auth;
 
@@ -7,16 +7,16 @@ public partial class SignupPage : ContentPage
 	public SignupPage()
 	{
 		InitializeComponent();
-	}
-
-    private void OnLoginLinkTapped(object sender, TappedEventArgs e)
-    {
-		Shell.Current.GoToAsync("//Login");
+        BindingContext = new SignupViewModel();
     }
 
-    private void OnSignupButtonClicked(object sender, EventArgs e)
+    private void FocusToEntry2(object sender, EventArgs e) => Entry2.Focus();
+    private void FocusToEntry3(object sender, EventArgs e) => Entry3.Focus();
+    private void FocusToEntry4(object sender, EventArgs e) => Entry4.Focus();
+
+    private void TrySignup(object sender, EventArgs e)
     {
-        // TODO: рег и вход
-        throw new NotImplementedException();
+        if (BindingContext is SignupViewModel vm)
+            vm.TrySignupCommand.Execute(null);
     }
 }
