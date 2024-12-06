@@ -4,8 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Maui;
 using MvvmHelpers;
 using PicsyncAdmin.Helpers;
-using PicsyncAdmin.Methods;
 using PicsyncAdmin.Models;
+using PicsyncAdmin.Models.Response;
 using PicsyncAdmin.Resources;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -32,10 +32,8 @@ namespace PicsyncAdmin.ViewModels
         private int currentPage = 1;
         [ObservableProperty]
         private string usedSpaceHumanReadable;
-
         [ObservableProperty]
         private string totalSpaceHumanReadable;
-
         [ObservableProperty]
         private string freeSpaceHumanReadable;
         [ObservableProperty]
@@ -52,6 +50,19 @@ namespace PicsyncAdmin.ViewModels
             _ = LoadComplaints();
             _ = LoadSettings();
         }
+        [RelayCommand]
+        private async Task NavigateToUserContentPage(Complaint complaint)
+        {
+            if (complaint == null || complaint.Album == null)
+                return;
+
+            var albumId = complaint.Album.Id;
+            var picturePath = complaint.Picture?.Path;
+
+            await Shell.Current.GoToAsync($"UserContentPage?albumId={albumId}&picturePath={Uri.EscapeDataString(picturePath ?? string.Empty)}");
+        }
+
+
 
         // Обработчик события обновления
         private void OnSettingsUpdated()
@@ -82,7 +93,7 @@ namespace PicsyncAdmin.ViewModels
                 _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
                 IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}"));
+                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=10&reverse&sort"));
                 IsFetch = false;
 
             if (response?.Complaints != null)
@@ -98,7 +109,10 @@ namespace PicsyncAdmin.ViewModels
                             {
                                 // Генерация пути для картинки
                                 complaint.Picture.Path ??=
-                                    new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign={complaint.Sign}");
+                                    
+                                //new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign={complaint.Sign}");
+                                new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/h480?sign={complaint.Sign}");
+
                             }
                             Complaints.Add(complaint);
                         }

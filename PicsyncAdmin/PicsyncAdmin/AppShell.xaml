@@ -3,21 +3,21 @@
     x:Class="PicsyncAdmin.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:PicsyncAdmin"
+    xmlns:local="clr-namespace:PicsyncAdmin.Views"
     Shell.FlyoutBehavior="Disabled"
     Title="PicsyncAdmin">
 
     <!-- Указываем страницу входа Views.Auth.Login как главную -->
     <ShellContent
         Title="Авторизация"
-        ContentTemplate="{DataTemplate local:Views.Auth.Login}"
+        ContentTemplate="{DataTemplate local:Auth.Login}"
         Route="LoginPage" />
     <TabBar>
         <Tab Title="Главная" Icon="house.svg">
-            <ShellContent ContentTemplate="{DataTemplate local:Views.Home}" Route="MainPage"/>
+            <ShellContent ContentTemplate="{DataTemplate local:Home}" Route="MainPage"/>
         </Tab>
         <Tab Title="Профиль" Icon="user.svg">
-            <ShellContent ContentTemplate="{DataTemplate local:Views.Profile}" Route="Profile"/>
+            <ShellContent ContentTemplate="{DataTemplate local:Profile}" Route="Profile"/>
         </Tab>
     </TabBar>
 </Shell>

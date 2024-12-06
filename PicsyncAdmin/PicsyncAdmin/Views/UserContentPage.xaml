@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
+             x:Class="PicsyncAdmin.Views.UserContentPage"
+             Title="UserContentPage">
+    <ScrollView>
+        <VerticalStackLayout Spacing="10" Padding="20">
+            <!-- Главное изображение -->
+            <Image Source="{Binding MainImagePath}" 
+                   Aspect="AspectFit" 
+                   IsVisible="{Binding IsMainImageVisible}" />
+
+            <!-- Заголовок для изображений -->
+            <Label Text="Изображения альбома:" 
+                   FontAttributes="Bold" 
+                   FontSize="18" />
+
+            <!-- Коллекция изображений -->
+            <CollectionView ItemsSource="{Binding AlbumPictures}" x:Name="ImageCollection">
+                <CollectionView.ItemsLayout>
+                    <GridItemsLayout Orientation="Vertical" 
+                                     HorizontalItemSpacing="5" 
+                                     x:Name="AdaptiveGridLayout" />
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Image Source="{Binding Path}" 
+                               Aspect="AspectFit" 
+                               Margin="5" />
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

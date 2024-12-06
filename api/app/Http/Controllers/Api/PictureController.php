@@ -80,7 +80,7 @@ class PictureController extends Controller
 
         // Получаем сколько сейчас весят пользовательские картинки и какой лимит сервера по загрузкам
         $currentStorageSize = $user->pictures()->sum('size');
-        $maxStorageSize = config('settings.storage_size');
+        $maxStorageSize = config('settings.free_storage_limit');
         //TODO: Проверка из кэша $diskUsage = Cache::get('disk_usage');
 
         // Массивы для ответа

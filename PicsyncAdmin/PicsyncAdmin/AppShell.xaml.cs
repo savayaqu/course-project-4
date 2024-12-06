@@ -1,5 +1,6 @@
 ﻿using PicsyncAdmin.Helpers;
 using PicsyncAdmin.ViewModels;
+using PicsyncAdmin.Views;
 
 namespace PicsyncAdmin
 {
@@ -12,6 +13,9 @@ namespace PicsyncAdmin
                 GoToAsync("//MainPage");
             else
                 GoToAsync("//LoginPage");
+
+            Routing.RegisterRoute("UserContentPage", typeof(UserContentPage));
+
         }
     }
 }

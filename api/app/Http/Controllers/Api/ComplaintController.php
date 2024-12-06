@@ -86,6 +86,7 @@ class ComplaintController extends Controller
 
         Complaint::create([
             'picture_id'        => $picture->id,
+            'album_id'          => $album->id,
             'description'       => $request->input('description'),
             'complaint_type_id' => $request->input('typeId'),
             'from_user_id'      => $user->id,

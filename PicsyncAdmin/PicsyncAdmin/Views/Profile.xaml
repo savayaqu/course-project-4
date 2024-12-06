@@ -4,39 +4,27 @@
              x:Class="PicsyncAdmin.Views.Profile"
              Title="Profile">
 
-    <VerticalStackLayout Padding="20">
+    <VerticalStackLayout Padding="20" Spacing="15">
 
-        <!-- Приветствие -->
-        <Label Text="Welcome to .NET MAUI!"
-               VerticalOptions="Start" 
-               HorizontalOptions="Center"
+        <Label Text="Редактирование профиля"
                FontSize="24"
-               FontAttributes="Bold"/>
-        <Button Text="Logout"
-        Command="{Binding LogoutCommand}"
-        HorizontalOptions="End"
-        VerticalOptions="Center"
-        Padding="10,5" />
-        <!-- Отображение данных пользователя -->
-        <Label
-               Text="{Binding User.Name}"
-               VerticalOptions="Start"
-               HorizontalOptions="Center"
-               FontSize="18"/>
-        <Label
-                Text="{Binding User.Login}"
-                VerticalOptions="Start"
-                HorizontalOptions="Center"
-                FontSize="18"/>
-        <Label
-                Text="{Binding User.Password}"
-                VerticalOptions="Start"
-                HorizontalOptions="Center"
-                FontSize="18"/>
-        <Label
-        Text="{Binding TotalSpace}"
-        VerticalOptions="Start"
-        HorizontalOptions="Center"
-        FontSize="18"/>
+               FontAttributes="Bold"
+               HorizontalOptions="Center" />
+
+        <Entry Placeholder="Имя" Text="{Binding Name}" />
+        <Entry Placeholder="Логин" Text="{Binding Login}" />
+        <Entry Placeholder="Новый пароль" Text="{Binding Password}" IsPassword="True" />
+        <Entry Placeholder="Повторите пароль" Text="{Binding ConfirmPassword}" IsPassword="True" />
+
+        <Label Text="{Binding ValidationMessage}"
+       TextColor="{Binding ValidationMessageColor}"
+       HorizontalOptions="Center" />
+
+        <HorizontalStackLayout Spacing="10">
+            <Button Text="Сохранить" Command="{Binding SaveChangesCommand}" />
+            <Button Text="Выход" Command="{Binding LogoutCommand}" />
+        </HorizontalStackLayout>
+
     </VerticalStackLayout>
 </ContentPage>
+

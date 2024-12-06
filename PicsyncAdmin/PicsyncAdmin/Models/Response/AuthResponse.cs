@@ -5,12 +5,12 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace PicsyncAdmin.Models
+namespace PicsyncAdmin.Models.Response
 {
     public class AuthResponse
     {
         // Класс описывающий ответ модуля Auth
-        [JsonPropertyName("user")]              public User User { get; set; }
-        [JsonPropertyName("token")]             public string Token { get; set; }
+        [JsonPropertyName("user")] public User User { get; set; }
+        [JsonPropertyName("token")] public string Token { get; set; }
     }
 }
