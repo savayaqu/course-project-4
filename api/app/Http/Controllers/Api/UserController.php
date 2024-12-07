@@ -46,6 +46,7 @@ class UserController extends Controller
 
     public function update(UserUpdateRequest $request, User $user): JsonResponse
     {
+        //TODO: проверять что меняется бан и вызывать метод
         $user->update($request->validated());
         return response()->json(['user' => UserResource::make($user)]);
     }

@@ -78,7 +78,7 @@ class ComplaintController extends Controller
             'page'       => $complaintsPage->currentPage(),
             'limit'      => $complaintsPage->perPage(),
             'total'      => $complaintsPage->total(),
-            'albums'     => $groupedComplaints->values()->all(), // Возвращаем сгруппированные альбомы с жалобами
+            'complaints'     => $groupedComplaints->values()->all(), // Возвращаем сгруппированные альбомы с жалобами
         ]);
     }
 

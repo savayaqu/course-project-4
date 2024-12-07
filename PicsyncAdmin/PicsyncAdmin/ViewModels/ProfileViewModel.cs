@@ -97,8 +97,6 @@ namespace PicsyncAdmin.ViewModels
             }
         }
 
-
-
         [RelayCommand]
         private async Task LogoutAsync()
         {

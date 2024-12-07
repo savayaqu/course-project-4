@@ -17,6 +17,7 @@ class WarningController extends Controller
     {
         if(Warning::where('user_id', $user->id)->count() >= config('settings.warning_limit_for_ban'))
         {
+            //TODO: вынести в метод
             $user->update(['is_banned' => true]);
             throw new ApiException("User $user->username already banned", 409);
         }
@@ -32,4 +33,5 @@ class WarningController extends Controller
         $warning->delete();
         return response()->json(null, 204);
     }
+
 }

@@ -60,6 +60,7 @@ class User extends Model implements
             'album_id'
         );
     }
+    //TODO: метод бана с удалением связей доступов и токенов
     public function complaintsFrom() {
         return $this->hasMany(Complaint::class, 'from_user_id');
     }

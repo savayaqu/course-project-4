@@ -1,29 +1,18 @@
+using PicsyncAdmin.Models;
 using PicsyncAdmin.ViewModels;
 
 namespace PicsyncAdmin.Views;
 
-[QueryProperty(nameof(AlbumId), "albumId")]
-[QueryProperty(nameof(PicturePath), "picturePath")]
+
 public partial class UserContentPage : ContentPage
 {
-    private UserContentPageViewModel ViewModel => (UserContentPageViewModel)BindingContext;
+    private UserContentViewModel ViewModel => (UserContentViewModel)BindingContext;
 
-    public ulong AlbumId
-    {
-        get => ViewModel.AlbumId;
-        set => ViewModel.AlbumId = value;
-    }
 
-    public string? PicturePath
-    {
-        get => ViewModel.PicturePath;
-        set => ViewModel.PicturePath = value;
-    }
-
-    public UserContentPage()
+    public UserContentPage(Complaint complaint)
     {
         InitializeComponent();
-        BindingContext = new UserContentPageViewModel(new HttpClient()); // Здесь создаётся экземпляр ViewModel
+        BindingContext = new UserContentViewModel(complaint); // Здесь создаётся экземпляр ViewModel
         SizeChanged += OnSizeChanged;
 
     }

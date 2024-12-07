@@ -7,6 +7,7 @@ using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Models.Response;
 using PicsyncAdmin.Resources;
+using PicsyncAdmin.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
@@ -43,10 +44,8 @@ namespace PicsyncAdmin.ViewModels
         public HomeViewModel()
         {
             _httpClient = new HttpClient();
-
             // Подписка на событие обновления настроек
             AppSettings.SettingsUpdated += OnSettingsUpdated;
-            _httpClient = new HttpClient();
             _ = LoadComplaints();
             _ = LoadSettings();
         }
@@ -59,7 +58,7 @@ namespace PicsyncAdmin.ViewModels
             var albumId = complaint.Album.Id;
             var picturePath = complaint.Picture?.Path;
 
-            await Shell.Current.GoToAsync($"UserContentPage?albumId={albumId}&picturePath={Uri.EscapeDataString(picturePath ?? string.Empty)}");
+            await Shell.Current.Navigation.PushAsync(new UserContentPage(complaint));
         }
 
 
@@ -90,36 +89,49 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
         private async Task LoadComplaints()
         {
+            try
+            {
                 _httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+
                 IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=10&reverse&sort"));
+                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=5"));
                 IsFetch = false;
 
-            if (response?.Complaints != null)
+                if (response?.Complaints != null)
                 {
                     Shell.Current.Dispatcher.Dispatch(() =>
                     {
-                        //Complaints.Clear();
                         CanLoadMore = response.Total > response.Page * response.Limit;
                         CurrentPage++;
-                        foreach (var complaint in response.Complaints)
-                        {
-                            if (complaint.Picture != null)
-                            {
-                                // Генерация пути для картинки
-                                complaint.Picture.Path ??=
-                                    
-                                //new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign={complaint.Sign}");
-                                new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/h480?sign={complaint.Sign}");
 
+                        foreach (var albumData in response.Complaints)
+                        {
+                            foreach (var complaint in albumData.Complaints)
+                            {
+                                if (complaint.Picture != null)
+                                {
+                                    complaint.Picture.Path ??= new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign={complaint.Sign}");
+                                }
+                                Complaints.Add(complaint);
                             }
-                            Complaints.Add(complaint);
                         }
                     });
                 }
-           
+            }
+            catch (JsonException ex)
+            {
+                Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected Error: {ex.Message}");
+            }
         }
+
+
+
+
         private bool CanLoadComplaints() =>
             !IsFetch;
 
