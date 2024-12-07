@@ -7,6 +7,7 @@ use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Complaint\ComplaintCreateRequest;
 use App\Http\Requests\Api\Complaint\ComplaintUpdateRequest;
+use App\Http\Resources\AlbumResource;
 use App\Http\Resources\ComplaintResource;
 use App\Models\Album;
 use App\Models\Complaint;
@@ -24,51 +25,63 @@ class ComplaintController extends Controller
         $sortBy = $request->query('sort', 'created_at');   // Сортировка по полю (по умолчанию дата)
         $orderBy = $request->has('reverse') ? 'desc' : 'asc'; // Направление сортировки
         $limit = intval($request->query('limit'));
-        if (!$limit)
+        if (!$limit) {
             $limit = 30;
+        }
 
         // Проверка валидации сортировки
         $allowedSortFields = [
-            'id',
-            'description',
-            'status',
-            'album_id',
-            'picture_id',
-            'from_user_id',
-            'about_user_id',
-            'complaint_type_id',
-            'created_at',
-            'updated_at'
+            'id', 'description', 'status', 'album_id', 'picture_id', 'from_user_id',
+            'about_user_id', 'complaint_type_id', 'created_at', 'updated_at'
         ];
-        if (!in_array($sortBy, $allowedSortFields))
+        if (!in_array($sortBy, $allowedSortFields)) {
             throw new ApiException('Sort must be of the following types: ' . join(', ', $allowedSortFields), 400);
+        }
 
+        // Инициализация запроса на выборку жалоб
         $query = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album'])
             ->orderBy($sortBy, $orderBy);
 
         // Фильтрация по статусу
         if ($request->has('status')) {
-            if ($status === "null")
+            if ($status === "null") {
                 // Выбираем не рассмотренные записи
                 $query->whereNull('status');
-            else
+            } else {
                 // Фильтруем по конкретному значению
                 $query->where('status', $status);
+            }
         }
 
-        // Если пользователь не админ => выводим СВОИ жалобы
-        if ($user->role->code !== 'admin')
+        // Если пользователь не админ => выводим только его жалобы
+        if ($user->role->code !== 'admin') {
             $query->where('from_user_id', $user->id);
+        }
 
+        // Получаем все жалобы в пагинированном виде
         $complaintsPage = $query->paginate($limit);
 
+        // Группируем жалобы по альбому
+        $groupedComplaints = $complaintsPage->getCollection()->groupBy(function ($complaint) {
+            return $complaint->album ? $complaint->album->id : 'no_album'; // Группируем по album_id
+        })->map(function ($complaints, $albumId) {
+            $album = $complaints->first()->album;  // Берём альбом из первой жалобы в группе, если он есть
+            return [
+                'album' => $album ? AlbumResource::make($album) : null, // Используем AlbumResource
+                'complaintsCount' => $complaints->count(), // Количество жалоб на этот альбом
+                'complaints' => ComplaintResource::collection($complaints), // Жалобы, относящиеся к этому альбому
+            ];
+        });
+
+        // Преобразуем результат в нужный формат для ответа
         return response()->json([
             'page'       => $complaintsPage->currentPage(),
             'limit'      => $complaintsPage->perPage(),
             'total'      => $complaintsPage->total(),
-            'complaints' => ComplaintResource::collection($complaintsPage->items())
+            'albums'     => $groupedComplaints->values()->all(), // Возвращаем сгруппированные альбомы с жалобами
         ]);
     }
+
 
     public function storeToPicture(ComplaintCreateRequest $request, Album $album, Picture $picture): JsonResponse
     {
