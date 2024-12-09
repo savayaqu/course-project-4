@@ -19,6 +19,8 @@ namespace PicsyncAdmin.ViewModels
 {
     public partial class HomeViewModel : ObservableObject
     {
+        public static HomeViewModel Instance { get; private set; }
+
         private readonly User? _user = AuthSession.User;
         private readonly string? _token = AuthSession.Token;
         private readonly HttpClient _httpClient;
@@ -43,6 +45,7 @@ namespace PicsyncAdmin.ViewModels
         // Конструктор
         public HomeViewModel()
         {
+            Instance = this;
             _httpClient = new HttpClient();
             // Подписка на событие обновления настроек
             AppSettings.SettingsUpdated += OnSettingsUpdated;
@@ -60,7 +63,17 @@ namespace PicsyncAdmin.ViewModels
 
             await Shell.Current.Navigation.PushAsync(new UserContentPage(complaint));
         }
-
+        [RelayCommand]
+        public async Task ResetComplaints()
+        {
+            Shell.Current.Dispatcher.Dispatch(() =>
+            {
+                Complaints.Clear(); // Очистка списка жалоб
+                CurrentPage = 1;    // Сброс текущей страницы
+                CanLoadMore = false; // Сброс состояния загрузки дополнительных данных
+            });
+            await LoadComplaints();
+        }
 
 
         // Обработчик события обновления
@@ -87,7 +100,7 @@ namespace PicsyncAdmin.ViewModels
                 AppSettings.UsedPercent = settingsResponse.Space.UsedPercent;
         }
         [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
-        private async Task LoadComplaints()
+        public async Task LoadComplaints()
         {
             try
             {

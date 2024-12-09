@@ -13,8 +13,9 @@
                    Text="Нерассмотренные жалобы"
                    HorizontalOptions="Center"
                    FontSize="20"
-                   Padding="20" /> 
-
+                   Padding="20" />
+            <!---->
+            <Button HeightRequest="20" WidthRequest="20" ImageSource="refresh.svg" Command="{Binding ResetComplaintsCommand}"/>
             <!-- Прогресс бар, отображающий использование пространства -->
             <StackLayout Grid.Row="2" Spacing="10" Padding="20">
                 <Label Text="Использовано пространства"

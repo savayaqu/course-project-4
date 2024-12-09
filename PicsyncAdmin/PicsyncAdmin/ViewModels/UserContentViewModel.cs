@@ -34,11 +34,19 @@ namespace PicsyncAdmin.ViewModels
         public async Task IssueWarning()
         {
             string comment = await Shell.Current.DisplayPromptAsync("Создание предупреждения", "Комментарий");
+            //создание предупреждения
             var response = await _httpClient.PostAsJsonAsync(new API_URL($"/users/{Complaint.AboutUser.Id}/warnings"), new { Comment = comment });
-            if (response.IsSuccessStatusCode)
+            //перевод жалобы в статус просмотрено
+            var complaintResponse = await _httpClient.PostAsJsonAsync(new API_URL($"/complaints/{Complaint.Id}"), new { Status = 1 });
+
+            if (response.IsSuccessStatusCode & complaintResponse.IsSuccessStatusCode)
             {
+
                 await Shell.Current.DisplayAlert("Успех", "Предупреждение выдано", "OK");
+                await HomeViewModel.Instance.ResetComplaints();
+                await Shell.Current.Navigation.PopModalAsync(); // Закрываем модальное окно
             }
+            // TODO: для бана и предупреждения переводить все жалобы в статус выполнен и возвращаться на страницу главную
             else
             {
                 await Shell.Current.DisplayAlert("Ошибка", "Не удалось выдать предупреждение", "OK");
@@ -51,7 +59,6 @@ namespace PicsyncAdmin.ViewModels
                 "Подтверждение удаления",
                 "Вы уверены, что хотите удалить этот альбом?",
                 "Да", "Нет");
-
             if (result)
             {
                 _httpClient.DefaultRequestHeaders.Authorization =
@@ -59,6 +66,7 @@ namespace PicsyncAdmin.ViewModels
                 var response = await _httpClient.DeleteAsync(new API_URL($"/albums/{Complaint.Album.Id}"));
                 if (response.IsSuccessStatusCode)
                 {
+                    await LoadDataAsync(); //Загружаем жалобы
                     await Shell.Current.GoToAsync("//HomePage"); // Возвращаем на HomePage
                 }
                 else
@@ -83,6 +91,8 @@ namespace PicsyncAdmin.ViewModels
                 if (response.IsSuccessStatusCode)
                 {
                     await Shell.Current.DisplayAlert("Успех", "Пользователь заблокирован", "OK");
+                    await HomeViewModel.Instance.ResetComplaints();
+                    await Shell.Current.Navigation.PopModalAsync(); // Закрываем модальное окно
                 }
                 else
                 {
