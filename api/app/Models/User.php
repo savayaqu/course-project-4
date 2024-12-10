@@ -60,7 +60,12 @@ class User extends Model implements
             'album_id'
         );
     }
-    //TODO: метод бана с удалением связей доступов и токенов и перевод жалоб в статус 1
+    public function ban()
+    {
+        AlbumAccess::whereIn('album_id', $this->albums()->pluck('id'))->delete();
+        Complaint::where('about_user_id', $this->id)->update(['status' => 1]);
+        $this->tokens()->delete();
+    }
     public function complaintsFrom() {
         return $this->hasMany(Complaint::class, 'from_user_id');
     }

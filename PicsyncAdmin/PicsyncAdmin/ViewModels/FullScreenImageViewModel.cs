@@ -2,12 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
-using PicsyncAdmin.Resources;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -42,7 +36,7 @@ namespace PicsyncAdmin.ViewModels
                 _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
                 // Запрос к API для удаления изображения
-                var response = await _httpClient.DeleteAsync(new API_URL($"/albums/{albumId}/pictures/{picture.Id}"));
+                var response = await _httpClient.DeleteAsync($"/albums/{albumId}/pictures/{picture.Id}");
 
                 if (response.IsSuccessStatusCode)
                 {

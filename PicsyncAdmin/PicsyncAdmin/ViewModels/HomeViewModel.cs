@@ -1,18 +1,14 @@
 ﻿
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Maui;
-using MvvmHelpers;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Models.Response;
-using PicsyncAdmin.Resources;
 using PicsyncAdmin.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Windows.Input;
 using ObservableObject = CommunityToolkit.Mvvm.ComponentModel.ObservableObject;
 
 namespace PicsyncAdmin.ViewModels
@@ -41,7 +37,7 @@ namespace PicsyncAdmin.ViewModels
         private string freeSpaceHumanReadable;
         [ObservableProperty]
         private double usedPercentDisplay;
-
+        // TODO: выводить статус загрузки во время жалоб и если жалоб нет то писать что жалоб нет
         // Конструктор
         public HomeViewModel()
         {
@@ -69,7 +65,7 @@ namespace PicsyncAdmin.ViewModels
             Shell.Current.Dispatcher.Dispatch(() =>
             {
                 Complaints.Clear(); // Очистка списка жалоб
-                CurrentPage = 1;    // Сброс текущей страницы
+                CurrentPage = 0;    // Сброс текущей страницы
                 CanLoadMore = false; // Сброс состояния загрузки дополнительных данных
             });
             await LoadComplaints();
@@ -91,7 +87,7 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task LoadSettings()
         {
-                var response = await _httpClient.GetStringAsync(new API_URL("/settings"));
+                var response = await _httpClient.GetStringAsync("/settings");
                 var settingsResponse = JsonSerializer.Deserialize<ApiResponse>(response);
                 AppSettings.UploadDisablePercentage = settingsResponse.Settings.UploadDisablePercentage;
                 AppSettings.TotalSpace = settingsResponse.Space.Total;
@@ -108,7 +104,7 @@ namespace PicsyncAdmin.ViewModels
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
                 IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=5"));
+                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>($"complaints?status=null&page={CurrentPage}&limit=5");
                 IsFetch = false;
 
                 if (response?.Complaints != null)
@@ -124,7 +120,7 @@ namespace PicsyncAdmin.ViewModels
                             {
                                 if (complaint.Picture != null)
                                 {
-                                    complaint.Picture.Path ??= new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/original?sign={complaint.Sign}");
+                                    complaint.Picture.Path ??= $"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}";
                                 }
                                 Complaints.Add(complaint);
                             }

@@ -3,8 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Diagnostics;
 using PicsyncAdmin.Helpers;
-using Microsoft.Maui.Graphics;
-using PicsyncAdmin.Resources;
 using PicsyncAdmin.Models.Response;
 
 namespace PicsyncAdmin.ViewModels
@@ -55,7 +53,7 @@ namespace PicsyncAdmin.ViewModels
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
                 var payload = new { Name, Login, Password };
-                var response = await _httpClient.PostAsJsonAsync(new API_URL("/users/me"), payload);
+                var response = await _httpClient.PostAsJsonAsync("/users/me", payload);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -105,7 +103,7 @@ namespace PicsyncAdmin.ViewModels
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
-                await _httpClient.PostAsync(new API_URL("/logout"), null);
+                await _httpClient.PostAsync("/logout", null);
 
                 AuthSession.ClearSession();
                 await Shell.Current.GoToAsync("//LoginPage");

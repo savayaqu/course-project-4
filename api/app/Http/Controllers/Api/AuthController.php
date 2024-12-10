@@ -19,8 +19,11 @@ class AuthController extends Controller
     {
         if (!Auth::attempt($request->only('login', 'password')))
             throw new ApiException('Invalid credentials', 401);
-
         $user = Auth::user();
+        if($request->is_banned == 1)
+        {
+            throw new ApiException('Banned', 403);
+        }
         $user->load('role');
 
         $token = $user->createToken('api_token')->plainTextToken;

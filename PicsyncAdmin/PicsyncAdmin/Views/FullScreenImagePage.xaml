@@ -15,9 +15,9 @@
             </Grid.RowDefinitions>
             <!-- Картинка во весь экран -->
             <Image Source="{Binding Picture.OriginalPath}"
-                   Aspect="AspectFit"
-                   VerticalOptions="Center"
-                   HorizontalOptions="Center" 
+                  
+                   VerticalOptions="CenterAndExpand"
+                   HorizontalOptions="CenterAndExpand" 
                    Grid.Row="0"/>
             <Button Text="Удалить картинку"
                     Command="{Binding DeleteImageCommand}"

@@ -7,16 +7,23 @@
     Shell.FlyoutBehavior="Disabled"
     Title="PicsyncAdmin">
 
-    <!-- Указываем страницу входа Views.Auth.Login как главную -->
+    <!-- Указываем страницу входа Views.Auth.Login как главную 
     <ShellContent
         Title="Авторизация"
         ContentTemplate="{DataTemplate local:Auth.Login}"
         Route="LoginPage" />
+    -->
+
+    <ShellContent
+     Title="Авторизация"
+     ContentTemplate="{DataTemplate local:ApiUrlSelectionPage}"
+     Route="ApiUrlSelectionPage" />
+
     <TabBar>
-        <Tab Title="Главная" Icon="house.svg">
+        <Tab Title="Главная" Icon="house.png">
             <ShellContent ContentTemplate="{DataTemplate local:Home}" Route="MainPage"/>
         </Tab>
-        <Tab Title="Профиль" Icon="user.svg">
+        <Tab Title="Профиль" Icon="user.png">
             <ShellContent ContentTemplate="{DataTemplate local:Profile}" Route="Profile"/>
         </Tab>
     </TabBar>

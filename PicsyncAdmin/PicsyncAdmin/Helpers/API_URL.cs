@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PicsyncAdmin.Resources
+namespace PicsyncAdmin.Helpers
 {
     public class API_URL
     {
-        private static readonly string _baseValue = "https://savayaqu.duckdns.org/picsync/api";
+        private static readonly string _baseValue = Preferences.Get("selectedApiUrl", string.Empty);
         private readonly string _path;
 
         public API_URL(string path)
@@ -18,9 +18,7 @@ namespace PicsyncAdmin.Resources
 
         public static implicit operator string(API_URL apiUrl)
         {
-            return $"{_baseValue}/{apiUrl._path}";
+            return $"{_baseValue}/api/{apiUrl._path}";
         }
     }
-
-
 }

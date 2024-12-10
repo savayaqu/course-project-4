@@ -1,11 +1,4 @@
 ﻿using PicsyncAdmin.Helpers;
-using PicsyncAdmin.Models;
-using PicsyncAdmin.Resources;
-using PicsyncAdmin.ViewModels;
-using PicsyncAdmin.Views;
-using PicsyncAdmin.Views.Auth;
-using System.Diagnostics;
-using System.Text.Json;
 
 namespace PicsyncAdmin
 {

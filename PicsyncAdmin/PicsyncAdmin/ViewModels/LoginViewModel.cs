@@ -1,15 +1,8 @@
 ﻿using MvvmHelpers;
 using PicsyncAdmin.Models;
-using PicsyncAdmin.Resources;
-using PicsyncAdmin.Views;
-using System;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using Microsoft.Maui.Storage;
-using System.Diagnostics;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models.Response;
 
