@@ -41,7 +41,8 @@ namespace PicsyncAdmin.ViewModels
 
             if (!string.IsNullOrEmpty(result) && result != "Отмена")
             {
-                Preferences.Set("selectedApiUrl", result);  // Сохраняем выбранный URL
+                Preferences.Set("SelectedUrl", result);  // Сохраняем выбранный URL
+                AuthSession.SelectedUrl = result;
                 await TestUriAp();
             }
         }
@@ -111,7 +112,9 @@ namespace PicsyncAdmin.ViewModels
             Preferences.Set("savedApiUrls", string.Join(";", urls));
 
             // Сохраняем выбранный URL
-            Preferences.Set("selectedApiUrl", ApiUrlEntry);
+
+            Preferences.Set("SelectedUrl", ApiUrlEntry);
+            AuthSession.SelectedUrl = ApiUrlEntry;
 
             await TestUriAp();
         }
@@ -127,16 +130,20 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task TestUriAp()
         {
-            var url = Preferences.Get("selectedApiUrl", string.Empty);
-            HttpResponseMessage response = await new HttpClient().GetAsync($"{url}/up");
-            if (response.IsSuccessStatusCode)
+            var url = AuthSession.SelectedUrl;
+            try
             {
-                await Shell.Current.GoToAsync("LoginPage");
+                HttpResponseMessage response = await new HttpClient().GetAsync($"{url}/up");
+                if (response.IsSuccessStatusCode)
+                {
+                    await Shell.Current.GoToAsync("///LoginPage");
+                    return;
+                }
+                throw new Exception($"{response.StatusCode} , {response.Content}");
             }
-            else
-            {
-                await Shell.Current.DisplayAlert("Ошибка", "Текущий сервер не отвечает, выберите другой", "OK");
-            }
+            catch(Exception ex) { await Shell.Current.DisplayAlert("Ошибка", $"{ex.Message} ", "OK"); }
+                await Shell.Current.DisplayAlert("Ошибка", $"{url} сервер не отвечает, выберите другой", "OK");
+            AuthSession.SelectedUrl = null;
         }
 
 

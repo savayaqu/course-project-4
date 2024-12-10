@@ -10,15 +10,12 @@ namespace PicsyncAdmin
         public AppShell()
         {
             InitializeComponent();
-            GoToAsync("//ApiUrlSelectionPage");
-            Routing.RegisterRoute("ApiUrlSelectionPage", typeof(ApiUrlSelectionPage));
-            //if (AuthSession.Token != null)
-            //  GoToAsync("//MainPage");
-            //else
-            //  GoToAsync("//LoginPage");
-
-            Routing.RegisterRoute("UserContentPage", typeof(UserContentPage));
-            Routing.RegisterRoute("LoginPage", typeof(Login));
+             if (AuthSession.SelectedUrl == null)
+                GoToAsync("//ApiUrlSelectionPage");
+            else if (AuthSession.Token == null)
+              GoToAsync("//LoginPage");
+            else
+                GoToAsync("//MainPage");
 
         }
     }

@@ -29,7 +29,7 @@ public partial class UserContentPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await ViewModel.LoadDataAsync();
+        await ViewModel.LoadData();
     }
 }
 

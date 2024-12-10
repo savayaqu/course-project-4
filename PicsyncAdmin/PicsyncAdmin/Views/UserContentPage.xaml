@@ -39,7 +39,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-           
+            <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadDataCommand}"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

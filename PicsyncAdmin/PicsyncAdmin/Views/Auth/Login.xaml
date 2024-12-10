@@ -8,10 +8,22 @@
     <ContentPage.BindingContext>
         <vm:LoginViewModel />
     </ContentPage.BindingContext>
-
-    <StackLayout Padding="20" VerticalOptions="Center">
-        <Entry Placeholder="Введите логин" Text="{Binding Login}" Margin="10" />
-        <Entry Placeholder="Введите пароль" Text="{Binding Password}" IsPassword="True" Margin="10" />
-        <Button Text="Войти" Command="{Binding LoginCommand}" Margin="10" />
+    
+    <StackLayout>
+        <StackLayout>
+            <Label Text="{Binding SelectedServer, StringFormat='Текущий сервер: {0}'}"/>
+            <Label Text="Выбрать другой сервер"
+                   HorizontalTextAlignment="Center" Margin="0,-5,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding SelectServerCommand}"/>
+                </Label.GestureRecognizers>
+            </Label>
+        </StackLayout>
+        <StackLayout  Padding="20" VerticalOptions="Center">
+            <Entry Placeholder="Введите логин" Text="{Binding Login}" Margin="10" />
+            <Entry Placeholder="Введите пароль" Text="{Binding Password}" IsPassword="True" Margin="10" />
+            <Button Text="Войти" Command="{Binding TryLoginCommand}" Margin="10" />
+        </StackLayout>
+        
     </StackLayout>
 </ContentPage>

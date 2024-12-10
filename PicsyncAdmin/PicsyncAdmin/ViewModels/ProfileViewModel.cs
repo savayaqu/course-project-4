@@ -53,7 +53,7 @@ namespace PicsyncAdmin.ViewModels
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
                 var payload = new { Name, Login, Password };
-                var response = await _httpClient.PostAsJsonAsync("/users/me", payload);
+                var response = await _httpClient.PostAsJsonAsync(new API_URL("/users/me"), payload);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -98,20 +98,23 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         private async Task LogoutAsync()
         {
+            bool isExit = false;
             try
             {
                 _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-
-                await _httpClient.PostAsync("/logout", null);
-
-                AuthSession.ClearSession();
-                await Shell.Current.GoToAsync("//LoginPage");
+                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+                 var response =  await _httpClient.PostAsync(new API_URL("/logout"), null);
+                if (!response.IsSuccessStatusCode) throw new Exception($"Ошибка {response.StatusCode}");
+                isExit = true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Ошибка при выходе: {ex.Message}");
+                isExit =  await Shell.Current.DisplayAlert($"Не получилось выйти", $"Вы желаете насильно выйти? \n{ex.Message}", "Да", "Нет");
             }
+            if (!isExit) return;   
+            AuthSession.ClearSession();
+            await Shell.Current.GoToAsync("//LoginPage");
         }
     }
 }

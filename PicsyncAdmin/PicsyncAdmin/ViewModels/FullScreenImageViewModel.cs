@@ -36,12 +36,13 @@ namespace PicsyncAdmin.ViewModels
                 _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
                 // Запрос к API для удаления изображения
-                var response = await _httpClient.DeleteAsync($"/albums/{albumId}/pictures/{picture.Id}");
+                var response = await _httpClient.DeleteAsync(new API_URL($"/albums/{AlbumId}/pictures/{picture.Id}"));
 
                 if (response.IsSuccessStatusCode)
                 {
                     // Обрабатываем успешное удаление
                     await Shell.Current.DisplayAlert("Удаление", "Изображение удалено.", "Ок");
+                    UserContentViewModel.Instance.AlbumPictures.Remove(picture);
                     await Shell.Current.Navigation.PopModalAsync(); // Закрываем модальное окно
                 }
                 else

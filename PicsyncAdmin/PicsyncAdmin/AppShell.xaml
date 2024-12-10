@@ -15,10 +15,17 @@
     -->
 
     <ShellContent
-     Title="Авторизация"
+     Title="Выбор URL"
      ContentTemplate="{DataTemplate local:ApiUrlSelectionPage}"
      Route="ApiUrlSelectionPage" />
-
+    <ShellContent
+ Title="Авторизация"
+ ContentTemplate="{DataTemplate local:Auth.Login}"
+ Route="LoginPage" />
+    <ShellContent
+Title="Контент пользователя"
+ContentTemplate="{DataTemplate local:UserContentPage}"
+Route="UserContentPage" />
     <TabBar>
         <Tab Title="Главная" Icon="house.png">
             <ShellContent ContentTemplate="{DataTemplate local:Home}" Route="MainPage"/>

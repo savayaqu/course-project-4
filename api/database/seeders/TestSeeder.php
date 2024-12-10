@@ -23,13 +23,13 @@ class TestSeeder extends Seeder
     {
         $roleAdminId = Role::firstOrCreate(['code' => 'admin'])->id;
         $roleUserId  = Role::firstOrCreate(['code' => 'user' ])->id;
-        User::firstOrCreate(['name' => 'Админ', 'login' => 'admin', 'password' => 'Admin123!', 'is_banned' => 0, 'role_id' => $roleAdminId]);
-        User::firstOrCreate(['name' => 'Чел 1', 'login' => 'test1', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
-        User::firstOrCreate(['name' => 'Чел 2', 'login' => 'test2', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
-        User::firstOrCreate(['name' => 'Чел 3', 'login' => 'test3', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
-        Album::firstOrCreate(['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 2]);
-        Album::firstOrCreate(['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 3]);
-        Album::firstOrCreate(['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 4]);
+        User::firstOrCreate(['login' => 'admin'],['name' => 'Админ', 'login' => 'admin', 'password' => 'Admin123!', 'is_banned' => 0, 'role_id' => $roleAdminId]);
+        User::firstOrCreate(['login' => 'test1'],['name' => 'Чел 1', 'login' => 'test1', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
+        User::firstOrCreate(['login' => 'test2'],['name' => 'Чел 2', 'login' => 'test2', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
+        User::firstOrCreate(['login' => 'test3'],['name' => 'Чел 3', 'login' => 'test3', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
+        Album::firstOrCreate(['user_id' => 2],['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 2]);
+        Album::firstOrCreate(['user_id' => 3],['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 3]);
+        Album::firstOrCreate(['user_id' => 4],['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 4]);
         AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 3]);
         AlbumAccess::firstOrCreate(['album_id' => 2, 'user_id' => 4]);
         AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 4]);
@@ -37,10 +37,12 @@ class TestSeeder extends Seeder
         ComplaintType::firstOrCreate(['name' => 'Детская порнография']);
         ComplaintType::firstOrCreate(['name' => 'Расчленёнка']);
         // Путь к существующим картинкам
-        $sourceDirectory = 'testnorm';
+        $parameter = $this->command->ask('Введите абсолютный путь до папки с картинками', Storage::path('sample'));
+        $sourceDirectory = $parameter;
 
         // Получение всех файлов из директории
-        $files = Storage::files($sourceDirectory);
+        $files = File::files($sourceDirectory);
+
         foreach ($files as $file) {
             // Ищем случайного пользователя и альбом
             $user = User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first();
@@ -55,19 +57,20 @@ class TestSeeder extends Seeder
             }
 
             // Имя файла
-            $fileName = basename($file);
+            $fileName = $file->getFilename();
+            $filePath = Storage::path("$destinationDirectory/$fileName");
 
             // Копируем файл
-            Storage::copy($file, $destinationDirectory . '/' . $fileName);
+            File::copy($file->getRealPath(), $filePath);
 
             // Добавляем запись в базу данных
             DB::table('pictures')->insertOrIgnore([
                 'name' => $fileName,
-                'hash' => md5_file(Storage::path($destinationDirectory . '/' . $fileName)),
+                'hash' => md5_file($filePath),
                 'date' => now(),
-                'size' => Storage::size($destinationDirectory . '/' . $fileName),
-                'width' => getimagesize(Storage::path($destinationDirectory . '/' . $fileName))[0],
-                'height' => getimagesize(Storage::path($destinationDirectory . '/' . $fileName))[1],
+                'size' => File::size($filePath),
+                'width' => getimagesize($filePath)[0] ?? 0, // Проверка на null для ширины
+                'height' => getimagesize($filePath)[1] ?? 0, // Проверка на null для высоты
                 'album_id' => $album->id,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -76,7 +79,7 @@ class TestSeeder extends Seeder
         for($i=0;$i<=3;$i++)
         {
             // Получение случайного пользователя
-            $userId = User::inRandomOrder()->first()->id;
+            $userId = User::inRandomOrder()->where('role_id', $roleUserId)->first()->id;
 
             // Получение случайного альбома пользователя
             $albumId = Album::where('user_id', $userId)->inRandomOrder()->first()->id;
@@ -95,5 +98,6 @@ class TestSeeder extends Seeder
                 'status' => null,
             ]);
         }
+
     }
 }

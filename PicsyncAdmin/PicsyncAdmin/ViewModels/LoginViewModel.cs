@@ -5,34 +5,32 @@ using System.Text.Json;
 using System.Windows.Input;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models.Response;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using ObservableObject = CommunityToolkit.Mvvm.ComponentModel.ObservableObject;
 
 namespace PicsyncAdmin.ViewModels
 {
-    public class LoginViewModel : BaseViewModel
+    public partial class LoginViewModel : ObservableObject
     {
         private readonly User? _user = AuthSession.User;
         private readonly string? _token = AuthSession.Token;
-        private string _login;
-        public string Login
+        [ObservableProperty]
+        private string login;
+        [ObservableProperty]
+        private string password;
+        [ObservableProperty]
+        private string selectedServer = AuthSession.SelectedUrl;
+        [RelayCommand]
+        public async Task SelectServer()
         {
-            get => _login;
-            set => SetProperty(ref _login, value);
+            AuthSession.SelectedUrl = null;
+            Preferences.Remove("SelectedUrl");
+            await Shell.Current.GoToAsync("//ApiUrlSelectionPage");
         }
-
-        private string _password;
-        public string Password
-        {
-            get => _password;
-            set => SetProperty(ref _password, value);
-        }
-        public ICommand LoginCommand { get; }
-
-        public LoginViewModel()
-        {
-            LoginCommand = new Command(OnLoginClicked);
-        }
-
-        private async void OnLoginClicked()
+        //TODO: isfetch для кнопки и блокать и т.д
+        [RelayCommand]
+        private async Task TryLogin()
         {
             if (string.IsNullOrEmpty(Login) || string.IsNullOrEmpty(Password))
             {

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Maui;
 using Newtonsoft.Json;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
@@ -14,17 +15,26 @@ namespace PicsyncAdmin.ViewModels
 {
     public partial class UserContentViewModel : ObservableObject
     {
+        public static UserContentViewModel Instance { get; private set; }
+
         private readonly HttpClient _httpClient;
         private readonly string? _token = AuthSession.Token;
         public Complaint Complaint { get; set; }
         public UserContentViewModel(Complaint complaint)
         {
+            Instance = this;
             _httpClient = new ();
             Complaint = complaint;
         }
         [ObservableProperty]
         private ObservableCollection<Picture> albumPictures = new();
-
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(LoadDataCommand))]
+        private bool isFetch = false;
+        [ObservableProperty]
+        public bool canLoadMore = false;
+        [ObservableProperty]
+        public int currentPage = 1;
         [ObservableProperty]
         private string? mainImagePath;
         [ObservableProperty]
@@ -34,9 +44,9 @@ namespace PicsyncAdmin.ViewModels
         {
             string comment = await Shell.Current.DisplayPromptAsync("Создание предупреждения", "Комментарий");
             //создание предупреждения
-            var response = await _httpClient.PostAsJsonAsync($"/users/{Complaint.AboutUser.Id}/warnings", new { Comment = comment });
+            var response = await _httpClient.PostAsJsonAsync(new API_URL($"/users/{Complaint.AboutUser.Id}/warnings"), new { Comment = comment });
             //перевод жалобы в статус просмотрено
-            var complaintResponse = await _httpClient.PostAsJsonAsync($"/complaints/{Complaint.Id}", new { Status = 1 });
+            var complaintResponse = await _httpClient.PostAsJsonAsync(new API_URL($"/complaints/{Complaint.Id}"), new { Status = 1 });
 
             if (response.IsSuccessStatusCode & complaintResponse.IsSuccessStatusCode)
             {
@@ -62,10 +72,10 @@ namespace PicsyncAdmin.ViewModels
             {
                 _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-                var response = await _httpClient.DeleteAsync(($"/albums/{Complaint.Album.Id}"));
+                var response = await _httpClient.DeleteAsync((new API_URL($"/albums/{Complaint.Album.Id}")));
                 if (response.IsSuccessStatusCode)
                 {
-                    await LoadDataAsync(); //Загружаем жалобы
+                    await LoadData(); //Загружаем жалобы
                     await Shell.Current.GoToAsync("//HomePage"); // Возвращаем на HomePage
                 }
                 else
@@ -86,7 +96,7 @@ namespace PicsyncAdmin.ViewModels
             {
                 _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-                var response = await _httpClient.PostAsJsonAsync($"/users/{Complaint.AboutUser.Id}", new { is_banned = true });
+                var response = await _httpClient.PostAsJsonAsync(new API_URL($"/users/{Complaint.AboutUser.Id}"), new { is_banned = true });
                 if (response.IsSuccessStatusCode)
                 {
                     await Shell.Current.DisplayAlert("Успех", "Пользователь заблокирован", "OK");
@@ -105,7 +115,7 @@ namespace PicsyncAdmin.ViewModels
         {
             _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-            var response = await _httpClient.DeleteAsync($"/complaints/{Complaint.Id}");
+            var response = await _httpClient.DeleteAsync(new API_URL($"/complaints/{Complaint.Id}"));
             if (response.IsSuccessStatusCode)
             {
                 await Shell.Current.GoToAsync("//HomePage"); // Возвращаем на HomePage
@@ -120,8 +130,9 @@ namespace PicsyncAdmin.ViewModels
         {
             await Shell.Current.Navigation.PushModalAsync(new FullScreenImagePage(picture, Complaint.Album.Id));
         }
+        [RelayCommand(CanExecute = nameof(CanLoadData))]
 
-        public async Task LoadDataAsync()
+        public async Task LoadData()
         {
             if (Complaint.Album.Id == 0)
                 return;
@@ -131,34 +142,32 @@ namespace PicsyncAdmin.ViewModels
                 // Запрос к API для получения списка картинок
                 _httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-
-                var response = await _httpClient.GetStringAsync($"/albums/{Complaint.Album.Id}/pictures");
-
+                IsFetch = true;
+                var response = await _httpClient.GetStringAsync(new API_URL($"/albums/{Complaint.Album.Id}/pictures?page={CurrentPage}"));
+                IsFetch = false;
                 // Десериализация ответа в объект PicturesResponse
                 var responseObject = JsonConvert.DeserializeObject<PicturesResponse>(response);
                 if (responseObject?.Pictures == null)
                     return;
 
-                Debug.WriteLine($"Ответ от API: {response}");
-
-                AlbumPictures.Clear();
-
+                CanLoadMore = responseObject.Total > responseObject.Page * responseObject.Limit;
+                CurrentPage++;
                 // Генерация пути для картинок
                 foreach (var picture in responseObject.Pictures)
                 {
                     if(picture.Height/picture.Width >=2.5)
                     {
-                        picture.OriginalPath ??= $"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/thumb/h1080?sign={responseObject.Sign}";
+                        picture.OriginalPath ??= new API_URL($"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/thumb/h1080?sign={responseObject.Sign}");
                     }
                     else if (picture.Width / picture.Height >= 2.5)
                     {
-                        picture.OriginalPath ??= $"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/thumb/w1080?sign={responseObject.Sign}";
+                        picture.OriginalPath ??= new API_URL($"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/thumb/w1080?sign={responseObject.Sign}");
                     }
                     else
                     {
-                        picture.OriginalPath ??= $"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/original?sign={responseObject.Sign}";
+                        picture.OriginalPath ??= new API_URL($"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/original?sign={responseObject.Sign}");
                     }
-                    picture.Path ??= $"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/thumb/q480sign={responseObject.Sign}";
+                    picture.Path ??= new API_URL($"/albums/{Complaint.Album.Id}/pictures/{picture.Id}/thumb/q480?sign={responseObject.Sign}");
                 }
 
                 // Если есть указанная картинка, делаем её первой
@@ -187,5 +196,7 @@ namespace PicsyncAdmin.ViewModels
                 Debug.WriteLine($"Ошибка загрузки данных: {ex.Message}");
             }
         }
+        private bool CanLoadData() =>
+            !IsFetch;
     }
 }

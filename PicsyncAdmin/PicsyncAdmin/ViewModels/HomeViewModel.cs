@@ -62,12 +62,9 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task ResetComplaints()
         {
-            Shell.Current.Dispatcher.Dispatch(() =>
-            {
-                Complaints.Clear(); // Очистка списка жалоб
-                CurrentPage = 0;    // Сброс текущей страницы
-                CanLoadMore = false; // Сброс состояния загрузки дополнительных данных
-            });
+            Complaints.Clear(); // Очистка списка жалоб
+            CurrentPage = 1;    // Сброс текущей страницы
+            CanLoadMore = false; // Сброс состояния загрузки дополнительных данных
             await LoadComplaints();
         }
 
@@ -87,7 +84,7 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task LoadSettings()
         {
-                var response = await _httpClient.GetStringAsync("/settings");
+                var response = await _httpClient.GetStringAsync(new API_URL("/settings"));
                 var settingsResponse = JsonSerializer.Deserialize<ApiResponse>(response);
                 AppSettings.UploadDisablePercentage = settingsResponse.Settings.UploadDisablePercentage;
                 AppSettings.TotalSpace = settingsResponse.Space.Total;
@@ -104,9 +101,8 @@ namespace PicsyncAdmin.ViewModels
                     new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
                 IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>($"complaints?status=null&page={CurrentPage}&limit=5");
+                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=5"));
                 IsFetch = false;
-
                 if (response?.Complaints != null)
                 {
                     Shell.Current.Dispatcher.Dispatch(() =>
@@ -120,7 +116,7 @@ namespace PicsyncAdmin.ViewModels
                             {
                                 if (complaint.Picture != null)
                                 {
-                                    complaint.Picture.Path ??= $"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}";
+                                    complaint.Picture.Path = new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
                                 }
                                 Complaints.Add(complaint);
                             }
