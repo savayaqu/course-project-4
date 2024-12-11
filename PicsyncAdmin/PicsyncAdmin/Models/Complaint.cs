@@ -11,7 +11,7 @@ namespace PicsyncAdmin.Models
 {
     public class Complaint
     {
-        public ulong Id { get; set; }
+        public int Id { get; set; }
         public string Type { get; set; }
         public int? Status { get; set; }
         public string? Description { get; set; }

@@ -10,9 +10,9 @@ namespace PicsyncAdmin.Models
 {
     public class Picture
     {
-        [JsonPropertyName("id")] public ulong Id { get; set; }
-        [JsonPropertyName("name")] public required string Name { get; set; }
-        [JsonPropertyName("hash")] public required string Hash { get; set; }
+        [JsonPropertyName("id")] public int Id { get; set; }
+        [JsonPropertyName("name")] public string? Name { get; set; }
+        [JsonPropertyName("hash")] public string? Hash { get; set; }
         [JsonPropertyName("size")] public int Size { get; set; }
 
         [JsonPropertyName("date")][System.Text.Json.Serialization.JsonConverter(typeof(CustomDateTimeConverter))] public DateTime Date { get; set; }

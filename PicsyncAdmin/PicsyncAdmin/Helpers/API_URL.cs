@@ -8,7 +8,7 @@ namespace PicsyncAdmin.Helpers
 {
     public class API_URL
     {
-        private static readonly string _baseValue = Preferences.Get("selectedApiUrl", string.Empty);
+        private static readonly string _baseValue = Preferences.Get("SelectedUrl", string.Empty);
         private readonly string _path;
         //TODO: перед отправкой запроса или после выводить ошибку сервера (обернуть)
         //TODO: вызывать из ApiUrlSelectionViewModel TestUriAp и предлагать выбор подождать еще или выбрать другой сервер при ошибке 504 или ещё 502

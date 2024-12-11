@@ -27,15 +27,19 @@ class TestSeeder extends Seeder
         User::firstOrCreate(['login' => 'test1'],['name' => 'Чел 1', 'login' => 'test1', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
         User::firstOrCreate(['login' => 'test2'],['name' => 'Чел 2', 'login' => 'test2', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
         User::firstOrCreate(['login' => 'test3'],['name' => 'Чел 3', 'login' => 'test3', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
-        Album::firstOrCreate(['user_id' => 2],['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 2]);
-        Album::firstOrCreate(['user_id' => 3],['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 3]);
-        Album::firstOrCreate(['user_id' => 4],['name' => 'Порно', 'path' => 'porno/love', 'user_id' => 4]);
+        Album::firstOrCreate(['name' =>fake()->word() . '-' . fake()->numberBetween(1, 35), 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
+        Album::firstOrCreate(['name' =>fake()->word() . '-' . fake()->numberBetween(1, 35), 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
+        Album::firstOrCreate(['name' =>fake()->word() . '-' . fake()->numberBetween(1, 35), 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
         AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 3]);
         AlbumAccess::firstOrCreate(['album_id' => 2, 'user_id' => 4]);
         AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 4]);
         AlbumAccess::firstOrCreate(['album_id' => 3, 'user_id' => 2]);
-        ComplaintType::firstOrCreate(['name' => 'Детская порнография']);
-        ComplaintType::firstOrCreate(['name' => 'Расчленёнка']);
+        ComplaintType::firstOrCreate(['name' => 'Террористическая пропаганда']);
+        ComplaintType::firstOrCreate(['name' => 'Сцены насилия']);
+        ComplaintType::firstOrCreate(['name' => 'Разжигание ненависти']);
+        ComplaintType::firstOrCreate(['name' => 'Пропаганда насилия']);
+        ComplaintType::firstOrCreate(['name' => 'Нарушение авторских прав']);
+        ComplaintType::firstOrCreate(['name' => 'Шок-контент']);
         // Путь к существующим картинкам
         $parameter = $this->command->ask('Введите абсолютный путь до папки с картинками', Storage::path('sample'));
         $sourceDirectory = $parameter;
@@ -76,7 +80,7 @@ class TestSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
-        for($i=0;$i<=3;$i++)
+        for($i=0;$i<=25;$i++)
         {
             // Получение случайного пользователя
             $userId = User::inRandomOrder()->where('role_id', $roleUserId)->first()->id;

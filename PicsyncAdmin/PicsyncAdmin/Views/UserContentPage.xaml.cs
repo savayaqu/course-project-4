@@ -1,4 +1,5 @@
 using PicsyncAdmin.Models;
+using PicsyncAdmin.Models.Response;
 using PicsyncAdmin.ViewModels;
 
 namespace PicsyncAdmin.Views;
@@ -9,20 +10,18 @@ public partial class UserContentPage : ContentPage
     private UserContentViewModel ViewModel => (UserContentViewModel)BindingContext;
 
 
-    public UserContentPage(Complaint complaint)
+    public UserContentPage(AlbumViewModel album)
     {
         InitializeComponent();
-        BindingContext = new UserContentViewModel(complaint); // Здесь создаётся экземпляр ViewModel
+        BindingContext = new UserContentViewModel(album); 
         SizeChanged += OnSizeChanged;
-
     }
     private void OnSizeChanged(object sender, EventArgs e)
     {
-        // Рассчитываем количество столбцов на основе ширины экрана
         if (AdaptiveGridLayout != null && Width > 0)
         {
-            int columnCount = (int)(Width / 150); // Ширина каждой колонки 150 пикселей
-            columnCount = Math.Max(columnCount, 1); // Минимум 1 колонка
+            int columnCount = (int)(Width / 150); 
+            columnCount = Math.Max(columnCount, 1); 
             AdaptiveGridLayout.Span = columnCount;
         }
     }
