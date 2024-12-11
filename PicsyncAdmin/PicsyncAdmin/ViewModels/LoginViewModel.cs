@@ -1,4 +1,5 @@
-﻿using MvvmHelpers;
+﻿using System.Diagnostics;
+using MvvmHelpers;
 using PicsyncAdmin.Models;
 using System.Text;
 using System.Text.Json;
@@ -13,8 +14,6 @@ namespace PicsyncAdmin.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {
-        private readonly User? _user = AuthSession.User;
-        private readonly string? _token = AuthSession.Token;
         [ObservableProperty]
         private string login;
         [ObservableProperty]

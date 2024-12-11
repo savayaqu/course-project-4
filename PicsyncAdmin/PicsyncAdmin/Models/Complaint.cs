@@ -11,11 +11,11 @@ namespace PicsyncAdmin.Models
 {
     public class Complaint
     {
-        public ulong Id { get; set; }
-        public string Type { get; set; }
+        public int Id { get; set; }
+        public string? Type { get; set; }
         public int? Status { get; set; }
         public string? Description { get; set; }
-        public User AboutUser { get; set; }
+        public required User  AboutUser { get; set; }
         public User? FromUser { get; set; }
         public string? Sign { get; set; }
         public Picture? Picture { get; set; }

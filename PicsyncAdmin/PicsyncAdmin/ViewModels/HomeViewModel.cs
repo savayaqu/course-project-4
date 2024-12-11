@@ -37,6 +37,11 @@ namespace PicsyncAdmin.ViewModels
         private string freeSpaceHumanReadable;
         [ObservableProperty]
         private double usedPercentDisplay;
+        [ObservableProperty]
+        private ObservableCollection<AlbumComplaintData> albumComplaints = new();
+        [ObservableProperty]
+        public ObservableCollection<AlbumViewModel> albums = new();
+
         // TODO: выводить статус загрузки во время жалоб и если жалоб нет то писать что жалоб нет
         // Конструктор
         public HomeViewModel()
@@ -49,20 +54,22 @@ namespace PicsyncAdmin.ViewModels
             _ = LoadSettings();
         }
         [RelayCommand]
-        private async Task NavigateToUserContentPage(Complaint complaint)
+        private async Task NavigateToUserContentPage(AlbumViewModel album)
         {
-            if (complaint == null || complaint.Album == null)
-                return;
-
-            var albumId = complaint.Album.Id;
-            var picturePath = complaint.Picture?.Path;
-
-            await Shell.Current.Navigation.PushAsync(new UserContentPage(complaint));
+            try
+            {
+                await Shell.Current.Navigation.PushAsync(new UserContentPage(album));
+            }
+            catch (Exception e)
+            {
+                await Shell.Current.DisplayAlert("Error", e.Message, "OK");
+                throw;
+            }
         }
         [RelayCommand]
         public async Task ResetComplaints()
         {
-            Complaints.Clear(); // Очистка списка жалоб
+            Albums.Clear(); // Очистка списка жалоб
             CurrentPage = 1;    // Сброс текущей страницы
             CanLoadMore = false; // Сброс состояния загрузки дополнительных данных
             await LoadComplaints();
@@ -78,10 +85,6 @@ namespace PicsyncAdmin.ViewModels
             TotalSpaceHumanReadable = AppSettings.BytesToHuman(AppSettings.TotalSpace);
             FreeSpaceHumanReadable = AppSettings.BytesToHuman(AppSettings.FreeSpace);
         }
-        public ObservableCollection<Complaint> Complaints { get; } = new();
-
-
-        [RelayCommand]
         public async Task LoadSettings()
         {
                 var response = await _httpClient.GetStringAsync(new API_URL("/settings"));
@@ -94,48 +97,55 @@ namespace PicsyncAdmin.ViewModels
         }
         [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
         public async Task LoadComplaints()
-        {
-            try
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+{
+    try
+    {
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
-                IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=5"));
-                IsFetch = false;
+        IsFetch = true;
+        var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}"));
+        IsFetch = false;
+
                 if (response?.Complaints != null)
                 {
-                    Shell.Current.Dispatcher.Dispatch(() =>
-                    {
-                        CanLoadMore = response.Total > response.Page * response.Limit;
-                        CurrentPage++;
+                    CanLoadMore = response.Total > response.Page * response.Limit;
+                    CurrentPage++;
 
-                        foreach (var albumData in response.Complaints)
+                    foreach (var albumData in response.Complaints)
+                    {
+                        var albumViewModel = new AlbumViewModel
                         {
-                            foreach (var complaint in albumData.Complaints)
+                            AlbumName = albumData.Album.Name,
+                            Id = albumData.Album.Id,
+                            ComplaintsCount = albumData.ComplaintsCount,
+                            RepresentativeComplaint = albumData.Complaints.FirstOrDefault(),
+                            AllComplaints = new ObservableCollection<Complaint>(albumData.Complaints)
+                        };
+
+                        // Перебираем все жалобы и если у них есть картинка, то связываем ее с соответствующим объектом
+                        foreach (var complaint in albumData.Complaints)
+                        {
+                            if (complaint.Picture != null)
                             {
-                                if (complaint.Picture != null)
-                                {
-                                    complaint.Picture.Path = new API_URL($"/albums/{complaint.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
-                                }
-                                Complaints.Add(complaint);
+                                // Можно использовать Picture в самой модели Complaint
+                                complaint.Picture.Path = new API_URL($"/albums/{albumData.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
                             }
                         }
-                    });
+
+                        Albums.Add(albumViewModel);
+                    }
                 }
             }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Unexpected Error: {ex.Message}");
-            }
-        }
-
-
-
+    catch (JsonException ex)
+    {
+        Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
+    }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"Unexpected Error: {ex.Message}");
+    }
+}
 
         private bool CanLoadComplaints() =>
             !IsFetch;
