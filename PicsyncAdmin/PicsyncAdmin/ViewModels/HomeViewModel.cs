@@ -97,63 +97,55 @@ namespace PicsyncAdmin.ViewModels
         }
         [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
         public async Task LoadComplaints()
-        {
-            try
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
+{
+    try
+    {
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
-                IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}&limit=5"));
-                IsFetch = false;
+        IsFetch = true;
+        var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(new API_URL($"complaints?status=null&page={CurrentPage}"));
+        IsFetch = false;
 
                 if (response?.Complaints != null)
                 {
-                    Shell.Current.Dispatcher.Dispatch(() =>
+                    CanLoadMore = response.Total > response.Page * response.Limit;
+                    CurrentPage++;
+
+                    foreach (var albumData in response.Complaints)
                     {
-                        CanLoadMore = response.Total > response.Page * response.Limit;
-                        CurrentPage++;
-
-                        foreach (var albumData in response.Complaints)
+                        var albumViewModel = new AlbumViewModel
                         {
-                            var albumViewModel = new AlbumViewModel
-                            {
-                                AlbumName = albumData.Album.Name,
-                                Id = albumData.Album.Id,
-                                ComplaintsCount = albumData.ComplaintsCount,
-                                Pictures = new ObservableCollection<Picture>(
-                                    albumData.Complaints
-                                        .Where(c => c.Picture != null)
-                                        .Select(c => new Picture
-                                        {
-                                            Id = c.Picture.Id,
-                                            Path = new API_URL($"/albums/{albumData.Album?.Id}/pictures/{c.Picture.Id}/thumb/q480?sign={c.Sign}")
-                                        })
-                                ),
-                                RepresentativeComplaint = albumData.Complaints.FirstOrDefault(),
-                                AllComplaints = albumData.Complaints,
-                                
-                            };
+                            AlbumName = albumData.Album.Name,
+                            Id = albumData.Album.Id,
+                            ComplaintsCount = albumData.ComplaintsCount,
+                            RepresentativeComplaint = albumData.Complaints.FirstOrDefault(),
+                            AllComplaints = new ObservableCollection<Complaint>(albumData.Complaints)
+                        };
 
-                            Albums.Add(albumViewModel);
+                        // Перебираем все жалобы и если у них есть картинка, то связываем ее с соответствующим объектом
+                        foreach (var complaint in albumData.Complaints)
+                        {
+                            if (complaint.Picture != null)
+                            {
+                                // Можно использовать Picture в самой модели Complaint
+                                complaint.Picture.Path = new API_URL($"/albums/{albumData.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
+                            }
                         }
 
-                    });
+                        Albums.Add(albumViewModel);
+                    }
                 }
             }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Unexpected Error: {ex.Message}");
-            }
-        }
-
-
-
-
+    catch (JsonException ex)
+    {
+        Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
+    }
+    catch (Exception ex)
+    {
+        Debug.WriteLine($"Unexpected Error: {ex.Message}");
+    }
+}
 
         private bool CanLoadComplaints() =>
             !IsFetch;

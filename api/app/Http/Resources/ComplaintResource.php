@@ -20,7 +20,7 @@ class ComplaintResource extends JsonResource
             'type' => $this->whenLoaded('type', fn() => $this->type->name),
             'status' => $this->status,
             'description' => $this->whenNotNull($this->description),
-            'fromUser' => $this->whenLoaded('fromUser', fn() => $this->when($isOwner, fn() => UserResource::make($this->fromUser))),
+            'fromUser' => $this->whenLoaded('fromUser', fn() => $this->when(!$isOwner, fn() => UserResource::make($this->fromUser))),
             'aboutUser' => $this->whenLoaded('aboutUser', fn() => UserResource::make($this->aboutUser)),
             'picture' => $this->whenLoaded('picture', fn() => PictureResource::make($this->picture)),
             'sign' => $this->whenLoaded('picture', fn() => $this->picture ? $this->picture->album->getSign($user) : null),

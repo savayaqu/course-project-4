@@ -1,95 +1,68 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="PicsyncAdmin.Views.Home"
              xmlns:local="clr-namespace:PicsyncAdmin.ViewModels"
+             x:Class="PicsyncAdmin.Views.Home"
              Title="Главная">
     <ScrollView>
-        <StackLayout>
+        <VerticalStackLayout Padding="10">
 
-            <!-- Заголовок-->
+            <!-- Заголовок -->
             <Label Text="Нерассмотренные жалобы"
                    HorizontalOptions="Center"
                    FontSize="20"
                    Padding="20" />
 
             <!-- Кнопка обновления -->
-            <Button HeightRequest="50" WidthRequest="50" ImageSource="refresh.png" Command="{Binding ResetComplaintsCommand}" />
-
-            <!-- Прогресс бар, отображающий использование пространства -->
-            <StackLayout Spacing="10" Padding="20">
-                <Label Text="Использовано пространства"
-                       HorizontalOptions="Center"
-                       FontSize="16"
-                       FontAttributes="Bold" />
-                <ProgressBar Progress="{Binding UsedPercent}" HorizontalOptions="FillAndExpand" />
-                <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="Center">
-                    <Label Text="{Binding FreeSpaceHumanReadable}" FontSize="12" />
-                    <Label Text="/" FontSize="12" />
-                    <Label Text="{Binding TotalSpaceHumanReadable}" FontSize="12" />
-                    <Label Text="{Binding UsedPercentDisplay, StringFormat='{0:F0}%'}" FontSize="14" />
-                </StackLayout>
-            </StackLayout>
-
-            <!-- Список альбомов с картинками и жалобами -->
-            <CollectionView ItemsSource="{Binding Albums}">
+            <Button HeightRequest="50" WidthRequest="50"
+                    ImageSource="refresh.png"
+                    Command="{Binding ResetComplaintsCommand}" />
+            <!-- Список альбомов -->
+                <CollectionView ItemsSource="{Binding Albums}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame Margin="5" Padding="10" CornerRadius="5">
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer 
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
-                                    CommandParameter="{Binding }" />
-                            </Frame.GestureRecognizers>
-                            <StackLayout>
+                        <Frame  >
+                            <VerticalStackLayout>
 
                                 <!-- Информация об альбоме -->
                                 <Label Text="{Binding AlbumName}" FontSize="16" FontAttributes="Bold" />
                                 <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб: {0}'}" FontSize="12" />
-
-                                <!-- Использование Grid для картинок и жалоб -->
-                                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto">
-                                    <!-- Список картинок -->
-                                    <CollectionView ItemsSource="{Binding Pictures}" Grid.Row="0" Grid.Column="0" ItemsLayout="HorizontalList">
-                                        <CollectionView.ItemTemplate>
-                                            <DataTemplate>
-                                                <Image Source="{Binding Path}" WidthRequest="100" HeightRequest="100" Aspect="AspectFill" />
-                                            </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
-
-                                    <!-- Список жалоб -->
-                                    <CollectionView ItemsSource="{Binding AllComplaints}" Grid.Row="0" Grid.Column="1" ItemsLayout="VerticalList">
-                                        <CollectionView.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackLayout Padding="5" Spacing="5" HorizontalOptions="Start">
-                                                    <!-- Информация о жалобе -->
-                                                    <Label Text="{Binding AboutUser.Name, StringFormat='Пожаловался: {0}'}" FontSize="12" LineBreakMode="TailTruncation" MaxLines="1" />
-                                                    <Label Text="{Binding Type, StringFormat='Тип жалобы: {0}'}" FontSize="12" LineBreakMode="TailTruncation" MaxLines="1" />
-                                                    <Label Text="{Binding Description, StringFormat='Описание: {0}'}" FontSize="12" LineBreakMode="WordWrap" MaxLines="2" />
+                                <Button HorizontalOptions="End" Text="Просмотреть полностью" Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
+                                    CommandParameter="{Binding }"/>
+                                <!-- Список жалоб с картинками -->
+                                <CollectionView ItemsSource="{Binding AllComplaints}">
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Horizontal" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <VerticalStackLayout Padding="5" WidthRequest="200">
+                                                <!-- Картинка жалобы -->
+                                                <Image Source="{Binding Picture.Path}" 
+                                                     WidthRequest="200" HeightRequest="200"/>
+                                                <!-- Информация о жалобе -->
+                                                <StackLayout Spacing="2">
+                                                    <Label Text="{Binding FromUser.Name, StringFormat='Пожаловался: {0}'}" FontSize="12" />
+                                                    <Label Text="{Binding Type, StringFormat='Тип жалобы: {0}'}" FontSize="12" />
+                                                    <Label Text="{Binding Description, StringFormat='Описание: {0}'}" FontSize="12" 
+                                                        LineBreakMode="WordWrap" MaxLines="2" />
+                                                    <Label Text="{Binding StatusDescription}" FontSize="12" />
                                                 </StackLayout>
-                                            </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
+                                            </VerticalStackLayout>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
 
-                                    <!-- Дополнительные картинки -->
-                                    <CollectionView ItemsSource="{Binding Pictures}" Grid.Row="0" Grid.Column="2" ItemsLayout="HorizontalList">
-                                        <CollectionView.ItemTemplate>
-                                            <DataTemplate>
-                                                <Image Source="{Binding Path}" WidthRequest="100" HeightRequest="100" Aspect="AspectFill" />
-                                            </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
-                                </Grid>
-                            </StackLayout>
+
+                            </VerticalStackLayout>
                         </Frame>
+                        
                     </DataTemplate>
+
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
             <!-- Кнопка загрузки дополнительных данных -->
             <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadComplaintsCommand}" />
-
-        </StackLayout>
+        </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

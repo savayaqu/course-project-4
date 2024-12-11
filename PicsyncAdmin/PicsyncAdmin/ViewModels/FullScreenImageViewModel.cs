@@ -25,6 +25,8 @@ namespace PicsyncAdmin.ViewModels
         public async Task Close()
         {
             await Shell.Current.Navigation.PopModalAsync(); // Закрываем модальное окно
+            //TODO: пофиксить, что когда назад возвращаешься, то он новые загружает
+            //TODO: в xaml разметку пофиксить
         }
         [RelayCommand]
         public async Task DeleteImage(Picture picture)

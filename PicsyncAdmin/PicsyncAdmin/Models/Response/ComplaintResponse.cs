@@ -27,9 +27,8 @@ namespace PicsyncAdmin.Models.Response
         public string AlbumName { get; set; }
         public ulong Id { get; set; }
         public int ComplaintsCount { get; set; }
-        public ObservableCollection<Picture> Pictures { get; set; }
         public Complaint RepresentativeComplaint { get; set; }
-        public List<Complaint> AllComplaints { get; set; } // Хранение всех жалоб
+        public ObservableCollection<Complaint> AllComplaints { get; set; } // Хранение всех жалоб, в которых теперь есть картинки
     }
 
 
