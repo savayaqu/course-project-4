@@ -22,63 +22,76 @@ class ComplaintController extends Controller
     {
         $user = Auth::user();
         $status = $request->query('status'); // Получаем параметр status из запроса
-        $sortBy = $request->query('sort', 'created_at');   // Сортировка по полю (по умолчанию дата)
+        $sortBy = $request->query('sort', 'created');   // Сортировка по полю (по умолчанию дата)
         $orderBy = $request->has('reverse') ? 'desc' : 'asc'; // Направление сортировки
-        $limit = intval($request->query('limit'));
-        if (!$limit) {
-            $limit = 30;
-        }
+        $limit = intval($request->query('limit', 30)); // Лимит записей (по умолчанию 30)
 
         // Проверка валидации сортировки
         $allowedSortFields = [
-            'id', 'description', 'status', 'album_id', 'picture_id', 'from_user_id',
-            'about_user_id', 'complaint_type_id', 'created_at', 'updated_at'
+            'description' => 'description',
+            'status' => 'status',
+            'album' => 'id',
+            'picture' => 'picture_id',
+            'fromUser' => 'from_user_id',
+            'type' => 'complaint_type_id',
+            'created' => 'created_at',
+            'updated' => 'updated_at',
         ];
-        if (!in_array($sortBy, $allowedSortFields)) {
-            throw new ApiException('Sort must be of the following types: ' . join(', ', $allowedSortFields), 400);
+
+        $keys = array_keys($allowedSortFields);
+        if (!in_array($sortBy, $keys)) {
+            throw new ApiException(
+                'Sort must be of the following types: ' . join(', ', $keys),
+                400
+            );
         }
 
-        // Инициализация запроса на выборку жалоб
-        $query = Complaint::with(['type', 'aboutUser', 'fromUser', 'picture', 'album'])
-            ->orderBy($sortBy, $orderBy);
+        // Запрос для альбомов
+        $query = Album::query();
 
-        // Фильтрация по статусу
-        if ($request->has('status')) {
-            if ($status === "null") {
-                // Выбираем не рассмотренные записи
-                $query->whereNull('status');
-            } else {
-                // Фильтруем по конкретному значению
-                $query->where('status', $status);
-            }
-        }
-
-        // Если пользователь не админ => выводим только его жалобы
         if ($user->role->code !== 'admin') {
-            $query->where('from_user_id', $user->id);
+            // Пользователь видит только альбомы, на которые он пожаловался, исключая свои альбомы
+            $query->whereHas('complaints', function ($q) use ($user) {
+                $q->where('from_user_id', $user->id);
+
+            });
+
         }
 
-        // Получаем все жалобы в пагинированном виде
-        $complaintsPage = $query->paginate($limit);
+        $query->with(['complaints' => function ($q) use (
+            $limit,
+            $user,
+            $allowedSortFields,
+            $sortBy,
+            $orderBy,
+            $request,
+            $status
+        ) {
+            // Фильтрация по статусу
+            if ($request->has('status')) {
+                if ($status === "null") {
+                    $q->whereNull('status'); // Не рассмотренные записи
+                } else {
+                    $q->where('status', $status); // Конкретный статус
+                }
+            }
+            if ($user->role->code !== 'admin') {
+                $q->where('from_user_id', $user->id);
+            }
+            $q->with(['type', 'fromUser', 'picture'])
+                ->orderBy($allowedSortFields[$sortBy], $orderBy);
 
-        // Группируем жалобы по альбому
-        $groupedComplaints = $complaintsPage->getCollection()->groupBy(function ($complaint) {
-            return $complaint->album ? $complaint->album->id : 'no_album'; // Группируем по album_id
-        })->map(function ($complaints, $albumId) {
-            $album = $complaints->first()->album;  // Берём альбом из первой жалобы в группе, если он есть
-            return [
-                'album' => $album ? AlbumResource::make($album) : null, // Используем AlbumResource
-                'complaintsCount' => $complaints->count(), // Количество жалоб на этот альбом
-                'complaints' => ComplaintResource::collection($complaints), // Жалобы, относящиеся к этому альбому
-            ];
-        });
+        }])->orderBy($allowedSortFields[$sortBy], $orderBy)
+            ->withCount('complaints');
 
-        // Преобразуем результат в нужный формат для ответа
+        // Пагинация
+        $albumsPage = $query->paginate($limit);
+
         return response()->json([
-            'page'       => $complaintsPage->currentPage(),
-            'limit'      => $complaintsPage->perPage(),
-            'total'      => $complaintsPage->total(),
-            'complaints'     => $groupedComplaints->values()->all(), // Возвращаем сгруппированные альбомы с жалобами
+            'page' => $albumsPage->currentPage(),
+            'limit' => $albumsPage->perPage(),
+            'total' => $albumsPage->total(),
+            'albums' => AlbumResource::collection($albumsPage->items()),
         ]);
     }
 
