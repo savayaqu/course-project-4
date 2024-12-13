@@ -55,7 +55,6 @@ namespace PicsyncAdmin.ViewModels
                 await HomeViewModel.Instance.ResetComplaints();
                 await Shell.Current.Navigation.PopModalAsync(); // Закрываем модальное окно
             }
-            // TODO: для бана и предупреждения переводить все жалобы в статус выполнен и возвращаться на страницу главную
             else
             {
                 await Shell.Current.DisplayAlert("Ошибка", "Не удалось выдать предупреждение", "OK");

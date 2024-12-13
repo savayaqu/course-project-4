@@ -19,7 +19,6 @@ namespace PicsyncAdmin.ViewModels
         // Поле для ввода URL
         [ObservableProperty]
         public string apiUrlEntry;
-
         // Выбранный URL
         [ObservableProperty]
         public string selectedApiUrl;
@@ -37,15 +36,15 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task ShowApiUrlSelection()
         {
-            var result = await Shell.Current.DisplayActionSheet("Выберите API URL", "Отмена", null, SavedApiUrls.ToArray());
-
-            if (!string.IsNullOrEmpty(result) && result != "Отмена")
+            SelectedApiUrl = await Shell.Current.DisplayActionSheet("Выберите API URL", "Отмена", null, SavedApiUrls.ToArray());
+            if (!string.IsNullOrEmpty(SelectedApiUrl) && SelectedApiUrl != "Отмена")
             {
-                Preferences.Set("SelectedUrl", result);  // Сохраняем выбранный URL
-                AuthSession.SelectedUrl = result;
+                AuthSession.SaveUrl(SelectedApiUrl); // Уведомит всех подписчиков
                 await TestUriAp();
             }
         }
+
+
 
         // Загружаем сохранённые URL
         private void LoadSavedApiUrls()
@@ -95,7 +94,7 @@ namespace PicsyncAdmin.ViewModels
             }
         }
         // Функция для проверки правильности URL
-        private bool IsValidUrl(string url)
+        private static bool IsValidUrl(string url)
         {
             // Регулярное выражение для проверки URL без api и up
             var regex = @"^https?://(?!.*(/$|/api$|/up$)).*$";
@@ -112,9 +111,7 @@ namespace PicsyncAdmin.ViewModels
             Preferences.Set("savedApiUrls", string.Join(";", urls));
 
             // Сохраняем выбранный URL
-
-            Preferences.Set("SelectedUrl", ApiUrlEntry);
-            AuthSession.SelectedUrl = ApiUrlEntry;
+            AuthSession.SaveUrl(ApiUrlEntry);
 
             await TestUriAp();
         }
@@ -128,23 +125,61 @@ namespace PicsyncAdmin.ViewModels
             Preferences.Set("savedApiUrls", string.Join(";", urls));
         }
         [RelayCommand]
-        public async Task TestUriAp()
+        public static async Task TestUriAp()
         {
             var url = AuthSession.SelectedUrl;
-            try
+
+            // Тайм-аут в миллисекундах (5000 мс = 5 секунд)
+            var timeout = TimeSpan.FromSeconds(5);
+
+            var isUp = await ApiHelper.ExecuteRequestAsync(async () =>
             {
-                HttpResponseMessage response = await new HttpClient().GetAsync($"{url}/up");
+                using var cts = new CancellationTokenSource(timeout);
+
+                // Отправка запроса с тайм-аутом
+                var client = new HttpClient();
+                var response = await client.GetAsync($"{url}/up", cts.Token);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    await Shell.Current.GoToAsync("///LoginPage");
-                    return;
+                    return true;
                 }
-                throw new Exception($"{response.StatusCode} , {response.Content}");
+
+                if ((int)response.StatusCode == 502 || (int)response.StatusCode == 504)
+                {
+                    throw new Exception("Сервер временно недоступен (502/504).");
+                }
+
+                throw new Exception($"Ошибка: {response.StatusCode}");
+            });
+
+            if (isUp == true)
+            {
+                await Shell.Current.GoToAsync("///LoginPage");
             }
-            catch(Exception ex) { await Shell.Current.DisplayAlert("Ошибка", $"{ex.Message} ", "OK"); }
-                await Shell.Current.DisplayAlert("Ошибка", $"{url} сервер не отвечает, выберите другой", "OK");
-            AuthSession.SelectedUrl = null;
+            else
+            {
+                var retryChoice = await Shell.Current.DisplayActionSheet(
+                    "Сервер недоступен. Попробовать снова или выбрать другой?",
+                    "Отмена",
+                    null,
+                    "Попробовать снова",
+                    "Выбрать другой сервер"
+                );
+
+                if (retryChoice == "Попробовать снова")
+                {
+                    await TestUriAp(); // Рекурсия для повторной проверки
+                }
+                else if (retryChoice == "Выбрать другой сервер")
+                {
+                    AuthSession.SelectedUrl = null;
+                    await Shell.Current.GoToAsync("//ApiUrlSelectionPage");
+                }
+            }
         }
+
+
 
 
     }
