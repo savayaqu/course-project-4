@@ -15,19 +15,28 @@ namespace PicsyncAdmin.ViewModels
     public partial class LoginViewModel : ObservableObject
     {
         [ObservableProperty]
-        private string login;
+        private string? login;
         [ObservableProperty]
-        private string password;
+        private string? password;
         [ObservableProperty]
-        private string selectedServer = AuthSession.SelectedUrl;
-        [RelayCommand]
-        public async Task SelectServer()
+        private string? selectedServer = AuthSession.SelectedUrl;
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(TryLoginCommand))]
+        private bool isFetch = false;
+
+        public LoginViewModel()
         {
-            AuthSession.SelectedUrl = null;
-            Preferences.Remove("SelectedUrl");
+            AuthSession.OnUrlChanged += url => SelectedServer = url;
+            SelectedServer = AuthSession.SelectedUrl; // Инициализация текущим значением
+        }
+
+
+        [RelayCommand]
+        public static async Task SelectServer()
+        {
+            AuthSession.ClearSession();
             await Shell.Current.GoToAsync("//ApiUrlSelectionPage");
         }
-        //TODO: isfetch для кнопки и блокать и т.д
         [RelayCommand]
         private async Task TryLogin()
         {
@@ -36,30 +45,35 @@ namespace PicsyncAdmin.ViewModels
                 await Shell.Current.DisplayAlert("Ошибка", "Введите логин и пароль", "OK");
                 return;
             }
-
+            IsFetch = true;
             var authResponse = await AuthenticateUserAsync(Login, Password);
             if (authResponse != null)
             {
                 // После успешной аутентификации сохраняем в Helpers.AuthSession юзера и токен
                 AuthSession.User = authResponse.User;
                 AuthSession.Token = authResponse.Token;
-
+                Debug.WriteLine(AuthSession.User);
+                Debug.WriteLine(AuthSession.Token);
                 // Сохраняем в Preferences
                 Preferences.Set("User", JsonSerializer.Serialize(authResponse.User));
                 Preferences.Set("Token", authResponse.Token);
 
                 await Shell.Current.GoToAsync("//MainPage");
             }
+            IsFetch = false;
         }
 
-        private async Task<AuthResponse> AuthenticateUserAsync(string login, string password)
+        private async Task<AuthResponse?> AuthenticateUserAsync(string login, string password)
         {
             var loginData = new { login, password };
             var jsonContent = new StringContent(JsonSerializer.Serialize(loginData), Encoding.UTF8, "application/json");
 
             try
             {
-                HttpResponseMessage response = await new HttpClient().PostAsync(new API_URL("login"), jsonContent);
+                var apiUrl = new API_URL("login");
+                Debug.WriteLine($"Попытка отправить запрос на: {apiUrl}");
+
+                HttpResponseMessage response = await new HttpClient().PostAsync(apiUrl, jsonContent);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -71,11 +85,16 @@ namespace PicsyncAdmin.ViewModels
                     await Shell.Current.DisplayAlert("Ошибка", "Неправильный логин или пароль", "OK");
                 }
             }
+            catch (InvalidOperationException ex)
+            {
+                await Shell.Current.DisplayAlert("Ошибка URL", ex.Message, "OK");
+            }
             catch (Exception ex)
             {
                 await Shell.Current.DisplayAlert("Ошибка сети", ex.Message, "OK");
             }
             return null;
         }
+
     }
 }
