@@ -6,6 +6,30 @@
              Title="Главная">
     <ScrollView>
         <VerticalStackLayout Padding="10">
+            <!-- Прогресс бар, отображающий использование пространства -->
+            <StackLayout Grid.Row="2" Spacing="10" Padding="20">
+                <Label Text="Использовано пространства"
+                       HorizontalOptions="Center"
+                       FontSize="16"
+                       FontAttributes="Bold" />
+                <ProgressBar Progress="{Binding UsedPercent}"
+                             HorizontalOptions="FillAndExpand" />
+                <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="Center">
+                    <Label Text="{Binding FreeSpaceHumanReadable}"
+                           VerticalOptions="Center"
+                           FontSize="12" />
+                    <Label Text="/"
+                           VerticalOptions="Center"
+                           FontSize="12" />
+                    <Label Text="{Binding TotalSpaceHumanReadable}"
+                           VerticalOptions="Center"
+                           FontSize="12" />
+                    <Label Text="{Binding UsedPercentDisplay, StringFormat='{0:F0}%'}" 
+                           HorizontalOptions="Center" 
+                           FontSize="14" 
+                           VerticalOptions="Center" />
+                </StackLayout>
+            </StackLayout>
 
             <!-- Заголовок -->
             <Label Text="Нерассмотренные жалобы"
@@ -17,20 +41,24 @@
             <Button HeightRequest="50" WidthRequest="50"
                     ImageSource="refresh.png"
                     Command="{Binding ResetComplaintsCommand}" />
-            <!-- Список альбомов -->
-                <CollectionView ItemsSource="{Binding Albums}">
+
+            <!-- Список жалоб -->
+            <CollectionView ItemsSource="{Binding Albums}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Frame  >
+                        <Frame Padding="10" Margin="5">
                             <VerticalStackLayout>
-
                                 <!-- Информация об альбоме -->
-                                <Label Text="{Binding AlbumName}" FontSize="16" FontAttributes="Bold" />
+                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
                                 <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб: {0}'}" FontSize="12" />
-                                <Button HorizontalOptions="End" Text="Просмотреть полностью" Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
-                                    CommandParameter="{Binding }"/>
-                                <!-- Список жалоб с картинками -->
-                                <CollectionView ItemsSource="{Binding AllComplaints}">
+
+                                <!-- Кнопка с параметром -->
+                                <Button HorizontalOptions="End" Text="Просмотреть полностью" 
+                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
+                            CommandParameter="{Binding Album}" />
+
+                                <!-- Список жалоб -->
+                                <CollectionView ItemsSource="{Binding Complaints}">
                                     <CollectionView.ItemsLayout>
                                         <LinearItemsLayout Orientation="Horizontal" />
                                     </CollectionView.ItemsLayout>
@@ -38,29 +66,31 @@
                                         <DataTemplate>
                                             <VerticalStackLayout Padding="5" WidthRequest="200">
                                                 <!-- Картинка жалобы -->
-                                                <Image Source="{Binding Picture.Path}" 
-                                                     WidthRequest="200" HeightRequest="200"/>
+                                                <Image WidthRequest="200" HeightRequest="200">
+                                                    <Image.Source>
+                                                        <UriImageSource Uri="{Binding Picture.Path}" CacheValidity="10:00:00:00" />
+                                                    </Image.Source>
+                                                </Image>
                                                 <!-- Информация о жалобе -->
                                                 <StackLayout Spacing="2">
                                                     <Label Text="{Binding FromUser.Name, StringFormat='Пожаловался: {0}'}" FontSize="12" />
                                                     <Label Text="{Binding Type, StringFormat='Тип жалобы: {0}'}" FontSize="12" />
                                                     <Label Text="{Binding Description, StringFormat='Описание: {0}'}" FontSize="12" 
-                                                        LineBreakMode="WordWrap" MaxLines="2" />
+                                               LineBreakMode="WordWrap" MaxLines="2" />
                                                     <Label Text="{Binding StatusDescription}" FontSize="12" />
                                                 </StackLayout>
                                             </VerticalStackLayout>
                                         </DataTemplate>
                                     </CollectionView.ItemTemplate>
                                 </CollectionView>
-
-
                             </VerticalStackLayout>
                         </Frame>
-                        
                     </DataTemplate>
-
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
+
+
             <!-- Кнопка загрузки дополнительных данных -->
             <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadComplaintsCommand}" />
         </VerticalStackLayout>

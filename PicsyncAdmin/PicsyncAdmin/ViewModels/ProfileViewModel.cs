@@ -9,7 +9,6 @@ namespace PicsyncAdmin.ViewModels
 {
     public partial class ProfileViewModel : ObservableObject
     {
-        private readonly HttpClient _httpClient;
         private readonly string? _token = AuthSession.Token;
 
         [ObservableProperty]
@@ -26,12 +25,12 @@ namespace PicsyncAdmin.ViewModels
 
         [ObservableProperty]
         private string? validationMessage;
+
         [ObservableProperty]
-        private  Color? validationMessageColor;
+        private Color? validationMessageColor;
 
         public ProfileViewModel()
         {
-            _httpClient = new HttpClient();
             // Инициализация свойств данными из текущей сессии
             Name = AuthSession.User?.Name;
             Login = AuthSession.User?.Login;
@@ -42,18 +41,17 @@ namespace PicsyncAdmin.ViewModels
         {
             ValidationMessage = null;
             ValidationMessageColor = Colors.Red; // По умолчанию ошибки будут красными
+
             try
             {
                 if (Password != ConfirmPassword)
-                { 
-                     ValidationMessage = "Пароли не совпадают"; 
+                {
+                    ValidationMessage = "Пароли не совпадают";
                     return;
                 }
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
 
                 var payload = new { Name, Login, Password };
-                var response = await _httpClient.PostAsJsonAsync(new API_URL("/users/me"), payload);
+                var response = await Fetch.DoAsync(HttpMethod.Post, "/users/me", setError: msg => ValidationMessage = msg, body: payload, serialize: true);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -68,25 +66,9 @@ namespace PicsyncAdmin.ViewModels
                     await Task.Delay(3000);
                     ValidationMessage = null;
                 }
-                else if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableContent)
-                {
-                    var errorResponse = await response.Content.ReadFromJsonAsync<ValidationErrorResponse>();
-                    if (errorResponse?.Errors != null)
-                    {
-                        var errorMessages = errorResponse.Errors
-                            .SelectMany(err => err.Value)
-                            .Aggregate((current, next) => $"{current}\n{next}");
-
-                        ValidationMessage = errorMessages;
-                    }
-                    else
-                    {
-                        ValidationMessage = "Ошибка валидации.";
-                    }
-                }
                 else
                 {
-                    ValidationMessage = "Не удалось сохранить изменения.";
+                    ValidationMessage ??= "Не удалось сохранить изменения.";
                 }
             }
             catch (Exception ex)
@@ -99,20 +81,32 @@ namespace PicsyncAdmin.ViewModels
         private async Task LogoutAsync()
         {
             bool isExit = false;
+
             try
             {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                 new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-                 var response =  await _httpClient.PostAsync(new API_URL("/logout"), null);
-                if (!response.IsSuccessStatusCode) throw new Exception($"Ошибка {response.StatusCode}");
+                var response = await Fetch.DoAsync(HttpMethod.Post, "/logout", setError: msg => Debug.WriteLine(msg));
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new Exception($"Ошибка {response.StatusCode}");
+                }
+
                 isExit = true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Ошибка при выходе: {ex.Message}");
-                isExit =  await Shell.Current.DisplayAlert($"Не получилось выйти", $"Вы желаете насильно выйти? \n{ex.Message}", "Да", "Нет");
+
+                isExit = await Shell.Current.DisplayAlert(
+                    "Не получилось выйти",
+                    $"Вы желаете насильно выйти? \n{ex.Message}",
+                    "Да",
+                    "Нет"
+                );
             }
-            if (!isExit) return;   
+
+            if (!isExit) return;
+
             AuthSession.ClearSession();
             await Shell.Current.GoToAsync("//LoginPage");
         }

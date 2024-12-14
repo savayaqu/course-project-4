@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PicsyncAdmin.Helpers
+﻿namespace PicsyncAdmin.Helpers
 {
     public static class AppSettings
     {
@@ -15,7 +13,7 @@ namespace PicsyncAdmin.Helpers
                 if (_uploadDisablePercentage != value)
                 {
                     _uploadDisablePercentage = value;
-                    SettingsUpdated?.Invoke(); // Сообщаем о новом значении
+                    OnSettingsUpdated(); // Вызываем событие обновления
                 }
             }
         }
@@ -29,7 +27,7 @@ namespace PicsyncAdmin.Helpers
                 if (_totalSpace != value)
                 {
                     _totalSpace = value;
-                    SettingsUpdated?.Invoke(); // Сообщаем о новом значении
+                    OnSettingsUpdated(); // Вызываем событие обновления
                 }
             }
         }
@@ -43,7 +41,7 @@ namespace PicsyncAdmin.Helpers
                 if (_freeSpace != value)
                 {
                     _freeSpace = value;
-                    SettingsUpdated?.Invoke(); // Сообщаем о новом значении
+                    OnSettingsUpdated(); // Вызываем событие обновления
                 }
             }
         }
@@ -57,7 +55,7 @@ namespace PicsyncAdmin.Helpers
                 if (_usedSpace != value)
                 {
                     _usedSpace = value;
-                    SettingsUpdated?.Invoke(); // Сообщаем о новом значении
+                    OnSettingsUpdated(); // Вызываем событие обновления
                 }
             }
         }
@@ -71,9 +69,15 @@ namespace PicsyncAdmin.Helpers
                 if (_usedPercent != value)
                 {
                     _usedPercent = value;
-                    SettingsUpdated?.Invoke(); // Сообщаем о новом значении
+                    OnSettingsUpdated(); // Вызываем событие обновления
                 }
             }
+        }
+
+        // Метод для вызова события
+        private static void OnSettingsUpdated()
+        {
+            SettingsUpdated?.Invoke(); // Уведомляем подписчиков
         }
 
         // Метод для преобразования байтов в человекочитаемый формат

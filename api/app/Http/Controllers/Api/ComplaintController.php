@@ -25,6 +25,7 @@ class ComplaintController extends Controller
         $sortBy = $request->query('sort', 'created');   // Сортировка по полю (по умолчанию дата)
         $orderBy = $request->has('reverse') ? 'desc' : 'asc'; // Направление сортировки
         $limit = intval($request->query('limit', 30)); // Лимит записей (по умолчанию 30)
+        $limit_per_album = intval($request->query('limit_per_album', 10)); // Лимит записей жалоб внутри альбома(по умолчанию 10)
 
         // Проверка валидации сортировки
         $allowedSortFields = [
@@ -65,7 +66,8 @@ class ComplaintController extends Controller
             $sortBy,
             $orderBy,
             $request,
-            $status
+            $status,
+            $limit_per_album,
         ) {
             // Фильтрация по статусу
             if ($request->has('status')) {
@@ -79,7 +81,7 @@ class ComplaintController extends Controller
                 $q->where('from_user_id', $user->id);
             }
             $q->with(['type', 'fromUser', 'picture'])
-                ->orderBy($allowedSortFields[$sortBy], $orderBy);
+                ->orderBy($allowedSortFields[$sortBy], $orderBy)->limit($limit_per_album);
 
         }])->orderBy($allowedSortFields[$sortBy], $orderBy)
             ->withCount('complaints');

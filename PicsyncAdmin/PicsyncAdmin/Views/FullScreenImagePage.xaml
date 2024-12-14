@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PicsyncAdmin.Views.FullScreenImagePage"
@@ -6,23 +5,44 @@
              Title="FullScreenImagePage">
     <ContentPage.Content>
         <Grid>
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Command="{Binding CloseCommand}"/>
-            </Grid.GestureRecognizers>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="30"/>
-            </Grid.RowDefinitions>
-            <!-- Картинка во весь экран -->
-            <Image Source="{Binding Picture.OriginalPath}"
-                  
-                   VerticalOptions="CenterAndExpand"
-                   HorizontalOptions="CenterAndExpand" 
-                   Grid.Row="0"/>
-            <Button Text="Удалить картинку"
-                    Command="{Binding DeleteImageCommand}"
-                    CommandParameter="{Binding Picture}"
-                    Grid.Row="1"/>
+            <!-- Шапка с кнопками -->
+            <Grid x:Name="Header" BackgroundColor="#66000000" Padding="10" IsVisible="True" Opacity="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Кнопка назад -->
+                <Button Text="Назад"
+                        TextColor="White"
+                        BackgroundColor="Transparent"
+                        Command="{Binding CloseCommand}" />
+
+                <!-- Кнопка удаления -->
+                <Button Text="Удалить"
+                        TextColor="White"
+                        BackgroundColor="Transparent"
+                        Command="{Binding DeleteImageCommand}"
+                        CommandParameter="{Binding Picture}"
+                        Grid.Column="2" />
+            </Grid>
+
+            <!-- Картинка с возможностью масштабирования -->
+            <Image x:Name="ZoomableImage"
+       Source="{Binding Picture.OriginalPath}"
+       Aspect="AspectFit"
+       VerticalOptions="CenterAndExpand"
+       HorizontalOptions="CenterAndExpand">
+                <Image.GestureRecognizers>
+                    <PinchGestureRecognizer PinchUpdated="OnPinchUpdated" />
+                    <PanGestureRecognizer PanUpdated="OnPanUpdated" />
+                </Image.GestureRecognizers>
+            </Image>
+
         </Grid>
     </ContentPage.Content>
 </ContentPage>

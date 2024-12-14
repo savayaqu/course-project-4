@@ -1,6 +1,7 @@
 ﻿
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Models.Response;
@@ -15,7 +16,7 @@ namespace PicsyncAdmin.ViewModels
 {
     public partial class HomeViewModel : ObservableObject
     {
-        public static HomeViewModel Instance { get; private set; }
+        public static HomeViewModel? Instance { get; private set; }
 
         private readonly User? _user = AuthSession.User;
         private readonly string? _token = AuthSession.Token;
@@ -37,9 +38,8 @@ namespace PicsyncAdmin.ViewModels
         private string freeSpaceHumanReadable;
         [ObservableProperty]
         private double usedPercentDisplay;
-        [ObservableProperty]
-        public ObservableCollection<AlbumViewModel> albums = new();
-
+        public ObservableCollection<AlbumComplaintData> Albums { get; set; } = new ObservableCollection<AlbumComplaintData>();
+        //TODO: переделать да структура в апи поменялась да и там вывод крутой
         // TODO: выводить статус загрузки во время жалоб и если жалоб нет то писать что жалоб нет
         // Конструктор
         public HomeViewModel()
@@ -48,11 +48,94 @@ namespace PicsyncAdmin.ViewModels
             _httpClient = new HttpClient();
             // Подписка на событие обновления настроек
             AppSettings.SettingsUpdated += OnSettingsUpdated;
+            // Загрузка настроек
+            Task.Run(async () => await LoadSettings()).Wait();
             _ = LoadComplaints();
-            _ = LoadSettings();
         }
+        [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
+        public async Task LoadComplaints()
+        {
+            try
+            {
+                Debug.WriteLine(AuthSession.Token);
+                IsFetch = true;
+
+                // Отправляем запрос на сервер
+                var response = await Fetch.DoAsync(
+                    HttpMethod.Get,
+                    $"/complaints?status=null&limit_per_album=3&page={CurrentPage}&limit=3",
+                    setError: msg => Debug.WriteLine($"Error: {msg}")
+                );
+
+                IsFetch = false;
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Debug.WriteLine($"Failed to fetch complaints: {response.StatusCode}");
+                    return;
+                }
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var responseObject = JsonConvert.DeserializeObject<ComplaintResponse>(responseString);
+
+                if (responseObject == null || responseObject.Albums == null)
+                {
+                    Debug.WriteLine("No data in response.");
+                    return;
+                }
+
+                // Устанавливаем значение CanLoadMore для определения возможности подгрузки данных
+                CanLoadMore = responseObject.Total > responseObject.Page * responseObject.Limit;
+                CurrentPage++;
+
+                // Обрабатываем данные из API
+                foreach (var albumData in responseObject.Albums)
+                {
+                    // Создаем объект Album, если он отсутствует
+                    albumData.Album ??= new Album
+                        {
+                            Id = albumData.Id,
+                            Name = albumData.Name,
+                            User = albumData.Complaints?.FirstOrDefault()?.FromUser ?? new User
+                            {
+                                Id = 0,
+                                Name = "Неизвестный пользователь"
+                            }
+                        };
+
+                    // Обрабатываем пути для картинок в жалобах
+                    foreach (var complaint in albumData.Complaints)
+                    {
+                        if (complaint.Picture != null)
+                        {
+                            complaint.Picture.Path = new API_URL(
+                                $"/albums/{albumData.Album.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
+                        }
+                    }
+
+                    // Добавляем элементы в коллекцию
+                    Albums.Add(albumData);
+                }
+
+                Debug.WriteLine($"Successfully loaded page {responseObject.Page} with {responseObject.Albums.Count} albums.");
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unexpected Error: {ex.Message}");
+            }
+        }
+
+
+
+        private bool CanLoadComplaints() =>
+            !IsFetch;
+
         [RelayCommand]
-        private async Task NavigateToUserContentPage(AlbumViewModel album)
+        private async Task NavigateToUserContentPage(Album album)
         {
             try
             {
@@ -85,98 +168,43 @@ namespace PicsyncAdmin.ViewModels
         }
         public async Task LoadSettings()
         {
-                var response = await _httpClient.GetStringAsync(new API_URL("/settings"));
-                var settingsResponse = JsonSerializer.Deserialize<ApiResponse>(response);
+            try
+            {
+                // Отправляем запрос через Fetch.DoAsync
+                var response = await Fetch.DoAsync(
+                    HttpMethod.Get,
+                    "/settings", // Путь запроса
+                    setError: msg => Debug.WriteLine($"Error: {msg}") // Обработчик ошибок
+                );
+                var responseString = await response.Content.ReadAsStringAsync();
+                var settingsResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse>(responseString);
+
+                if (settingsResponse == null)
+                {
+                    bool accept = await Shell.Current.DisplayAlert("Ошибка загрузки настроек", "Желаете попробовать снова?", "Да", "Нет");
+                    if(accept)
+                    {
+                        await LoadSettings();
+                    }
+                    return;
+                }
+
+                // Обновление значений настроек
                 AppSettings.UploadDisablePercentage = settingsResponse.Settings.UploadDisablePercentage;
                 AppSettings.TotalSpace = settingsResponse.Space.Total;
                 AppSettings.FreeSpace = settingsResponse.Space.Free;
                 AppSettings.UsedSpace = settingsResponse.Space.Used;
                 AppSettings.UsedPercent = settingsResponse.Space.UsedPercent;
-        }
-        [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
-        public async Task LoadComplaints()
-        {
-            try
-            {
-                _httpClient.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _token);
-                Debug.WriteLine(_token);
 
-                IsFetch = true;
-                var response = await _httpClient.GetFromJsonAsync<ComplaintResponse>(
-                    new API_URL($"complaints?status=null&page={CurrentPage}"));
-                IsFetch = false;
-
-                if (response?.Complaints != null)
-                {
-                    CanLoadMore = response.Total > response.Page * response.Limit;
-                    CurrentPage++;
-
-                    foreach (var albumData in response.Complaints)
-                    {
-                        // Ищем существующий альбом
-                        var existingAlbum = Albums.FirstOrDefault(a => a.Id == albumData.Album.Id);
-
-                        if (existingAlbum != null)
-                        {
-                            existingAlbum.ComplaintsCount += albumData.ComplaintsCount;
-
-                            // Добавляем новые жалобы
-                            foreach (var complaint in albumData.Complaints)
-                            {
-                                if (complaint.Picture != null)
-                                {
-                                    complaint.Picture.Path = new API_URL(
-                                        $"/albums/{albumData.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
-                                }
-
-                                if (!existingAlbum.AllComplaints.Any(c => c.Id == complaint.Id))
-                                {
-                                    // Если жалобы нет, добавляем ее
-                                    existingAlbum.AllComplaints.Add(complaint);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Если альбома нет, создаем новый
-                            var newAlbum = new AlbumViewModel
-                            {
-                                AlbumName = albumData.Album.Name,
-                                Id = albumData.Album.Id,
-                                ComplaintsCount = albumData.ComplaintsCount,
-                                RepresentativeComplaint = albumData.Complaints.FirstOrDefault(),
-                                AllComplaints = new ObservableCollection<Complaint>(albumData.Complaints)
-                            };
-
-                            // Обновляем пути картинок
-                            foreach (var complaint in albumData.Complaints)
-                            {
-                                if (complaint.Picture != null)
-                                {
-                                    complaint.Picture.Path = new API_URL(
-                                        $"/albums/{albumData.Album?.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
-                                }
-                            }
-
-                            Albums.Add(newAlbum);
-                        }
-                    }
-                }
-            }
-            catch (JsonException ex)
-            {
-                Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
+                // Вызываем событие обновления настроек
+                AppSettings.SettingsUpdated += OnSettingsUpdated;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unexpected Error: {ex.Message}");
+                await Shell.Current.DisplayAlert($"Error loading settings", ex.Message, "OK");
             }
         }
 
-
-        private bool CanLoadComplaints() =>
-            !IsFetch;
 
 
     }

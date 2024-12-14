@@ -1,8 +1,6 @@
 ﻿using PicsyncAdmin.Models;
-using Microsoft.Maui.Storage;
 using System.Text.Json;
-using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
+
 
 namespace PicsyncAdmin.Helpers
 {
@@ -10,7 +8,34 @@ namespace PicsyncAdmin.Helpers
     {
         public static event Action<string?>? OnUrlChanged;
         public static User? User { get; set; }
-        public static string? Token { get; set; }
+        private static string? _token = null;
+        public static string? Token
+        {
+
+            get 
+            { 
+                var token = _token; 
+                if (token == null)
+                {
+                    token = Preferences.Get("token", string.Empty);
+                }
+                if (token == string.Empty)
+                {
+                    return null;
+                }
+                _token = token;
+                return token;
+            } 
+            set
+            {
+                _token = value;
+
+                if (value == null)
+                    Preferences.Remove("token");
+                else
+                    Preferences.Set("token", value);
+            }
+        }
         private static string? _selectedUrl = null;
         public static string? SelectedUrl
         {
@@ -37,6 +62,7 @@ namespace PicsyncAdmin.Helpers
         {
             User = null;
             Token = null;
+
             SelectedUrl = null;
         }
 

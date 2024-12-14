@@ -10,7 +10,7 @@ public partial class UserContentPage : ContentPage
     private UserContentViewModel ViewModel => (UserContentViewModel)BindingContext;
 
 
-    public UserContentPage(AlbumViewModel album)
+    public UserContentPage(Album album)
     {
         InitializeComponent();
         BindingContext = new UserContentViewModel(album); 
@@ -24,11 +24,6 @@ public partial class UserContentPage : ContentPage
             columnCount = Math.Max(columnCount, 1); 
             AdaptiveGridLayout.Span = columnCount;
         }
-    }
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        await ViewModel.LoadData();
     }
 }
 

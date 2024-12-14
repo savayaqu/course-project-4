@@ -23,8 +23,8 @@ namespace PicsyncAdmin.Helpers
             {
                 throw new InvalidOperationException("Base URL не задан. Проверьте AuthSession.SelectedUrl.");
             }
-
             var fullUrl = $"{_baseValue}/api/{apiUrl._path}";
+            Debug.WriteLine($"Сформированный URL: {fullUrl}");
             return fullUrl;
         }
     }

@@ -56,6 +56,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <AndroidResource Remove="Models\Request\**" />
+	  <Compile Remove="Models\Request\**" />
+	  <EmbeddedResource Remove="Models\Request\**" />
+	  <MauiCss Remove="Models\Request\**" />
+	  <MauiXaml Remove="Models\Request\**" />
+	  <None Remove="Models\Request\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="Resources\Images\house.svg" />
 	  <None Remove="Resources\Images\log_out.svg" />
 	  <None Remove="Resources\Images\theme.svg" />
@@ -91,10 +100,6 @@
 	  <MauiXaml Update="Views\UserContentPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Models\Request\" />
 	</ItemGroup>
 
 </Project>
