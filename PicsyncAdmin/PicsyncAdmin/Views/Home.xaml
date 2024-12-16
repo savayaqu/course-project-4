@@ -41,7 +41,13 @@
             <Button HeightRequest="50" WidthRequest="50"
                     ImageSource="refresh.png"
                     Command="{Binding ResetComplaintsCommand}" />
-
+            <Label 
+                    Text="{Binding StatusMessage}" 
+                    FontSize="Medium" 
+                    TextColor="Gray" 
+                    HorizontalOptions="Center" 
+                    VerticalOptions="Center" 
+                    IsVisible="{Binding IsFetch}" />
             <!-- Список жалоб -->
             <CollectionView ItemsSource="{Binding Albums}">
                 <CollectionView.ItemTemplate>

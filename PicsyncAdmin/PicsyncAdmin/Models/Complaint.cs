@@ -12,14 +12,14 @@ namespace PicsyncAdmin.Models
     public class Complaint
     {
         public int Id { get; set; }
-        public string? Type { get; set; }
+        public required string Type { get; set; }
         public int? Status { get; set; }
         public string? Description { get; set; }
         public required User  AboutUser { get; set; }
-        public User? FromUser { get; set; }
+        public required User FromUser { get; set; }
         public string? Sign { get; set; }
         public Picture? Picture { get; set; }
-        public Album? Album { get; set; }
+        public required Album Album { get; set; }
         // Свойство для получения описания статуса
         public string StatusDescription
         {

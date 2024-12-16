@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 namespace PicsyncAdmin.ViewModels
 {
+    //TODO: в разметке расположить красиво кнопки и инфу
     public partial class UserContentViewModel : ObservableObject
     {
         public static UserContentViewModel? Instance { get; private set; }
@@ -27,9 +28,12 @@ namespace PicsyncAdmin.ViewModels
         [ObservableProperty]
         private ObservableCollection<Picture> albumPictures = new();
 
+
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoadDataCommand))]
         private bool isFetch = false;
+        [ObservableProperty]
+        private string statusMessage;
 
         [ObservableProperty]
         private bool canLoadMore = false;
@@ -42,6 +46,18 @@ namespace PicsyncAdmin.ViewModels
 
         [ObservableProperty]
         private bool isMainImageVisible;
+
+        [ObservableProperty]
+        private int picturesCount;
+
+        [ObservableProperty]
+        private int complaintsCount;
+
+        [ObservableProperty]
+        private string albumName;
+
+        [ObservableProperty]
+        private string userName;
 
         [RelayCommand]
         public async Task IssueWarning()
@@ -129,8 +145,18 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task ViewImage(Picture picture)
         {
-            await Shell.Current.Navigation.PushModalAsync(new FullScreenImagePage(picture, Album.Id));
+            try
+            {
+                if (picture == null) throw new ArgumentNullException(nameof(picture));
+                await Shell.Current.Navigation.PushModalAsync(new FullScreenImagePage(picture, Album.Id));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка в ViewImage: {ex.Message}");
+                await Shell.Current.DisplayAlert("Ошибка", "Не удалось открыть изображение.", "Ок");
+            }
         }
+
 
         [RelayCommand(CanExecute = nameof(CanLoadData))]
         public async Task LoadData()
@@ -139,18 +165,46 @@ namespace PicsyncAdmin.ViewModels
 
             try
             {
+                StatusMessage = "Загрузка данных...";
                 IsFetch = true;
 
+                // Получение списка картинок
                 var response = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}/pictures?page={CurrentPage}", setError: msg => Debug.WriteLine(msg));
+                // Получение информации об альбоме
+                var responseAlbum = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}", setError: msg => Debug.WriteLine(msg));
 
                 IsFetch = false;
 
-                if (!response.IsSuccessStatusCode) return;
+                if (!response.IsSuccessStatusCode || !responseAlbum.IsSuccessStatusCode)
+                {
+                    StatusMessage = "Ошибка загрузки данных. Попробуйте снова.";
+                    return;
+                }
 
+                // Разбор ответа с картинками
                 var responseObject = JsonConvert.DeserializeObject<PicturesResponse>(await response.Content.ReadAsStringAsync());
+                if (responseObject?.Pictures == null || !responseObject.Pictures.Any())
+                {
+                    StatusMessage = "Картинки отсутствуют.";
+                    return;
+                }
 
-                if (responseObject?.Pictures == null) return;
+                // Разбор ответа с данными альбома
+                var albumData = JsonConvert.DeserializeObject<AlbumResponse>(await responseAlbum.Content.ReadAsStringAsync());
+                if (albumData?.Album == null)
+                {
+                    StatusMessage = "Не удалось загрузить данные альбома.";
+                    return;
+                }
 
+                // Запись данных в свойства
+                PicturesCount = albumData.Album.PicturesCount;
+                ComplaintsCount = albumData.Album.ComplaintsCount;
+                AlbumName = albumData.Album.Name;
+                UserName = albumData.Album.User.Name;
+                StatusMessage = ""; // Скрываем статус, если данные загружены
+
+                // Логика работы с картинками
                 CanLoadMore = responseObject.Total > responseObject.Page * responseObject.Limit;
                 CurrentPage++;
 
@@ -167,9 +221,11 @@ namespace PicsyncAdmin.ViewModels
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка загрузки данных: {ex.Message}");
+                Debug.WriteLine($"Ошибка: {ex.Message}");
+                StatusMessage = "Произошла ошибка при загрузке данных.";
             }
         }
+
 
         private bool CanLoadData() => !IsFetch;
     }

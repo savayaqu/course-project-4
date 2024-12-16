@@ -39,7 +39,7 @@ Route
         ->prefix('{album}')
         ->middleware(CheckAlbumAccess::class)
         ->group(function ($album) {         // [АЛЬБОМ]
-            $album->get   ('', 'show');     // Просмотр информации об альбоме
+            $album->get   ('', 'show')->name('albums.show');     // Просмотр информации об альбоме
             $album->post  ('', 'update');   // Изменение информации об СВОЁМ альбоме
             $album->delete('', 'destroy');  // Удаления СВОЕГО альбома и всё связанное с ним (в т.ч. и файлов)
             $album->delete('accesses'       , [    AccessController::class, 'destroy'     ])    // Убрать доступ у пользователя у СЕБЯ с ЧУЖОГО альбома

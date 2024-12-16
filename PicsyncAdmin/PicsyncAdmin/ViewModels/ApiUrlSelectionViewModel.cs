@@ -39,14 +39,11 @@ namespace PicsyncAdmin.ViewModels
             SelectedApiUrl = await Shell.Current.DisplayActionSheet("Выберите API URL", "Отмена", null, SavedApiUrls.ToArray());
             if (!string.IsNullOrEmpty(SelectedApiUrl) && SelectedApiUrl != "Отмена")
             {
-                AuthSession.SaveUrl(SelectedApiUrl); // Уведомит всех подписчиков
+                AuthSession.SaveUrl(SelectedApiUrl);
                 await TestUriAp();
             }
         }
 
-
-
-        // Загружаем сохранённые URL
         private void LoadSavedApiUrls()
         {
             var savedUrls = Preferences.Get("savedApiUrls", string.Empty);
@@ -63,10 +60,8 @@ namespace PicsyncAdmin.ViewModels
             ApiUrlEntry = await Shell.Current.DisplayPromptAsync("Сервер", "Введите URL", "OK", "Отмена", "https://example.com");
             if (!string.IsNullOrEmpty(ApiUrlEntry))
             {
-                // Проверяем, что введённый URL соответствует формату
                 if (IsValidUrl(ApiUrlEntry))
                 {
-                    // Показываем ActionSheet с 3 вариантами
                     var result = await Shell.Current.DisplayActionSheet(
                         "Выберите действие", // Заголовок
                         "Отмена",            // Кнопка "Отмена"
@@ -100,56 +95,42 @@ namespace PicsyncAdmin.ViewModels
             var regex = @"^https?://(?!.*(/$|/api$|/up$)).*$";
             return System.Text.RegularExpressions.Regex.IsMatch(url, regex);
         }
+        // Функция для сохранения и одновременного выбора Url
         [RelayCommand]
         private async Task SaveUrlAndSelect()
         {
-            // Добавляем новый URL в коллекцию
             SavedApiUrls.Add(ApiUrlEntry);
-
-            // Сохраняем коллекцию URL в локальное хранилище
             var urls = SavedApiUrls.ToList();
             Preferences.Set("savedApiUrls", string.Join(";", urls));
-
-            // Сохраняем выбранный URL
             AuthSession.SaveUrl(ApiUrlEntry);
-
             await TestUriAp();
         }
+        // Функция для сохранения Url
         private void SaveUrlOnly()
         {
-            // Добавляем новый URL в коллекцию
             SavedApiUrls.Add(ApiUrlEntry);
-
-            // Сохраняем коллекцию URL в локальное хранилище
             var urls = SavedApiUrls.ToList();
             Preferences.Set("savedApiUrls", string.Join(";", urls));
         }
+        // Функция для проверки работоспособности Url
         [RelayCommand]
         public static async Task TestUriAp()
         {
             var url = AuthSession.SelectedUrl;
-
-            // Тайм-аут в миллисекундах (5000 мс = 5 секунд)
             var timeout = TimeSpan.FromSeconds(5);
-
             var isUp = await ApiHelper.ExecuteRequestAsync(async () =>
             {
                 using var cts = new CancellationTokenSource(timeout);
-
-                // Отправка запроса с тайм-аутом
                 var client = new HttpClient();
                 var response = await client.GetAsync($"{url}/up", cts.Token);
-
                 if (response.IsSuccessStatusCode)
                 {
                     return true;
                 }
-
                 if ((int)response.StatusCode == 502 || (int)response.StatusCode == 504)
                 {
                     throw new Exception("Сервер временно недоступен (502/504).");
                 }
-
                 throw new Exception($"Ошибка: {response.StatusCode}");
             });
 
@@ -178,10 +159,5 @@ namespace PicsyncAdmin.ViewModels
                 }
             }
         }
-
-
-
-
     }
-
 }

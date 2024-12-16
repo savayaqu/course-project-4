@@ -13,25 +13,15 @@ namespace PicsyncAdmin.ViewModels
 
         [ObservableProperty]
         private ulong albumId;
-        [ObservableProperty]
-        private bool isHeaderVisible = true;
         public FullScreenImageViewModel(Picture picture, ulong albumId)
         {
             AlbumId = albumId;
             Picture = picture;
         }
         [RelayCommand]
-        public void ToggleHeaderVisibility()
-        {
-            IsHeaderVisible = !IsHeaderVisible;
-            //TODO: вроде не работает
-        }
-        [RelayCommand]
         public async Task Close()
         {
             await Shell.Current.Navigation.PopModalAsync(); // Закрываем модальное окно
-            // TODO: пофиксить, что когда назад возвращаешься, то он новые загружает
-            // TODO: в xaml разметку пофиксить
         }
 
         [RelayCommand]

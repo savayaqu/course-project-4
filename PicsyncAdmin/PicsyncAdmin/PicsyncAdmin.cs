@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Maui;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace PicsyncAdmin
 {
@@ -9,7 +8,6 @@ namespace PicsyncAdmin
         {
             var builder = MauiApp.CreateBuilder();
             builder
-                .UseMauiCommunityToolkit()
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {

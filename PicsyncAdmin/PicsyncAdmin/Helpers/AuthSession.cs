@@ -82,7 +82,7 @@ namespace PicsyncAdmin.Helpers
                 {
                     User = JsonSerializer.Deserialize<User>(userJson);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     ClearSession(); // Очистим сессию при ошибке
                 }

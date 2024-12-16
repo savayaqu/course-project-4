@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.Input;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.ViewModels;
 
@@ -6,79 +5,84 @@ namespace PicsyncAdmin.Views;
 
 public partial class FullScreenImagePage : ContentPage
 {
-    private double _currentScale = 1;      // Текущий масштаб
-    private double _startScale = 1;       // Масштаб в начале жеста
-    private double _xOffset = 0;          // Смещение по X
-    private double _yOffset = 0;          // Смещение по Y
-    private double _startX = 0;           // Начальная позиция X
-    private double _startY = 0;           // Начальная позиция Y
-    private const double MinScale = 1;    // Минимальный масштаб
-    private const double MaxScale = 5;    // Максимальный масштаб
+    double currentScale = 1;
+    double startScale = 1;
+    double xOffset = 0;
+    double yOffset = 0;
+    double panX, panY;
 
-    private bool _isPinching = false;     // Флаг для определения активного жеста Pinch
-    private bool _isPanning = false;      // Флаг для определения активного жеста Pan
     public FullScreenImagePage(Picture picture, ulong albumId)
-	{
-		InitializeComponent();
+    {
+        InitializeComponent();
         BindingContext = new FullScreenImageViewModel(picture, albumId);
-        //TODO: коряво работает перемещение и скейлинг
-
+        //TODO: плохо работает перемещение и масштабирование, картинка может улететь, кнопки загородить
     }
-    // Обработка жеста масштабирования
-    private void OnPinchUpdated(object sender, PinchGestureUpdatedEventArgs e)
+    void OnPanUpdated(object sender, PanUpdatedEventArgs e)
+    {
+        switch (e.StatusType)
+        {
+            case GestureStatus.Running:
+                // Translate and pan.
+                double boundsX = Content.Width;
+                double boundsY = Content.Height;
+                Content.TranslationX = Math.Clamp(panX + e.TotalX, -boundsX, boundsX);
+                Content.TranslationY = Math.Clamp(panY + e.TotalY, -boundsY, boundsY);
+                break;
+
+            case GestureStatus.Completed:
+                // Store the translation applied during the pan
+                panX = Content.TranslationX;
+                panY = Content.TranslationY;
+                break;
+        }
+    }
+    void OnPinchUpdated(object sender, PinchGestureUpdatedEventArgs e)
     {
         if (e.Status == GestureStatus.Started)
         {
-            _isPinching = true;  // Начинаем жест Pinch
-            _startScale = _currentScale;
+            // Store the current scale factor applied to the wrapped user interface element,
+            // and zero the components for the center point of the translate transform.
+            startScale = Content.Scale;
+            Content.AnchorX = 0;
+            Content.AnchorY = 0;
         }
-        else if (e.Status == GestureStatus.Running)
+        if (e.Status == GestureStatus.Running)
         {
-            // Если идет масштабирование, отключаем ложные Pan-движения
-            _isPanning = false;
+            // Calculate the scale factor to be applied.
+            currentScale += (e.Scale - 1) * startScale;
+            currentScale = Math.Max(1, currentScale);
 
-            // Вычисляем новый масштаб
-            _currentScale = Math.Max(MinScale, Math.Min(MaxScale, _startScale * e.Scale));
-            ZoomableImage.Scale = _currentScale;
+            // The ScaleOrigin is in relative coordinates to the wrapped user interface element,
+            // so get the X pixel coordinate.
+            double renderedX = Content.X + xOffset;
+            double deltaX = renderedX / Width;
+            double deltaWidth = Width / (Content.Width * startScale);
+            double originX = (e.ScaleOrigin.X - deltaX) * deltaWidth;
+
+            // The ScaleOrigin is in relative coordinates to the wrapped user interface element,
+            // so get the Y pixel coordinate.
+            double renderedY = Content.Y + yOffset;
+            double deltaY = renderedY / Height;
+            double deltaHeight = Height / (Content.Height * startScale);
+            double originY = (e.ScaleOrigin.Y - deltaY) * deltaHeight;
+
+            // Calculate the transformed element pixel coordinates.
+            double targetX = xOffset - (originX * Content.Width) * (currentScale - startScale);
+            double targetY = yOffset - (originY * Content.Height) * (currentScale - startScale);
+
+            // Apply translation based on the change in origin.
+            Content.TranslationX = Math.Clamp(targetX, -Content.Width * (currentScale - 1), 0);
+            Content.TranslationY = Math.Clamp(targetY, -Content.Height * (currentScale - 1), 0);
+
+            // Apply scale factor
+            Content.Scale = currentScale;
         }
-        else if (e.Status == GestureStatus.Completed)
+        if (e.Status == GestureStatus.Completed)
         {
-            _isPinching = false;  // Завершаем Pinch
+            // Store the translation delta's of the wrapped user interface element.
+            xOffset = Content.TranslationX;
+            yOffset = Content.TranslationY;
         }
-    }
-
-    // Обработка жеста перемещения
-    private void OnPanUpdated(object sender, PanUpdatedEventArgs e)
-    {
-        if (_currentScale <= 1 || _isPinching)
-            return; // Перемещение не требуется при масштабе <= 1 или когда идет Pinch
-
-        if (e.StatusType == GestureStatus.Started)
-        {
-            _isPanning = true;  // Начинаем Pan-движение
-            _startX = e.TotalX - _xOffset;
-            _startY = e.TotalY - _yOffset;
-        }
-        else if (e.StatusType == GestureStatus.Running)
-        {
-            // Вычисляем новое смещение
-            _xOffset = e.TotalX - _startX;
-            _yOffset = e.TotalY - _startY;
-
-            // Применяем смещение с учетом границ
-            ZoomableImage.TranslationX = Clamp(_xOffset, -ZoomableImage.Width * (_currentScale - 1) / 2, ZoomableImage.Width * (_currentScale - 1) / 2);
-            ZoomableImage.TranslationY = Clamp(_yOffset, -ZoomableImage.Height * (_currentScale - 1) / 2, ZoomableImage.Height * (_currentScale - 1) / 2);
-        }
-        else if (e.StatusType == GestureStatus.Completed)
-        {
-            _isPanning = false;  // Завершаем Pan
-        }
-    }
-
-    // Метод для ограничения значений (сдвига)
-    private double Clamp(double value, double min, double max)
-    {
-        return Math.Max(min, Math.Min(max, value));
     }
 
 

@@ -2,22 +2,30 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
+             xmlns:local="clr-namespace:PicsyncAdmin.Converters"
              x:Class="PicsyncAdmin.Views.UserContentPage"
              Title="UserContentPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout Spacing="10" Padding="20">
-            <!-- Главное изображение -->
-            <Image Source="{Binding MainImagePath}" 
-                   Aspect="AspectFit" 
-                   IsVisible="{Binding IsMainImageVisible}" />
-            
             <Button Text="Создать предупреждение" Command="{Binding IssueWarningCommand}"/>
             <Button Text="Забанить" Command="{Binding BlockUserCommand}"/>
-            <!-- Заголовок для изображений -->
-            <Label Text="Изображения альбома:" 
-                   FontAttributes="Bold" 
-                   FontSize="18" />
-            
+
+            <Label Text="{Binding AlbumName, StringFormat='Изображения альбома: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+            <Label Text="{Binding UserName, StringFormat='Владелец альбома: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+            <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб на альбом: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+            <Label Text="{Binding PicturesCount, StringFormat='Изображений в альбоме: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+
+            <Label 
+                Text="{Binding StatusMessage}" 
+                FontSize="Medium" 
+                HorizontalOptions="Center" 
+                VerticalOptions="Center" 
+                IsVisible="{Binding IsFetch}" />
             <!-- Коллекция изображений -->
             <CollectionView ItemsSource="{Binding AlbumPictures}" x:Name="ImageCollection">
                 <CollectionView.ItemsLayout>

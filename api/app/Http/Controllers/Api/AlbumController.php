@@ -92,7 +92,9 @@ class AlbumController extends Controller
     public function show(Album $album): JsonResponse
     {
         $user = Auth::user();
-        if ($album->user_id === $user?->id)
+        if($user->role->code === 'admin')
+            $relations = ['complaints', 'user'];
+        else if ($album->user_id === $user?->id)
             $relations = ['invitations', 'usersViaAccess'];
         else
             $relations = ['user'];
@@ -100,7 +102,7 @@ class AlbumController extends Controller
         $album->load([
             'pictures' => fn ($query) => $query->limit(4),
             ...$relations,
-        ])->loadCount(['pictures']);
+        ])->loadCount(['pictures', 'complaints']);
         return response()->json(['album' => AlbumResource::make($album)]);
     }
 

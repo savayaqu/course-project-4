@@ -9,8 +9,8 @@ namespace PicsyncAdmin.Models.Response
 {
     public class ApiResponse
     {
-        [JsonPropertyName("settings")] public Settings? Settings { get; set; }
-        [JsonPropertyName("space")] public Space? Space { get; set; }
+        [JsonPropertyName("settings")] public required Settings Settings { get; set; }
+        [JsonPropertyName("space")] public required Space Space { get; set; }
     }
 
     public class Settings

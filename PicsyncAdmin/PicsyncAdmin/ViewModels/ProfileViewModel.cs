@@ -11,23 +11,17 @@ namespace PicsyncAdmin.ViewModels
     {
         private readonly string? _token = AuthSession.Token;
 
-        [ObservableProperty]
-        private string? name;
+        [ObservableProperty] private string? name;
 
-        [ObservableProperty]
-        private string? login;
+        [ObservableProperty] private string? login;
 
-        [ObservableProperty]
-        private string? password;
+        [ObservableProperty] private string? password;
 
-        [ObservableProperty]
-        private string? confirmPassword;
+        [ObservableProperty] private string? confirmPassword;
 
-        [ObservableProperty]
-        private string? validationMessage;
+        [ObservableProperty] private string? validationMessage;
 
-        [ObservableProperty]
-        private Color? validationMessageColor;
+        [ObservableProperty] private Color? validationMessageColor;
 
         public ProfileViewModel()
         {

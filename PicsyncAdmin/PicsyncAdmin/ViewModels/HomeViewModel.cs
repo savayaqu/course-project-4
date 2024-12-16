@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
 using ObservableObject = CommunityToolkit.Mvvm.ComponentModel.ObservableObject;
+using System.Linq;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -24,6 +25,8 @@ namespace PicsyncAdmin.ViewModels
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoadComplaintsCommand))]
         private bool isFetch = false;
+        [ObservableProperty]
+        private string statusMessage;
         [ObservableProperty]
         private double usedPercent;
         [ObservableProperty]
@@ -39,9 +42,6 @@ namespace PicsyncAdmin.ViewModels
         [ObservableProperty]
         private double usedPercentDisplay;
         public ObservableCollection<AlbumComplaintData> Albums { get; set; } = new ObservableCollection<AlbumComplaintData>();
-        //TODO: переделать да структура в апи поменялась да и там вывод крутой
-        // TODO: выводить статус загрузки во время жалоб и если жалоб нет то писать что жалоб нет
-        // Конструктор
         public HomeViewModel()
         {
             Instance = this;
@@ -49,15 +49,16 @@ namespace PicsyncAdmin.ViewModels
             // Подписка на событие обновления настроек
             AppSettings.SettingsUpdated += OnSettingsUpdated;
             // Загрузка настроек
-            Task.Run(async () => await LoadSettings()).Wait();
-            _ = LoadComplaints();
+            Task.Run(() => LoadSettings());
+            Task.Run(() => LoadComplaints());
+
         }
         [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
         public async Task LoadComplaints()
         {
             try
             {
-                Debug.WriteLine(AuthSession.Token);
+                StatusMessage = "Загрузка жалоб...";
                 IsFetch = true;
 
                 // Отправляем запрос на сервер
@@ -71,7 +72,7 @@ namespace PicsyncAdmin.ViewModels
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    Debug.WriteLine($"Failed to fetch complaints: {response.StatusCode}");
+                    StatusMessage = "Ошибка загрузки жалоб. Попробуйте снова.";
                     return;
                 }
 
@@ -80,9 +81,11 @@ namespace PicsyncAdmin.ViewModels
 
                 if (responseObject == null || responseObject.Albums == null)
                 {
-                    Debug.WriteLine("No data in response.");
+                    StatusMessage = "Жалоб нет.";
                     return;
                 }
+
+                StatusMessage = ""; // Скрываем статус, если жалобы есть
 
                 // Устанавливаем значение CanLoadMore для определения возможности подгрузки данных
                 CanLoadMore = responseObject.Total > responseObject.Page * responseObject.Limit;
@@ -102,15 +105,13 @@ namespace PicsyncAdmin.ViewModels
                                 Name = "Неизвестный пользователь"
                             }
                         };
-
+                    foreach (var complaint in
                     // Обрабатываем пути для картинок в жалобах
-                    foreach (var complaint in albumData.Complaints)
+                    from complaint in albumData.Complaints
+                    where complaint.Picture != null
+                    select complaint)
                     {
-                        if (complaint.Picture != null)
-                        {
-                            complaint.Picture.Path = new API_URL(
-                                $"/albums/{albumData.Album.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
-                        }
+                        complaint.Picture.Path = new API_URL($"/albums/{albumData.Album.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
                     }
 
                     // Добавляем элементы в коллекцию
@@ -121,16 +122,13 @@ namespace PicsyncAdmin.ViewModels
             }
             catch (System.Text.Json.JsonException ex)
             {
-                Debug.WriteLine($"JSON Deserialization Error: {ex.Message}");
+                StatusMessage = "Ошибка обработки данных.";
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Debug.WriteLine($"Unexpected Error: {ex.Message}");
+                StatusMessage = "Произошла ошибка. Попробуйте снова.";
             }
         }
-
-
-
         private bool CanLoadComplaints() =>
             !IsFetch;
 

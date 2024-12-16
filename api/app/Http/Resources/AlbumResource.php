@@ -12,6 +12,10 @@ class AlbumResource extends JsonResource
         $user = $request->user();
         $isOwner = $this->user_id === $user->id;
         $isAdmin = $request->attributes->get('role') === 'admin';
+        //Убрать из ответа массив жалоб при просмотре конкретного альбома
+        if ($request->routeIs('albums.show')) {
+            unset($this['complaints']);
+        }
         return [
             'id'    => $this->id,
             'name'  => $this->name,
@@ -36,6 +40,7 @@ class AlbumResource extends JsonResource
                     'sign' => $this->getSign($user),
                     'ids' => $this->pictures->pluck('id'),
             ])),
+
             'complaintsCount' => $this->whenCounted('complaints', fn($count) => $this->when($count, $count)),
             'complaints' => $this->whenLoaded ('complaints', fn() =>
                     $this->when($this->complaints->isNotEmpty(), fn() => ComplaintResource::collection($this->complaints))),

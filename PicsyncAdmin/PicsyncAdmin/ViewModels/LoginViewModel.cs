@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using MvvmHelpers;
-using PicsyncAdmin.Models;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models.Response;
 using CommunityToolkit.Mvvm.Input;
@@ -44,7 +42,7 @@ namespace PicsyncAdmin.ViewModels
         {
             if (string.IsNullOrWhiteSpace(Login) || string.IsNullOrWhiteSpace(Password))
             {
-                await ShowAlert("Ошибка", "Введите логин и пароль");
+                await Shell.Current.DisplayAlert("Ошибка", "Введите логин и пароль", "OK");
                 return;
             }
 
@@ -63,12 +61,12 @@ namespace PicsyncAdmin.ViewModels
                 );
                 if (Error != null)
                 {
-                    await ShowAlert("Ошибка", Error);
+                    await Shell.Current.DisplayAlert("Ошибка", Error, "OK");
                     return;
                 }
                 if (authResponse == null || !response.IsSuccessStatusCode)
                 {
-                    await ShowAlert("Ошибка", "Неправильный логин или пароль");
+                    await Shell.Current.DisplayAlert("Ошибка", "Неправильный логин или пароль", "OK");
                     return;
                 }
                 
@@ -87,15 +85,9 @@ namespace PicsyncAdmin.ViewModels
             }
             catch (Exception ex)
             {
-                await ShowAlert("Ошибка", $"Что-то пошло не так: {ex.Message}");
+                await Shell.Current.DisplayAlert("Ошибка", $"Что-то пошло не так: {ex.Message}", "OK");
                 Debug.WriteLine($"Неизвестная ошибка: {ex}");
             }
-        }
-
-        // Универсальный метод для отображения ошибок
-        private static Task ShowAlert(string title, string message)
-        {
-            return Shell.Current.DisplayAlert(title, message, "OK");
         }
     }
 }
