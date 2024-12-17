@@ -94,29 +94,37 @@ namespace PicsyncAdmin.ViewModels
                 // Обрабатываем данные из API
                 foreach (var albumData in responseObject.Albums)
                 {
-                    // Создаем объект Album, если он отсутствует
-                    albumData.Album ??= new Album
-                        {
-                            Id = albumData.Id,
-                            Name = albumData.Name,
-                            User = albumData.Complaints?.FirstOrDefault()?.FromUser ?? new User
-                            {
-                                Id = 0,
-                                Name = "Неизвестный пользователь"
-                            }
-                        };
-                    foreach (var complaint in
-                    // Обрабатываем пути для картинок в жалобах
-                    from complaint in albumData.Complaints
-                    where complaint.Picture != null
-                    select complaint)
+                    if (albumData == null || albumData.Complaints == null)
                     {
-                        complaint.Picture.Path = new API_URL($"/albums/{albumData.Album.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
+                        continue; // Пропускаем null значения
                     }
 
-                    // Добавляем элементы в коллекцию
+                    // Создаем объект Album, если он отсутствует
+                    albumData.Album ??= new Album
+                    {
+                        Id = albumData.Id,
+                        Name = albumData.Name,
+                        User = albumData.Complaints?.FirstOrDefault()?.FromUser ?? new User
+                        {
+                            Id = 0,
+                            Name = "Неизвестный пользователь"
+                        }
+                    };
+
+                    // Обрабатываем пути для картинок в жалобах, если они существуют
+                    foreach (var complaint in albumData.Complaints?.Where(c => c.Picture != null) ?? Enumerable.Empty<Complaint>())
+                    {
+                        // Убедитесь, что albumData.Album не равен null
+                        if (albumData.Album != null && complaint.Picture != null)
+                        {
+                            complaint.Picture.Path = new API_URL($"/albums/{albumData.Album.Id}/pictures/{complaint.Picture.Id}/thumb/q480?sign={complaint.Sign}");
+                        }
+                    }
+
+                    // Добавляем объект albumData в коллекцию Albums
                     Albums.Add(albumData);
                 }
+
 
                 Debug.WriteLine($"Successfully loaded page {responseObject.Page} with {responseObject.Albums.Count} albums.");
             }
@@ -180,7 +188,7 @@ namespace PicsyncAdmin.ViewModels
                 if (settingsResponse == null)
                 {
                     bool accept = await Shell.Current.DisplayAlert("Ошибка загрузки настроек", "Желаете попробовать снова?", "Да", "Нет");
-                    if(accept)
+                    if (accept)
                     {
                         await LoadSettings();
                     }

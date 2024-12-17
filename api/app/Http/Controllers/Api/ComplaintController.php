@@ -54,10 +54,19 @@ class ComplaintController extends Controller
             // Пользователь видит только альбомы, на которые он пожаловался, исключая свои альбомы
             $query->whereHas('complaints', function ($q) use ($user) {
                 $q->where('from_user_id', $user->id);
-
             });
-
         }
+        // Фильтрация по статусу
+        $query->whereHas('complaints', function ($q) use ($status) {
+           if ($status === "null") {
+               $q->whereNull('status'); // Не рассмотренные жалобы
+           } else if($status == null) {
+               return;
+           }
+           else {
+               $q->where('status', $status); //Конкретный статус
+           }
+        });
 
         $query->with(['complaints' => function ($q) use (
             $limit,
@@ -69,14 +78,7 @@ class ComplaintController extends Controller
             $status,
             $limit_per_album,
         ) {
-            // Фильтрация по статусу
-            if ($request->has('status')) {
-                if ($status === "null") {
-                    $q->whereNull('status'); // Не рассмотренные записи
-                } else {
-                    $q->where('status', $status); // Конкретный статус
-                }
-            }
+
             if ($user->role->code !== 'admin') {
                 $q->where('from_user_id', $user->id);
             }
