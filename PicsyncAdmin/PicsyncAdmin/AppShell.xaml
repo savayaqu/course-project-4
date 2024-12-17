@@ -6,14 +6,7 @@
     xmlns:local="clr-namespace:PicsyncAdmin.Views"
     Shell.FlyoutBehavior="Disabled"
     Title="PicsyncAdmin">
-
-    <!-- Указываем страницу входа Views.Auth.Login как главную 
-    <ShellContent
-        Title="Авторизация"
-        ContentTemplate="{DataTemplate local:Auth.Login}"
-        Route="LoginPage" />
-    -->
-
+    
     <ShellContent
      Title="Выбор URL"
      ContentTemplate="{DataTemplate local:ApiUrlSelectionPage}"

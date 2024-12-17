@@ -102,7 +102,7 @@ namespace PicsyncAdmin.ViewModels
             if (!isExit) return;
 
             AuthSession.ClearSession();
-            await Shell.Current.GoToAsync("//LoginPage");
+            await Shell.Current.GoToAsync("//ApiUrlSelectionPage");
         }
     }
 }

@@ -64,9 +64,9 @@ namespace PicsyncAdmin.ViewModels
         {
             string comment = await Shell.Current.DisplayPromptAsync("Создание предупреждения", "Комментарий");
 
-            var warningResponse = await Fetch.DoAsync(HttpMethod.Post, $"/users/{Album.User.Id}/warnings", setError: msg => Debug.WriteLine(msg), body: new { Comment = comment }, serialize: true);
+            var warningResponse = await Fetch.DoAsync(HttpMethod.Post, $"/users/{Album.User.Id}/warnings", setError: msg => Debug.WriteLine(msg), body: new { comment = comment }, serialize: true);
 
-            var complaintResponse = await Fetch.DoAsync(HttpMethod.Post, $"/complaints/{Album.User.Id}", setError: msg => Debug.WriteLine(msg), body: new { Status = 1 }, serialize: true);
+            var complaintResponse = await Fetch.DoAsync(HttpMethod.Post, $"/complaints/{Album.User.Id}", setError: msg => Debug.WriteLine(msg), body: new { status = 1 }, serialize: true);
 
             if (warningResponse.IsSuccessStatusCode && complaintResponse.IsSuccessStatusCode)
             {

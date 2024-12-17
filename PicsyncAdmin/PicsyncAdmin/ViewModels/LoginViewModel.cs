@@ -81,6 +81,7 @@ namespace PicsyncAdmin.ViewModels
                 Preferences.Set("User", JsonSerializer.Serialize(authResponse.User));
                 Preferences.Set("Token", authResponse.Token);
 
+                Debug.WriteLine("Навигация на MainPage...");
                 await Shell.Current.GoToAsync("//MainPage");
             }
             catch (Exception ex)

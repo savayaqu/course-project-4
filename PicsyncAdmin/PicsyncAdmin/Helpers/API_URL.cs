@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PicsyncAdmin.Helpers
 {
     public class API_URL
     {
-        private static readonly string? _baseValue = AuthSession.SelectedUrl;
         private readonly string _path;
 
         public API_URL(string path)
@@ -19,14 +14,17 @@ namespace PicsyncAdmin.Helpers
 
         public static implicit operator string(API_URL apiUrl)
         {
-            if (string.IsNullOrWhiteSpace(_baseValue))
+            // Всегда берём актуальное значение SelectedUrl
+            var baseValue = AuthSession.SelectedUrl;
+
+            if (string.IsNullOrWhiteSpace(baseValue))
             {
                 throw new InvalidOperationException("Base URL не задан. Проверьте AuthSession.SelectedUrl.");
             }
-            var fullUrl = $"{_baseValue}/api/{apiUrl._path}";
+
+            var fullUrl = $"{baseValue}/api/{apiUrl._path}";
             Debug.WriteLine($"Сформированный URL: {fullUrl}");
             return fullUrl;
         }
     }
-
 }

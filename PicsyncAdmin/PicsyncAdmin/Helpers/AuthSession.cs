@@ -1,4 +1,6 @@
 ﻿using PicsyncAdmin.Models;
+using PicsyncAdmin.ViewModels;
+using System.Diagnostics;
 using System.Text.Json;
 
 
@@ -51,11 +53,17 @@ namespace PicsyncAdmin.Helpers
             }
         }
 
-        public static void SaveUrl(string? selectedUrl)
+        public static void SaveUrl(string url)
         {
-            SelectedUrl = selectedUrl;
-            OnUrlChanged?.Invoke(selectedUrl);
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentException("URL не может быть пустым", nameof(url));
+
+            SelectedUrl = url;
+            Preferences.Set("SelectedUrl", url);
+
+            Debug.WriteLine($"URL сохранён в AuthSession: {SelectedUrl}");
         }
+
 
         // Метод для очистки данных при выходе
         public static void ClearSession()
@@ -67,13 +75,21 @@ namespace PicsyncAdmin.Helpers
         }
 
         // Метод для восстановления данных из Preferences
-        public static void LoadSession()
+        public static async Task LoadSession()
         {
+            // Восстанавливаем SelectedUrl
+            SelectedUrl = Preferences.Get("SelectedUrl", string.Empty);
+            Debug.WriteLine($"SelectedUrl из Preferences: {SelectedUrl}");
+
+            if (string.IsNullOrWhiteSpace(SelectedUrl))
+            {
+                await Shell.Current.GoToAsync("///ApiUrlSelectionPage");
+                return;
+            }
 
             // Восстанавливаем токен
-            Token = Preferences.Get("Token", null);
-            // Восстанавливаем SelectedUrl
-            SelectedUrl = Preferences.Get("SelectedUrl", null);
+            Token = Preferences.Get("token", null);
+
             // Восстанавливаем пользователя только если в Preferences есть данные
             var userJson = Preferences.Get("User", null);
             if (!string.IsNullOrEmpty(userJson))
@@ -81,12 +97,53 @@ namespace PicsyncAdmin.Helpers
                 try
                 {
                     User = JsonSerializer.Deserialize<User>(userJson);
+                    await CheckAuthFromServer();
                 }
                 catch (Exception)
                 {
-                    ClearSession(); // Очистим сессию при ошибке
+                    ClearSession();
+                    await Shell.Current.GoToAsync("///LoginPage");
                 }
             }
+            else
+            {
+                await Shell.Current.GoToAsync("///LoginPage");
+            }
         }
+
+        //Проверка работоспособности сервера и ещё чето слово умное ну ти пон
+        public static async Task CheckAuthFromServer()
+        {
+            try
+            {
+                var response = await Fetch.DoAsync(HttpMethod.Get, "/users/me");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Debug.WriteLine("AUTH: Пользователь авторизован");
+                    await Shell.Current.GoToAsync("//MainPage");
+                }
+                else if ((int)response.StatusCode >= 500)
+                {
+                    Debug.WriteLine("AUTH: Ошибка сервера");
+                    ClearSession();
+                    await Shell.Current.GoToAsync("///ApiUrlSelectionPage");
+                }
+                else
+                {
+                    Debug.WriteLine("AUTH: Токен недействителен или истёк");
+                    ClearSession();
+                    await Shell.Current.GoToAsync("///LoginPage");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"AUTH: Ошибка проверки авторизации: {ex.Message}");
+                ClearSession();
+                await Shell.Current.GoToAsync("///ApiUrlSelectionPage");
+            }
+        }
+
+
     }
 }

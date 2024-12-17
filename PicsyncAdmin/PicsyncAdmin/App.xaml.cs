@@ -7,10 +7,14 @@ namespace PicsyncAdmin
         public App()
         {
             InitializeComponent();
-            AuthSession.LoadSession();
-
             // Назнаение AppShell в качестве главной страницы
             MainPage = new AppShell();
+            // Затем асинхронно загружаем сессию
+            LoadAuthSession();
+        }
+        private async void LoadAuthSession()
+        {
+            await AuthSession.LoadSession();
         }
     }
 }

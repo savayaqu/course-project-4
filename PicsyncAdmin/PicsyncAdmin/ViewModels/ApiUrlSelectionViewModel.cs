@@ -39,10 +39,19 @@ namespace PicsyncAdmin.ViewModels
             SelectedApiUrl = await Shell.Current.DisplayActionSheet("Выберите API URL", "Отмена", null, SavedApiUrls.ToArray());
             if (!string.IsNullOrEmpty(SelectedApiUrl) && SelectedApiUrl != "Отмена")
             {
-                AuthSession.SaveUrl(SelectedApiUrl);
-                await TestUriAp();
+                if (IsValidUrl(SelectedApiUrl))
+                {
+                    AuthSession.SaveUrl(SelectedApiUrl);
+                    Debug.Write(SelectedApiUrl ,"Во время выбора и сохранения токена на странице с выбором апи");
+                    await TestUriAp();
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert("Ошибка", "Некорректный URL. Выберите другой.", "OK");
+                }
             }
         }
+
 
         private void LoadSavedApiUrls()
         {
@@ -117,12 +126,22 @@ namespace PicsyncAdmin.ViewModels
         public static async Task TestUriAp()
         {
             var url = AuthSession.SelectedUrl;
+
+            if (string.IsNullOrEmpty(url))
+            {
+                Debug.WriteLine("SelectedUrl пустой или не задан.");
+                await Shell.Current.DisplayAlert("Ошибка", "Базовый URL не задан. Выберите сервер снова.", "OK");
+                await Shell.Current.GoToAsync("//ApiUrlSelectionPage");
+                return;
+            }
+
             var timeout = TimeSpan.FromSeconds(5);
             var isUp = await ApiHelper.ExecuteRequestAsync(async () =>
             {
                 using var cts = new CancellationTokenSource(timeout);
                 var client = new HttpClient();
                 var response = await client.GetAsync($"{url}/up", cts.Token);
+
                 if (response.IsSuccessStatusCode)
                 {
                     return true;
@@ -134,7 +153,7 @@ namespace PicsyncAdmin.ViewModels
                 throw new Exception($"Ошибка: {response.StatusCode}");
             });
 
-            if (isUp == true)
+            if (isUp)
             {
                 await Shell.Current.GoToAsync("///LoginPage");
             }
@@ -159,5 +178,6 @@ namespace PicsyncAdmin.ViewModels
                 }
             }
         }
+
     }
 }

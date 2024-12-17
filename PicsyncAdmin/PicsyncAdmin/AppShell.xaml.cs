@@ -10,13 +10,6 @@ namespace PicsyncAdmin
         public AppShell()
         {
             InitializeComponent();
-             if (AuthSession.SelectedUrl == null)
-                GoToAsync("//ApiUrlSelectionPage");
-            else if (AuthSession.Token == null)
-              GoToAsync("//LoginPage");
-            else
-                GoToAsync("//MainPage");
-
         }
     }
 }
