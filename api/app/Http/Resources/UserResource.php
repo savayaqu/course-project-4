@@ -23,11 +23,14 @@ class UserResource extends JsonResource
                 ),
                 $this->mergeWhen($isAdmin, [
                     'complaintsAboutCount' => $this->whenCounted('complaintsAbout', fn($count) => $this->when($count, $count)),
+                    'complaintsAboutAcceptedCount' => $this->whenCounted('complaintsAbout', $this->complaintsAbout()->where('status', 1)->count()),
                     'complaintsAbout'      => $this->whenLoaded ('complaintsAbout', fn() =>
                         $this->when($this->complaintsAbout->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsAbout))
                     ),
+
                 ]),
                 'complaintsFromCount' => $this->whenCounted('complaintsFrom', fn($count) => $this->when($count, $count)),
+                'complaintsFromAcceptedCount' => $this->whenCounted('complaintsFrom', $this->complaintsFrom()->where('status', 1)->count()),
                 'complaintsFrom'      => $this->whenLoaded ('complaintsFrom', fn() =>
                     $this->when($this->complaintsFrom->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsFrom))
                 ),

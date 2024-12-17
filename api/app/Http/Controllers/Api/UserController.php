@@ -15,9 +15,9 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         $users = User::with([
-            'role', 'warnings', 'complaintsAbout',
+            'role', 'warnings',
         ])->withCount([
-            'tags', 'albums', 'pictures', 'albumsViaAccess', 'complaintsFrom',
+            'tags', 'albums', 'pictures', 'albumsViaAccess', 'complaintsFrom', 'complaintsAbout'
         ])->get();
 
         return response()->json(['users' => UserResource::collection($users)]);
