@@ -11,27 +11,26 @@ class ComplaintResource extends JsonResource
     {
         $user = $request->user();
         $isOwner = $this->from_user_id === $user->id;
-
-        // Проверяем, есть ли флаг для исключения поля album
-        $excludeAlbum = $request->query('exclude_album', false);
-
-        $data = [
+        return [
             'id' => $this->id,
             'type' => $this->whenLoaded('type', fn() => $this->type->name),
             'status' => $this->status,
             'description' => $this->whenNotNull($this->description),
-            'fromUser' => $this->whenLoaded('fromUser', fn() => $this->when(!$isOwner, fn() => UserResource::make($this->fromUser))),
-            'aboutUser' => $this->whenLoaded('aboutUser', fn() => UserResource::make($this->aboutUser)),
-            'picture' => $this->whenLoaded('picture', fn() => PictureResource::make($this->picture)),
-            'sign' => $this->whenLoaded('picture', fn() => $this->picture ? $this->picture->album->getSign($user) : null),
+            'fromUser' => $this->whenLoaded('fromUser',
+                fn() => $this->when(!$isOwner, fn() => UserResource::make($this->fromUser))
+            ),
+            'aboutUser' => $this->whenLoaded('aboutUser',
+                fn() => UserResource::make($this->aboutUser)
+            ),
+            $this->when($this->whenLoaded('picture', true, false), fn() =>
+                $this->mergeWhen($this->picture, fn() => [
+                    'picture' => PictureResource::make($this->picture),
+                    'sign' => $this->picture->album->getSign($user),
+                ])
+            ),
+            'album' => $this->whenLoaded('album', fn() =>
+                $this->when($this->album, fn() => AlbumResource::make($this->album))
+            ),
         ];
-
-        // Добавляем поле album только если флаг exclude_album не установлен
-        if (!$excludeAlbum) {
-            $data['album'] = $this->whenLoaded('album', fn() => AlbumResource::make($this->album));
-        }
-
-        return $data;
     }
-
 }

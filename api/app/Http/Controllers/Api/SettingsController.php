@@ -28,7 +28,6 @@ class SettingsController extends Controller
         return response()->json([
             'settings' => [
                 ...$settings,
-                'test' => config('settings'),
                 'is_upload_disabled' => $spaceInfo->usedPercent >= config('settings.upload_disable_percentage'),
             ],
         ]);

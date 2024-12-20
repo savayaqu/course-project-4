@@ -37,8 +37,9 @@ class AlbumResource extends JsonResource
                     'ids' => $this->pictures->pluck('id'),
             ])),
             'complaintsCount' => $this->whenCounted('complaints', fn($count) => $this->when($count, $count)),
-            'complaints' => $this->whenLoaded ('complaints', fn() =>
-                    $this->when($this->complaints->isNotEmpty(), fn() => ComplaintResource::collection($this->complaints))),
+            'complaints'      => $this->whenLoaded ('complaints', fn() =>
+                $this->when($this->complaints->isNotEmpty(), fn() => ComplaintResource::collection($this->complaints))
+            ),
         ];
     }
 }
