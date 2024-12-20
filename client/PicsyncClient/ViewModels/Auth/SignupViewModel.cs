@@ -4,7 +4,6 @@ using ObservableDictionary;
 using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -36,7 +35,7 @@ public partial class SignupViewModel : ObservableObject
     private string? error = null;
 
     [ObservableProperty]
-    private ObservableStringDictionary<List<string>> badFields = [];
+    private List<KeyValuePair<string, List<string>>> badFields = [];
 
     [RelayCommand]
     private void GoToLogin()
@@ -52,8 +51,8 @@ public partial class SignupViewModel : ObservableObject
 
         if (Password != PasswordConfirm)
         {
-            Error = "123Ошибка валидации данных";
-            BadFields.Add("passwordConfirm", ["Пароли не совпадают"]);
+            Error = "Ошибка валидации данных";
+            BadFields = [ new("passwordConfirm", [ "" ]) ];
             return;
         }
         var regData = new RegisterRequest(Login, Password, Nickname);
@@ -74,7 +73,7 @@ public partial class SignupViewModel : ObservableObject
                     Error = "Ошибка валидации данных";
                     var errorJson = await res.Content.ReadAsStringAsync();
                     Debug.WriteLine("ERRJSON: " + errorJson);
-                    BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
+                    //BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
                 }
                 catch {}
                 return;

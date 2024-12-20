@@ -1,6 +1,5 @@
 ﻿using PicsyncClient.Models.Response;
 using System.Diagnostics;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace PicsyncClient.Utils;

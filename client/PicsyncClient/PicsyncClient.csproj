@@ -75,11 +75,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Views\Album\" />
-	  <Folder Include="Views\Picture\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <MauiXaml Update="Views\AlbumsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
