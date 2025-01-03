@@ -1,11 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ObservableDictionary;
 using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
 using System.Diagnostics;
 using System.Text.Json;
+using static PicsyncClient.Utils.Fetcher;
 
 namespace PicsyncClient.ViewModels.Auth;
 
@@ -35,7 +35,12 @@ public partial class SignupViewModel : ObservableObject
     private string? error = null;
 
     [ObservableProperty]
-    private List<KeyValuePair<string, List<string>>> badFields = [];
+    private Dictionary<string, List<string>> badFields = [];
+
+    public string Url => ServerData.Url?.ToString();
+
+    [RelayCommand]
+    public void ForgetServer() => ServerData.ForgetAndNavigate();
 
     [RelayCommand]
     private void GoToLogin()
@@ -52,13 +57,16 @@ public partial class SignupViewModel : ObservableObject
         if (Password != PasswordConfirm)
         {
             Error = "Ошибка валидации данных";
-            BadFields = [ new("passwordConfirm", [ "" ]) ];
+            BadFields = new()
+            {
+                { "passwordConfirm", ["Пароли не совпадают"] },
+            };
             return;
         }
         var regData = new RegisterRequest(Login, Password, Nickname);
         try
         {
-            (var res, var body) = await Fetch.DoAsync<AuthResponse>(
+            (var res, var body) = await FetchAsync<AuthResponse>(
                 HttpMethod.Post, "register",
                 isFetch => IsFetch = isFetch,
                 error   => Error   = error,
@@ -73,7 +81,7 @@ public partial class SignupViewModel : ObservableObject
                     Error = "Ошибка валидации данных";
                     var errorJson = await res.Content.ReadAsStringAsync();
                     Debug.WriteLine("ERRJSON: " + errorJson);
-                    //BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
+                    BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
                 }
                 catch {}
                 return;

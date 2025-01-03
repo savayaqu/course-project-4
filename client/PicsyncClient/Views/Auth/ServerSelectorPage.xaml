@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+             x:Class="PicsyncClient.Views.Auth.ServerSelectorPage">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <tk:IsListNotNullOrEmptyConverter x:Key="IsListNotNullOrEmptyConverter" />
+            <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ScrollView>
+        <StackLayout Spacing="10" Padding="10" VerticalOptions="Center" MaximumWidthRequest="500">
+            <Label Text="Выбор сервера" HorizontalTextAlignment="Center" FontSize="24"/>
+
+            <Border Padding="10" Stroke="Red"
+                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="6"/>
+                </Border.StrokeShape>
+                <StackLayout Grid.Column="1" Spacing="5">
+                    <HorizontalStackLayout Spacing="5">
+                        <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                            <Image.Behaviors>
+                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                            </Image.Behaviors>
+                        </Image>
+                        <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                    </HorizontalStackLayout>
+                    <Label Text="{Binding Error}"/>
+                </StackLayout>
+            </Border>
+            
+            <Entry Text="{Binding Url}" Placeholder="Введите URL" Completed="TryNewConnect" Keyboard="Url"/>
+            <Button Text="Подключиться" Command="{Binding TryNewConnectCommand}"/>
+            <StackLayout HeightRequest="30">
+                <Label Text="Отмена"
+                   IsVisible="{Binding IsFetch}"
+                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                   TextDecorations="Underline" FontSize="16" Padding="5"
+                   HorizontalTextAlignment="Center">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding CancelConnectCommand}"/>
+                    </Label.GestureRecognizers>
+                </Label>
+            </StackLayout>
+            
+            <Label Text="Прошлые сервера" HorizontalTextAlignment="Center" Margin="0,10,0,0"
+                   IsVisible="{Binding PastUrls, Converter={StaticResource IsListNotNullOrEmptyConverter}}"/>
+            <CollectionView ItemsSource="{Binding PastUrls}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="5" Margin="0,0,0,5">
+                            <Grid ColumnDefinitions="*,auto,auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Command="{Binding TryPastConnectCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
+                                        CommandParameter="{Binding .}"/>
+                                </Grid.GestureRecognizers>
+                                <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0,0,0"/>
+                                <Button Grid.Column="1" HeightRequest="32" WidthRequest="32" ImageSource="trash_2.png" Padding="8"
+                                        CommandParameter="{Binding .}"
+                                        Command="{Binding DeletePastUrlCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
+                                        Background="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                    <Button.Behaviors>
+                                        <tk:IconTintColorBehavior TintColor="Red"/>
+                                    </Button.Behaviors>
+                                </Button>
+                                <Image Grid.Column="2" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
+                                    <Image.Behaviors>
+                                        <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
+                                    </Image.Behaviors>
+                                </Image>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

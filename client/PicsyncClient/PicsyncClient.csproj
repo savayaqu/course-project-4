@@ -21,10 +21,10 @@
 		<Nullable>enable</Nullable>
 
 		<!-- Display name -->
-		<ApplicationTitle>PicsyncClient</ApplicationTitle>
+		<ApplicationTitle>Picsync</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.picsyncclient</ApplicationId>
+		<ApplicationId>com.picsyncteam.picsyncclientdebugname2</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -57,34 +57,61 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Images\badge_check.svg" />
+	  <None Remove="Resources\Images\chevron_right.svg" />
 	  <None Remove="Resources\Images\circle_user_round.svg" />
 	  <None Remove="Resources\Images\gallery_vertical_end.svg" />
 	  <None Remove="Resources\Images\house.svg" />
 	  <None Remove="Resources\Images\images.svg" />
+	  <None Remove="Resources\Images\info.svg" />
 	  <None Remove="Resources\Images\library_big.svg" />
+	  <None Remove="Resources\Images\octagon_x.svg" />
 	  <None Remove="Resources\Images\settings.svg" />
+	  <None Remove="Resources\Images\share.svg" />
+	  <None Remove="Resources\Images\share_2.svg" />
+	  <None Remove="Resources\Images\trash_2.svg" />
+	  <None Remove="Resources\Images\triangle_alert.svg" />
+	  <None Remove="Resources\Images\users.svg" />
+	  <None Remove="Resources\Images\users_round.svg" />
 	  <None Remove="Resources\Images\user_round.svg" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.0.3" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
 		<PackageReference Include="Dubacik22.ObservableDictionary" Version="1.0.4" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\ViewerPage.xaml.cs">
+	    <DependentUpon>ViewerPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="Views\AlbumsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\AlbumPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Auth\LoginPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Auth\ServerSelectorPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Auth\SignupPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\ViewerPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

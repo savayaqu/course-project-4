@@ -8,9 +8,11 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
 
-        if (AuthData.Token != null)
-            GoToAsync("//Main");
-        else
+        if (ServerData.Url == null)
+            GoToAsync("//ServerSelector");
+        else if (AuthData.Token == null)
             GoToAsync("//Login");
+        else
+            GoToAsync("//Main");
     }
 }

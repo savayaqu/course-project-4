@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using PicsyncClient.Models;
 using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
+using System.Net;
+using static PicsyncClient.Utils.Fetcher;
 
 namespace PicsyncClient.ViewModels.Auth;
 
@@ -24,11 +25,18 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty]
     private string? error = null;
 
+    public string Url => ServerData.Url?.ToString();
+
     [RelayCommand]
-    private void GoToSignup()
-    {
-        Shell.Current.GoToAsync("//Signup");
-    }
+    public void ForgetServer() => ServerData.ForgetAndNavigate();
+
+    [RelayCommand]
+    private void GoToSignup() => Shell.Current.GoToAsync("//Signup");
+
+    private bool CanLogin() =>
+        Login    != "" &&
+        Password != "" &&
+        !IsFetch;
 
     [RelayCommand(CanExecute = nameof(CanLogin))]
     private async Task TryLogin()
@@ -36,7 +44,7 @@ public partial class LoginViewModel : ObservableObject
         var credentials = new CredentialsRequest(Login, Password);
         try
         {
-            (var res, var body) = await Fetch.DoAsync<AuthResponse>(
+            (var res, var body) = await FetchAsync<AuthResponse>(
                 HttpMethod.Post, "login",
                 isFetch => IsFetch = isFetch,
                 error   => Error   = error,
@@ -44,7 +52,7 @@ public partial class LoginViewModel : ObservableObject
                 serialize: true
             );
 
-            if (res.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            if (res.StatusCode == HttpStatusCode.Unauthorized)
             {
                 Error = "Неправильный логин и/или пароль";
                 return;
@@ -78,9 +86,4 @@ public partial class LoginViewModel : ObservableObject
         Debug.WriteLine("CONTENT: " + JsonSerializer.Serialize(await res.Content.ReadAsStringAsync()));
         */
     }
-
-    private bool CanLogin() =>
-        Login != "" &&
-        Password != "" &&
-        !IsFetch;
 }

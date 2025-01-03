@@ -1,5 +1,6 @@
 ﻿using PicsyncClient.Models;
 using System.Text.Json;
+using static PicsyncClient.Utils.Fetcher;
 
 namespace PicsyncClient.Utils;
 
@@ -62,7 +63,7 @@ public static class AuthData
         bool isExit = false;
         try
         {
-            var res = await Fetch.DoAsync(HttpMethod.Post, "logout", setIsFetch);
+            var res = await FetchAsync(HttpMethod.Post, "logout", setIsFetch);
             if (!res.IsSuccessStatusCode)
                 throw new Exception($"Пришёл плохой код ({(int)res.StatusCode} {res.ReasonPhrase})");
 

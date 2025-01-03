@@ -8,17 +8,18 @@
     Shell.FlyoutBehavior="Disabled"
     Title="Picsync">
 
-    <ShellContent ContentTemplate="{DataTemplate views:Auth.LoginPage}"  Route="Login"  Shell.TabBarIsVisible="False"/>
-    <ShellContent ContentTemplate="{DataTemplate views:Auth.SignupPage}" Route="Signup" Shell.TabBarIsVisible="False"/>
+    <ShellContent ContentTemplate="{DataTemplate views:Auth.ServerSelectorPage}"  Route="ServerSelector"  Shell.TabBarIsVisible="False"/>
+    <ShellContent ContentTemplate="{DataTemplate views:Auth.LoginPage}"           Route="Login"           Shell.TabBarIsVisible="False"/>
+    <ShellContent ContentTemplate="{DataTemplate views:Auth.SignupPage}"          Route="Signup"          Shell.TabBarIsVisible="False"/>
 
     <TabBar>
-        <Tab Title="Недавнее" Icon="house.svg">
+        <Tab Title="Недавнее" Icon="house.png">
             <ShellContent ContentTemplate="{DataTemplate views:MainPage}" Route="Main"/>
         </Tab>
-        <Tab Title="Альбомы" Icon="library_big.svg">
+        <Tab Title="Альбомы" Icon="library_big.png">
             <ShellContent ContentTemplate="{DataTemplate views:AlbumsPage}" Route="Albums"/>
         </Tab>
-        <Tab Title="Настройки" Icon="settings.svg">
+        <Tab Title="Настройки" Icon="settings.png">
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" Route="Settings"/>
         </Tab>
     </TabBar>
