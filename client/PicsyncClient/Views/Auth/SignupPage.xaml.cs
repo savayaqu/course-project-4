@@ -16,6 +16,9 @@ public partial class SignupPage : ContentPage
 
     private void TrySignup(object sender, EventArgs e)
     {
+        if (sender is Entry entry)
+            entry.Unfocus();
+
         if (BindingContext is SignupViewModel vm)
             vm.TrySignupCommand.Execute(null);
     }

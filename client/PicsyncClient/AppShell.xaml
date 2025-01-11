@@ -23,4 +23,5 @@
             <ShellContent ContentTemplate="{DataTemplate views:SettingsPage}" Route="Settings"/>
         </Tab>
     </TabBar>
+    
 </Shell>

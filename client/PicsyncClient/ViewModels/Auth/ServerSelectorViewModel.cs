@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using PicsyncClient.Utils;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
+using System.Collections.Specialized;
 
 namespace PicsyncClient.ViewModels.Auth;
 
@@ -25,6 +25,14 @@ public partial class ServerSelectorViewModel : ObservableObject
     private CancellationTokenSource _cancellationTokenSource;
 
     public ObservableCollection<string> PastUrls => ServerData.PastUrls;
+
+    public bool PastUrlsIsVisible => PastUrls.Count > 0;
+
+    public ServerSelectorViewModel()
+    {
+        PastUrls.CollectionChanged += (object? sender, NotifyCollectionChangedEventArgs e) 
+            => OnPropertyChanged(nameof(PastUrlsIsVisible));
+    }
 
     public bool CanTryNewConnect() => url != "" && !IsFetch;
 

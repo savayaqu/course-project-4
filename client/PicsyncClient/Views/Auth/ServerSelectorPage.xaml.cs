@@ -12,7 +12,10 @@ public partial class ServerSelectorPage : ContentPage
 
     private void TryNewConnect(object sender, EventArgs e)
     {
-		if (BindingContext is ServerSelectorViewModel vm) 
+        if (sender is Entry entry)
+            entry.Unfocus();
+
+        if (BindingContext is ServerSelectorViewModel vm) 
 			vm.TryNewConnectCommand.Execute(null);
     }
 }

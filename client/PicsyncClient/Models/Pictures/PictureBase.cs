@@ -1,4 +1,5 @@
 using PicsyncClient.Models.Albums;
+using SQLite;
 
 namespace PicsyncClient.Models.Pictures;
 
@@ -11,6 +12,8 @@ public abstract class PictureBase : IPicture
     public virtual int?      Width  { get; set; }
     public virtual int?      Height { get; set; }
     public virtual DateTime? Date   { get; set; }
+
+    [Ignore]
     public virtual IAlbum    Album  { get; set; }
            
     // Геттеры

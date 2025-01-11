@@ -67,6 +67,7 @@ public partial class LoginViewModel : ObservableObject
                 Error = "Ошибка сервера: " + "Не пришли данные";
                 return;
             }
+            Password = "";
             AuthData.SaveAndNavigate(body.Token, body.User);
         }
         catch (HttpRequestException ex)

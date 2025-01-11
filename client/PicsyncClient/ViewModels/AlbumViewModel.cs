@@ -10,6 +10,9 @@ using PicsyncClient.Views;
 using PicsyncClient.Utils;
 using PicsyncClient.Enum;
 using static PicsyncClient.Utils.Fetcher;
+using CommunityToolkit.Maui.Views;
+using PicsyncClient.Components.Popups;
+using PicsyncClient.ViewModels.Popups;
 
 namespace PicsyncClient.ViewModels;
 
@@ -28,12 +31,10 @@ public partial class AlbumViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
     [NotifyPropertyChangedFor(nameof(CanLoadMore))]
-    private int remotePage = 1;
+    private int remoteOffset = 1;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
-    [NotifyPropertyChangedFor(nameof(CanLoadMore))]
-    private PicturesPageResponse? latestRemotePicturesPage;
+    private PicturesPageResponse? lastRemotePicturesPage;
 
     //public int PageSize => ColumnCount * 10;
     public int PageSize => 30;
@@ -45,52 +46,133 @@ public partial class AlbumViewModel : ObservableObject
     private string? error;
 
     [ObservableProperty]
-    private ObservableCollection<ItemssGroup<Models.Pictures.IPicture>> picturesGroups = [];
+    private ObservableCollection<ItemsGroup<Models.Pictures.IPicture>> picturesGroups = [];
 
     public AlbumViewModel(IAlbum album)
     {
         Album = album;
         if (CanLoadMore)
-            LoadMore();
+            LoadMoreCommand.Execute(null);
     }
+
 
     public bool CanLoadMore 
     { 
         get
         {
             if (IsBusy) return false;
-            bool res = false;
-            if (Album is AlbumLocal albumLocal)
+            if (Album is AlbumSynced albumSynced)
             {
-                res = albumLocal.LocalPictures.Count > LocalOffset;
-                Debug.WriteLine($"CanLoadMoreCheck: {res} = albumLocal.LocalPictures.Count {albumLocal.LocalPictures.Count} > LocalOffset {LocalOffset}");
+                Debug.WriteLine($"CanLoadMoreCheck: { albumSynced.RemotePicturesCount > RemoteOffset || 
+                                                      albumSynced.LocalPictures.Count > LocalOffset } = \n" +
+                    $"albumSynced.RemotePicturesCount {albumSynced.RemotePicturesCount} > RemoteOffset {RemoteOffset} ||\n" +
+                    $"albumLocal .LocalPictures.Count {albumSynced.LocalPictures.Count} > LocalOffset {  LocalOffset}");
+                if (albumSynced.RemotePicturesCount > RemoteOffset || 
+                    albumSynced.LocalPictures.Count > LocalOffset) return true;
+            }
+            else if (Album is AlbumLocal albumLocal)
+            {
+                Debug.WriteLine($"CanLoadMoreCheck: {albumLocal.LocalPictures.Count > LocalOffset} = " +
+                    $"albumLocal.LocalPictures.Count {albumLocal.LocalPictures.Count} > LocalOffset {LocalOffset}");
+                return albumLocal.LocalPictures.Count > LocalOffset;
             }
             else if (Album is AlbumRemote albumRemote)
             {
-                res = albumRemote.RemotePicturesCount > (RemotePage - 1) * PageSize;
-                Debug.WriteLine($"CanLoadMoreCheck: {res} = albumRemote.RemotePicturesCount {albumRemote.RemotePicturesCount} > (RemotePage {RemotePage} - 1) * PageSize {PageSize}");
+                Debug.WriteLine($"CanLoadMoreCheck: {albumRemote.RemotePicturesCount > RemoteOffset} = " +
+                    $"albumRemote.RemotePicturesCount {albumRemote.RemotePicturesCount} > RemoteOffset {RemoteOffset}");
+                return albumRemote.RemotePicturesCount > RemoteOffset;
             }
-            else
-            {
-                res = false;
-                Debug.WriteLine($"CanLoadMoreCheck: {res} = NOT IMPLEMENTED");
-            }
-            return res;
+            return false;
         } 
     }
 
     [RelayCommand(CanExecute = nameof(CanLoadMore))]
     public async Task LoadMore()
     {
-        Debug.WriteLine("=========== LoadMore ============");
-        Debug.WriteLine($"Offset & Page: {LocalOffset} & {RemotePage}, IsBusy: {IsBusy}");
+        Debug.WriteLine($"=========== LoadMore ============\nOffset / Total:\n" +
+            ((Album is IAlbumLocal local ) ? $"[local_] { LocalOffset}/{local .LocalPictures.Count}\n" : "") +
+            ((Album is AlbumRemote remote) ? $"[remote] {RemoteOffset}/{remote.RemotePicturesCount}\n" : ""));
+
         if (IsBusy) return;
 
-        IsBusy = true;
         List<Models.Pictures.IPicture> piece;
-        
-        if (Album is AlbumLocal albumLocal)
+
+        if (Album is AlbumSynced albumSynced)
         {
+            // TODO: хочется отображать сразу локальные картинки, не дожидаясь 
+            IsBusy = true;
+
+            if (LastRemotePicturesPage == null || RemoteOffset < albumSynced.RemotePicturesCount)
+            {
+                (var res, var picturesPage) = await FetchAsync<PicturesPageResponse>(
+                    HttpMethod.Get,
+                    URLs.AlbumPictures(albumSynced.Id, new()
+                    {
+                        Page = RemoteOffset / PageSize + 1,
+                        Limit = PageSize,
+                        Sort = PicturesSort.date,
+                        IsReverse = true,
+                    }),
+                    isFetch => IsBusy = isFetch,
+                    error => Error = error
+                );
+                if (picturesPage != null)
+                {
+                    albumSynced.RemotePicturesCount = picturesPage.Total;
+
+                    if (picturesPage.Signature != null)
+                    {
+                        if (albumSynced.Preview == null)
+                            albumSynced.Preview = new() { Signature = picturesPage.Signature };
+                        else
+                            albumSynced.Preview.Signature = picturesPage.Signature;
+                    }
+
+                    LastRemotePicturesPage = picturesPage;
+                }
+            }
+
+            var remotePictures = LastRemotePicturesPage?.Pictures
+                .Where(r => !albumSynced.LocalPictures
+                    .OfType<PictureSynced>()
+                    .Any(l => l.Id == r.Id)
+                );
+
+            piece = [];
+
+            for (int i = 0; i < PageSize; i++)
+            {
+                var localPicture = albumSynced.LocalPictures[LocalOffset];
+                var remotePicture = LastRemotePicturesPage?.Pictures[RemoteOffset - PageSize * (RemoteOffset / PageSize)];
+
+                if (remotePicture != null)
+                {
+                    var syncedPicture = albumSynced.LocalPictures
+                        .OfType<PictureSynced>()
+                        .FirstOrDefault(l => l.Id == remotePicture.Id);
+
+                    if (syncedPicture != null)
+                    {
+                        syncedPicture.Update(remotePicture);
+                        remotePicture = null;
+                    }
+                }
+
+                if (remotePicture == null || localPicture.Date > remotePicture.Date)
+                {
+                    LocalOffset++;
+                    piece.Add(localPicture);
+                }
+                else
+                {
+                    RemoteOffset++;
+                    piece.Add(remotePicture);
+                }
+            } 
+        }
+        else if (Album is AlbumLocal albumLocal)
+        {
+            IsBusy = true;
             piece = albumLocal.LocalPictures
                 .Skip(LocalOffset)
                 .Take(PageSize)
@@ -105,15 +187,17 @@ public partial class AlbumViewModel : ObservableObject
                 HttpMethod.Get,
                 URLs.AlbumPictures(albumRemote.Id, new()
                 {
-                    Page = RemotePage,
+                    Page = RemoteOffset / PageSize + 1,
                     Limit = PageSize,
                     Sort = PicturesSort.date,
-                    IsReverse = false,
+                    IsReverse = true,
                 }),
                 isFetch => IsBusy = isFetch,
                 error => Error = error
             );
             if (picturesPage == null) return;
+
+            albumRemote.RemotePicturesCount = picturesPage.Total;
 
             if (picturesPage.Signature != null)
             {
@@ -130,7 +214,7 @@ public partial class AlbumViewModel : ObservableObject
                 piece.Add(picture);
             }
 
-            RemotePage++;
+            RemoteOffset += PageSize;
         }
         else
         {
@@ -160,6 +244,25 @@ public partial class AlbumViewModel : ObservableObject
 
         IsBusy = false;
         Debug.WriteLine("=========== END LoadMore ============");
+    }
+
+
+    public bool IsLocal => Album is IAlbumLocal;
+    public bool IsSynced => Album is AlbumSynced;
+    public bool IsRemote => Album is AlbumRemote;
+    public bool IsNonOwned => Album is AlbumRemote album && album.Owner != null;
+
+    public bool CanSync => Album.GetType() == typeof(AlbumLocal);
+
+    [RelayCommand(CanExecute = nameof(CanSync))]
+    public async Task Sync()
+    {
+        if (Album is not AlbumLocal albumLocal || 
+            albumLocal.GetType() != typeof(AlbumLocal)
+        ) return;
+
+        AlbumSyncPopup popup = new(albumLocal);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
     }
 
 

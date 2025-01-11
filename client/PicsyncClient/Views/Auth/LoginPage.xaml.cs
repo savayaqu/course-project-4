@@ -17,6 +17,9 @@ public partial class LoginPage : ContentPage
 
     private void TryLogin(object sender, EventArgs e)
     {
+        if (sender is Entry entry)
+            entry.Unfocus();
+
         if (BindingContext is LoginViewModel vm)
             vm.TryLoginCommand.Execute(null);
     }

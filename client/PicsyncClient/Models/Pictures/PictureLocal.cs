@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace PicsyncClient.Models.Pictures;
 
-public class PictureLocal : PictureBase
+public class PictureLocal : PictureBase, IPictureLocal
 {
     // Свойства
     public override string Name => Path.GetFileName(LocalPath);

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+          xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+          x:Class="PicsyncClient.Components.Popups.AlbumSyncPopup"
+          Color="Transparent">
+    <tk:Popup.Resources>
+        <ResourceDictionary>
+            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
+            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
+        </ResourceDictionary>
+    </tk:Popup.Resources>
+    <Grid MaximumWidthRequest="350">
+        <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}">
+            <StackLayout>
+                <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
+                    <Label Text="Синхронизировать" FontSize="18" VerticalOptions="Center"/>
+                    <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
+                            Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
+                </Grid>
+
+                <Border Padding="10" Stroke="Red" Margin="5"
+                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="6"/>
+                    </Border.StrokeShape>
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <HorizontalStackLayout Spacing="5">
+                            <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                <Image.Behaviors>
+                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                </Image.Behaviors>
+                            </Image>
+                            <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding Error}"/>
+                    </StackLayout>
+                </Border>
+
+                <Label Text="В новый альбом" Margin="5"/>
+                <Entry Text="{Binding AlbumNameNew}" Placeholder="{Binding AlbumNameDefault}" Margin="0,0,0,5"/>
+                <Button Command="{Binding ConfirmCommand}" Text="Создать и начать"/>
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+                <StackLayout IsVisible="{Binding AlbumsListIsVisible}">
+                    <Grid ColumnDefinitions="*,auto,*" ColumnSpacing="5" Margin="5,10">
+                        <BoxView Grid.Column="0" HeightRequest="1"  BackgroundColor="Gray"/>
+                        <Label   Grid.Column="1" Text="ИЛИ" FontSize="12" TextColor="Gray"/>
+                        <BoxView Grid.Column="2" HeightRequest="1"  BackgroundColor="Gray"/>
+                    </Grid>
+                    <Label Text="В существующий на сервере альбом" Margin="5"/>
+                    <CollectionView ItemsSource="{Binding AlbumsRemoteOwn}">
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="10">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            Command="{Binding ConfirmCommand, Source={RelativeSource AncestorType={x:Type vm:Popups.AlbumSyncPopupViewModel}}}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Frame.GestureRecognizers>
+                                    <Grid ColumnDefinitions="*,auto">
+                                        <Label>
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="{Binding Name}" FontAttributes="Bold"/>
+                                                    <Span Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray"/>
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        <Image Grid.Column="1" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
+                                            <Image.Behaviors>
+                                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                            </Image.Behaviors>
+                                        </Image>
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </StackLayout>
+            </StackLayout>
+        </Frame>
+    </Grid>
+</tk:Popup>

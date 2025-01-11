@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using PicsyncClient.Components.Popups;
+using PicsyncClient.ViewModels.Popups;
 
 namespace PicsyncClient
 {
@@ -17,8 +19,10 @@ namespace PicsyncClient
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
 
+            //builder.Services.AddTransientPopup<AlbumSyncPopup, AlbumSyncViewModel>();
+
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

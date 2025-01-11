@@ -47,37 +47,42 @@
                 </Label>
             </StackLayout>
             
-            <Label Text="Прошлые сервера" HorizontalTextAlignment="Center" Margin="0,10,0,0"
-                   IsVisible="{Binding PastUrls, Converter={StaticResource IsListNotNullOrEmptyConverter}}"/>
-            <CollectionView ItemsSource="{Binding PastUrls}">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame Padding="5" Margin="0,0,0,5">
-                            <Grid ColumnDefinitions="*,auto,auto">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer 
-                                        Command="{Binding TryPastConnectCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
-                                        CommandParameter="{Binding .}"/>
-                                </Grid.GestureRecognizers>
-                                <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0,0,0"/>
-                                <Button Grid.Column="1" HeightRequest="32" WidthRequest="32" ImageSource="trash_2.png" Padding="8"
-                                        CommandParameter="{Binding .}"
-                                        Command="{Binding DeletePastUrlCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
-                                        Background="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-                                    <Button.Behaviors>
-                                        <tk:IconTintColorBehavior TintColor="Red"/>
-                                    </Button.Behaviors>
-                                </Button>
-                                <Image Grid.Column="2" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
-                                    <Image.Behaviors>
-                                        <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
-                                    </Image.Behaviors>
-                                </Image>
-                            </Grid>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <StackLayout IsVisible="{Binding PastUrlsIsVisible}" Spacing="10">
+                <Label Text="Прошлые сервера" HorizontalTextAlignment="Center" Margin="0,10,0,0"/>
+                <CollectionView ItemsSource="{Binding PastUrls}">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="5">
+                                <Grid ColumnDefinitions="*,auto,auto">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            Command="{Binding TryPastConnectCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Grid.GestureRecognizers>
+                                    <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0,0,0"/>
+                                    <Button Grid.Column="1" HeightRequest="32" WidthRequest="32" ImageSource="trash_2.png" Padding="8"
+                                            CommandParameter="{Binding .}"
+                                            Command="{Binding DeletePastUrlCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
+                                            Background="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                        <Button.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="Red"/>
+                                        </Button.Behaviors>
+                                    </Button>
+                                    <Image Grid.Column="2" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+            
         </StackLayout>
     </ScrollView>
 </ContentPage>

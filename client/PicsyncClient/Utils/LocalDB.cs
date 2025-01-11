@@ -17,8 +17,8 @@ public static class LocalDB
 
             // Инициализация
             _db = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "local.db"));
-            _db.CreateTable<Album>();
-            _db.CreateTable<Picture>();
+            _db.CreateTable<AlbumSynced>();
+            _db.CreateTable<PictureSynced>();
             return _db;
         }
     }

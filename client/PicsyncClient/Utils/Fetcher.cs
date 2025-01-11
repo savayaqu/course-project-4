@@ -24,9 +24,22 @@ public static class Fetcher
 
         // Готовим запрос
         Uri fullUrl;
-        if      (path is Uri    uri   ) fullUrl = uri;
-        else if (path is string urlEnd) fullUrl = new Uri($"{URLs.API_URL}/{urlEnd}");
+        if      (path is Uri uri) fullUrl = uri;
+        else if (path is string urlEnd)
+        {
+            try
+            {
+                fullUrl = new Uri($"{URLs.API_URL}/{urlEnd}");
+            }
+            catch (Exception ex)
+            {
+                setIsFetch?.Invoke(false);
+                setError?.Invoke($"Ошибка URL: {ex.Message}");
+                return new();
+            }
+        }
         else throw new ArgumentException("path should be of the type: Uri, string");
+
         Debug.WriteLine("FETCH: FullUrl: " + fullUrl);
 
         var request = new HttpRequestMessage(method, fullUrl);
@@ -65,6 +78,8 @@ public static class Fetcher
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine("Fetcher: responseJsonErr: " + ex.Message);
+                    setError?.Invoke($"Пришёл плохой ответ {(int)response.StatusCode} ({response.ReasonPhrase})");
                     //setError?.Invoke("Не удалось прочитать ошибку"); // TODO: FIXME: удалить setError
                 }
             }

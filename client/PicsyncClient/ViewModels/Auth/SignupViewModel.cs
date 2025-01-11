@@ -96,6 +96,8 @@ public partial class SignupViewModel : ObservableObject
                 Error = "Ошибка сервера: " + "Не пришли данные";
                 return;
             }
+            Password = "";
+            PasswordConfirm = "";
             AuthData.SaveAndNavigate(body.Token, body.User);
         }
         catch (HttpRequestException ex)

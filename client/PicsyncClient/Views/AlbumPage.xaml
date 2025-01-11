@@ -6,6 +6,22 @@
              x:Class="PicsyncClient.Views.AlbumPage"
              Shell.TabBarIsVisible="False"
              Title="{Binding Album.Name}">
+    <Shell.TitleView>
+        <Grid Padding="0,0,5,0" ColumnDefinitions="*,auto">
+            <Label Text="{Binding Album.Name}" FontSize="18" VerticalOptions="Center" FontAttributes="Bold" 
+                   TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}"/>
+            <Button FontSize="13" Text="Синхронизировать" FontAttributes="Bold"
+                    ImageSource="cloud_upload.png" ContentLayout="Right, 10"
+                    Command="{Binding SyncCommand}"
+                    HeightRequest="40" Padding="12,4,12,4"
+                    HorizontalOptions="End" VerticalOptions="Center" 
+                    IsVisible="{Binding CanSync}">
+                <Button.Behaviors>
+                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
+                </Button.Behaviors>
+            </Button>
+        </Grid>
+    </Shell.TitleView>
     <ContentPage.Resources>
         <ResourceDictionary>
             <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
@@ -25,7 +41,7 @@
         </CollectionView.ItemsLayout>
         <CollectionView.GroupHeaderTemplate>
             <DataTemplate>
-                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" Margin="5,2,1,1" />
+                <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" Margin="5,5,5,1" />
             </DataTemplate>
         </CollectionView.GroupHeaderTemplate>
         <CollectionView.ItemTemplate>
