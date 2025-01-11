@@ -19,15 +19,16 @@ class Invitation extends Model
 
     public function failOnExpires(): void
     {
-        if (now()->greaterThan($this->expires_at)) {
-            $this->delete();
-            throw new ApiException('Invitation expired', 409);
-        }
-        if ($this->join_limit !== null &&
-            $this->join_limit < 1) {
-            $this->delete();
-            throw new ApiException('Invitation expired', 409);
-        }
+        if ((
+            $this->expires_at === null ||
+            !now()->greaterThan($this->expires_at)
+        ) && (
+            $this->join_limit === null ||
+            $this->join_limit > 0
+        )) return;
+
+        $this->delete();
+        throw new ApiException('Invitation expired', 409);
     }
 
     public function album() {

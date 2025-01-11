@@ -6,10 +6,13 @@ use App\Exceptions\Api\ApiException;
 use App\Exceptions\Api\ForbiddenException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Invitation\InvitationCreateRequest;
+use App\Http\Resources\AlbumResource;
 use App\Http\Resources\InvitationResource;
+use App\Http\Resources\PictureResource;
 use App\Models\Album;
 use App\Models\AlbumAccess;
 use App\Models\Invitation;
+use App\Models\Picture;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -42,7 +45,20 @@ class InvitationController extends Controller
     {
         $invitation->failOnExpires();
         $invitation->load(['album', 'album.user']);
-        return response()->json(InvitationResource::make($invitation));
+        $pictures = Picture
+            ::where('album_id', $invitation->album->id)
+            ->orderBy('date', 'DESC')
+            ->limit(30)
+            ->get();
+        $res = [
+            'album' => AlbumResource::make($invitation->album),
+            'pictures' => PictureResource::collection($pictures),
+        ];
+
+        if ($invitation?->album?->user?->id == Auth::id())
+            $res['invite'] = InvitationResource::make($invitation);
+
+        return response()->json($res);
     }
 
     public function join(Invitation $invitation): JsonResponse

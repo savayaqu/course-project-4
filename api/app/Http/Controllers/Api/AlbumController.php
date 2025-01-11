@@ -26,7 +26,7 @@ class AlbumController extends Controller
                     'usersViaAccess',
                 ])
                 ->with([
-                    'pictures' => fn ($query) => $query->limit(4),
+                    'pictures' => fn ($query) => $query->orderBy('date', 'DESC')->limit(4),
                 ])
                 ->get()
             ),
@@ -37,7 +37,7 @@ class AlbumController extends Controller
                     'pictures',
                 ])
                 ->with([
-                    'pictures' => fn ($query) => $query->limit(4),
+                    'pictures' => fn ($query) => $query->orderBy('date', 'DESC')->limit(4),
                     'user',
                 ])
                 ->get()
