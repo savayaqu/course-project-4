@@ -19,7 +19,7 @@ public class AlbumRemote : AlbumBase
 
     // Свойства
   //[JsonPropertyName("path"              )] public string?   Path          { get; set; } // TODO: CLEAN: мб устарело
-    [JsonPropertyName("id"                )] public ulong Id                { get; set; }
+    [JsonPropertyName("id")]    [PrimaryKey] public ulong Id                { get; set; }
     [JsonPropertyName("name"              )] public override string Name    { get; set; }
     [JsonPropertyName("createdAt"         )] public DateTime? CreatedAt     { get; set; }
     [JsonPropertyName("picturesCount"     )] public int RemotePicturesCount { get; set; } = 0;

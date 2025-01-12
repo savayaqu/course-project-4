@@ -30,6 +30,6 @@ public class PictureRemote : PictureBase
     }
 
     // Геттеры
-    public override string OriginalPath  => URLs.PictureOriginal (SpecificAlbum.Id, Id, SpecificAlbum?.Preview?.Signature).ToString();
-    public override string ThumbnailPath => URLs.PictureThumbnail(SpecificAlbum.Id, Id, SpecificAlbum?.Preview?.Signature).ToString();
+    public override string OriginalPath  => URLs.PictureOriginal (SpecificAlbum?.Id ?? 0, Id, SpecificAlbum?.Preview?.Signature).ToString();
+    public override string ThumbnailPath => URLs.PictureThumbnail(SpecificAlbum?.Id ?? 0, Id, SpecificAlbum?.Preview?.Signature).ToString();
 }

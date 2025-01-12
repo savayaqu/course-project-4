@@ -55,6 +55,8 @@ public partial class AlbumsViewModel : ObservableObject
         if (Error != null) return;
 
         List<AlbumSynced> syncedAlbumsFromLocal = new(AlbumsSynced);
+        Debug.WriteLine("RequestAlbums: AlbumsRemote: \n" + JsonSerializer.Serialize(AlbumsRemote));
+        Debug.WriteLine("RequestAlbums: syncedAlbumsFromLocal: \n" + JsonSerializer.Serialize(syncedAlbumsFromLocal));
         AlbumsSynced.Clear();
 
         // Проверка что синхронизирующиеся альбомы до сих пор на сервере
@@ -63,20 +65,41 @@ public partial class AlbumsViewModel : ObservableObject
             var remote = AlbumsRemote[i];
             var synced = syncedAlbumsFromLocal.FirstOrDefault(a => a.Id == remote.Id);
 
-            if (synced == null) continue;
+            Debug.WriteLine($"RequestAlbums: for(): AlbumsRemote[{i}] = \n" + JsonSerializer.Serialize(remote) + $"\n [[[synced]]] = \n{JsonSerializer.Serialize(synced)}");
 
-            synced.Name = remote.Name;
+            Debug.WriteLine($"RequestAlbums: synced == null: {synced == null}");
+            if (synced is not AlbumSynced syncedTrue) continue;
 
+            Debug.WriteLine($"RequestAlbums: synced.simple: #{syncedTrue.Id} {syncedTrue.LocalPath}");
+
+            Debug.WriteLine($"RequestAlbums: synced.Update: {syncedTrue == null}");
+            syncedTrue.Update(remote);
+
+            Debug.WriteLine($"RequestAlbums: DB.Update: \n{JsonSerializer.Serialize(syncedTrue)}");
+            DB.Update(syncedTrue);
+
+            Debug.WriteLine($"RequestAlbums: AlbumsRemote.RemoveAt: {i}");
             AlbumsRemote.RemoveAt(i);
-            AlbumsSynced.Add(synced);
-            syncedAlbumsFromLocal.Remove(synced);
+
+            Debug.WriteLine($"RequestAlbums: AlbumsSynced.Add");
+            AlbumsSynced.Add(syncedTrue); 
+
+            Debug.WriteLine($"RequestAlbums: syncedAlbumsFromLocal.Remove");
+            syncedAlbumsFromLocal.Remove(syncedTrue);
         }
 
+        Debug.WriteLine("RequestAlbums: syncedAlbumsFromLocal END: \n" + JsonSerializer.Serialize(syncedAlbumsFromLocal));
         // Оставшиейся в syncedAlbumsFromLocal более не синхронизируются
         foreach (var nonSynced in syncedAlbumsFromLocal)
         {
+            Debug.WriteLine("RequestAlbums: foreach: \n" + JsonSerializer.Serialize(nonSynced));
             AlbumLocal localAlbum = new(nonSynced);
+
             AlbumsLocal.Add(localAlbum);
+
+            LocalData.Albums.Remove(nonSynced);
+            LocalData.Albums.Add(localAlbum);
+
             DB.Delete(nonSynced);
         }
     }
