@@ -22,8 +22,13 @@ public partial class AlbumsViewModel : ObservableObject
     public AlbumsViewModel()
     {
         AlbumsSynced.CollectionChanged += OnAlbumsSyncedCollectionChanged;
+        RequestAlbumsCommand.PropertyChanged += (s, e) => 
+        {
+            if (e.PropertyName == nameof(AsyncRelayCommand.IsRunning))
+                OnPropertyChanged(nameof(CanRequestAlbums));
+        };
 
-        _ = RequestAlbums();
+        RequestAlbumsCommand.Execute(null);
     }
 
     public bool SyncedIsVisibled => AlbumsSynced.Count > 0;
@@ -42,21 +47,27 @@ public partial class AlbumsViewModel : ObservableObject
         OnPropertyChanged(nameof(SyncedIsVisibled));
     }
 
-    private async Task RequestAlbums()
+    //[ObservableProperty]
+    //[NotifyPropertyChangedFor(nameof(CanRequestAlbums))]
+    //[NotifyCanExecuteChangedFor(nameof(RequestAlbumsCommand))]
+    //private bool isBusyOnRequestAll = false;
+
+    public bool CanRequestAlbums => !(RequestAlbumsCommand.IsRunning || IsFetch);
+
+    [RelayCommand(CanExecute = nameof(CanRequestAlbums), IncludeCancelCommand = true)]
+    private async Task RequestAlbums(CancellationToken token = default)
     {
+        var remoteTask = RequestRemoteAlbumsCommand.ExecuteAsync(token);
         var localTask  = RequestLocalAlbumsCommand.ExecuteAsync(null);
-        var remoteTask = RequestRemoteAlbumsCommand.ExecuteAsync(null);
 
         await Task.WhenAll(localTask, remoteTask);
 
         //if (localTask .IsFaulted ||
-        //    remoteTask.IsFaulted) return; // TODO: переделать/вынести
+        //    remoteTask.IsFaulted) return; // TODO: переделать(bool результат)/вынести
 
         if (Error != null) return;
 
         List<AlbumSynced> syncedAlbumsFromLocal = new(AlbumsSynced);
-        Debug.WriteLine("RequestAlbums: AlbumsRemote: \n" + JsonSerializer.Serialize(AlbumsRemote));
-        Debug.WriteLine("RequestAlbums: syncedAlbumsFromLocal: \n" + JsonSerializer.Serialize(syncedAlbumsFromLocal));
         AlbumsSynced.Clear();
 
         // Проверка что синхронизирующиеся альбомы до сих пор на сервере
@@ -65,26 +76,16 @@ public partial class AlbumsViewModel : ObservableObject
             var remote = AlbumsRemote[i];
             var synced = syncedAlbumsFromLocal.FirstOrDefault(a => a.Id == remote.Id);
 
-            Debug.WriteLine($"RequestAlbums: for(): AlbumsRemote[{i}] = \n" + JsonSerializer.Serialize(remote) + $"\n [[[synced]]] = \n{JsonSerializer.Serialize(synced)}");
-
-            Debug.WriteLine($"RequestAlbums: synced == null: {synced == null}");
             if (synced is not AlbumSynced syncedTrue) continue;
 
             Debug.WriteLine($"RequestAlbums: synced.simple: #{syncedTrue.Id} {syncedTrue.LocalPath}");
-
-            Debug.WriteLine($"RequestAlbums: synced.Update: {syncedTrue == null}");
             syncedTrue.Update(remote);
 
-            Debug.WriteLine($"RequestAlbums: DB.Update: \n{JsonSerializer.Serialize(syncedTrue)}");
             DB.Update(syncedTrue);
 
-            Debug.WriteLine($"RequestAlbums: AlbumsRemote.RemoveAt: {i}");
             AlbumsRemote.RemoveAt(i);
+            AlbumsSynced.Insert(0, syncedTrue); 
 
-            Debug.WriteLine($"RequestAlbums: AlbumsSynced.Add");
-            AlbumsSynced.Add(syncedTrue); 
-
-            Debug.WriteLine($"RequestAlbums: syncedAlbumsFromLocal.Remove");
             syncedAlbumsFromLocal.Remove(syncedTrue);
         }
 
@@ -162,7 +163,9 @@ public partial class AlbumsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanRequestRemote))]
-    [NotifyCanExecuteChangedFor(nameof(RequestRemoteAlbumsCommand))]
+    [NotifyPropertyChangedFor(nameof(CanRequestAlbums))]
+    [NotifyCanExecuteChangedFor(nameof (RequestAlbumsCommand))] 
+    [NotifyCanExecuteChangedFor(nameof (RequestRemoteAlbumsCommand))]
     private bool isFetch = false;
 
     [ObservableProperty] 
@@ -170,13 +173,14 @@ public partial class AlbumsViewModel : ObservableObject
 
     public bool CanRequestRemote => !IsFetch;
 
-    [RelayCommand(CanExecute = nameof(CanRequestRemote))]
-    public async Task RequestRemoteAlbums()
+    [RelayCommand(CanExecute = nameof(CanRequestRemote), IncludeCancelCommand = true)]
+    public async Task RequestRemoteAlbums(CancellationToken token = default)
     {
         (var res, var body) = await FetchAsync<AlbumsResponse>(
             HttpMethod.Get, URLs.Albums,
             isFetch => IsFetch = isFetch,
-            error   => Error   = error
+            error   => Error   = error,
+            cancellationToken: token
         );
         if (body == null)
         {

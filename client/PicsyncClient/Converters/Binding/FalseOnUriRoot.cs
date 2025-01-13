@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using PicsyncClient.Models.Albums;
+using System.Globalization;
 
 namespace PicsyncClient.Converters;
 
@@ -10,7 +11,13 @@ public class FalseOnUriRoot : IValueConverter
         {
             uri = uri.Replace("file:/", "");
             uri = uri.Replace("/storage/emulated/0/", "");
-            return uri.IndexOf('/') != -1;
+            return uri.Contains('/');
+        }
+        if (value is IAlbumLocal album)
+        {
+            string path = album.LocalPath.Replace("file:/", "");
+            path = path.Replace("/storage/emulated/0/", "");
+            return !(album.Name == path);
         }
         return true;
     }

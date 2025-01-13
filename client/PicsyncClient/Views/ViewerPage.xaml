@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:pinch="clr-namespace:Bertuzzi.MAUI.PinchZoomImage"
              x:Class="PicsyncClient.Views.ViewerPage"
              Shell.TabBarIsVisible="False"
              Title="{Binding Picture.Name}">
+    <!--<ContentPage.Behaviors>
+        <tk:StatusBarBehavior StatusBarColor="Transparent"/>
+    </ContentPage.Behaviors>-->
     <pinch:PinchZoom>
         <Image Source="{Binding Picture.OriginalPath}"/>
     </pinch:PinchZoom>

@@ -6,14 +6,39 @@
              x:Class="PicsyncClient.Views.AlbumPage"
              Shell.TabBarIsVisible="False"
              Title="{Binding Album.Name}">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <Shell.TitleView>
         <Grid Padding="0,0,5,0" ColumnDefinitions="*,auto">
-            <Label Text="{Binding Album.Name}" FontSize="18" VerticalOptions="Center" FontAttributes="Bold" 
-                   TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}"/>
-            <Button FontSize="13" Text="Синхронизировать" FontAttributes="Bold"
-                    ImageSource="cloud_upload.png" ContentLayout="Right, 10"
+            <StackLayout VerticalOptions="Center">
+                <HorizontalStackLayout>
+                    <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold"
+                           TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}"/>
+                    <Label Text="{Binding Album.NameDuplicaIndex, StringFormat=' ({0})'}" FontSize="18" VerticalTextAlignment="End" 
+                           TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}"
+                           IsVisible="{Binding Album.NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
+                    <Label Text="{Binding Album.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="16" VerticalTextAlignment="End"
+                           IsVisible="{Binding IsRemote}"/>
+                </HorizontalStackLayout>
+                <Label Text="{Binding Album.LocalPath}" TextColor="Gray" FontSize="11"
+                       IsVisible="{Binding IsLocal}"/>
+                <Label IsVisible="{Binding IsNonOwned}">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="от " TextColor="Gray"/>
+                            <Span Text="{Binding Album.Owner.Nickname}"/>
+                            <Span Text="{Binding Album.Owner.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="12"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </StackLayout>
+            <Button FontSize="10" Text="Синхронизировать" FontAttributes="Bold"
+                    ImageSource="cloud_upload.png" ContentLayout="Top, -5"
                     Command="{Binding SyncCommand}"
-                    HeightRequest="40" Padding="12,4,12,4"
+                    HeightRequest="40" Padding="5,2,5,2"
                     HorizontalOptions="End" VerticalOptions="Center" 
                     IsVisible="{Binding CanSync}">
                 <Button.Behaviors>
@@ -22,11 +47,6 @@
             </Button>
         </Grid>
     </Shell.TitleView>
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
-        </ResourceDictionary>
-    </ContentPage.Resources>
     <CollectionView Margin="1,0"
                     ItemsSource="{Binding PicturesGroups}" 
                     IsGrouped="True"
