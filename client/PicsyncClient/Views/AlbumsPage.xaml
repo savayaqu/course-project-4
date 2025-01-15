@@ -23,7 +23,22 @@
         <StackLayout Margin="5,0">
 
             <StackLayout IsVisible="{Binding SyncedIsVisibled}">
-                <Label FontSize="18" Margin="5" Text="Синхронизируемые"/>
+                <Grid ColumnDefinitions="*,auto" HeightRequest="50">
+                    <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
+                        <Label FontSize="18" VerticalOptions="Center" Text="Синхронизируемые"/>
+                        <ActivityIndicator VerticalOptions="Center" HeightRequest="24" WidthRequest="24"
+                                       IsRunning="{Binding RequestAlbumsCommand.IsRunning}"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                        <Label Text="Обновить" TextDecorations="Underline" FontSize="14" Padding="10" VerticalTextAlignment="Center"
+                               TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                               IsEnabled="{Binding CanRequestAlbums}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RequestAlbumsCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+                </Grid>
                 <CollectionView ItemsSource="{Binding AlbumsSynced}">
                     <CollectionView.ItemsLayout>
                         <GridItemsLayout Orientation="Vertical" 
@@ -64,8 +79,8 @@
                                                     IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
                                                 <Label Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14" VerticalTextAlignment="End"/>
                                             </HorizontalStackLayout>
-                                            <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray"
-                                                IsVisible="{Binding LocalPath, Converter={StaticResource FalseOnUriRoot}}"/>
+                                            <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray" FontSize="11"
+                                                IsVisible="{Binding ., Converter={StaticResource FalseOnUriRoot}}"/>
                                         </StackLayout>
 
                                         <HorizontalStackLayout Grid.Column="1" Spacing="10">
@@ -105,8 +120,9 @@
                         <BoxView HeightRequest="5" Background="Transparent"/>
                     </CollectionView.Footer>
                 </CollectionView>
-
+                
                 <BoxView HeightRequest="1" Color="Gray" Margin="5"/>
+                <!--<BoxView HeightRequest="5" BackgroundColor="Transparent"/>-->
             </StackLayout>
 
             <Grid ColumnDefinitions="*,auto" HeightRequest="50">
@@ -232,7 +248,15 @@
                 </CollectionView.Footer>
             </CollectionView>
 
+            <Label Text="Ввести код приглашения" TextDecorations="Underline" FontSize="14" Padding="10" HorizontalOptions="Center"
+                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenInviteEnterCommand}"/>
+                </Label.GestureRecognizers>
+            </Label>
+
             <BoxView HeightRequest="1" Color="Gray" Margin="5"/>
+            <!--<BoxView HeightRequest="5" BackgroundColor="Transparent"/>-->
 
             <Grid ColumnDefinitions="*,auto" HeightRequest="50">
                 <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
@@ -310,7 +334,7 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
                 <CollectionView.Footer>
-                    <BoxView HeightRequest="5" Background="Transparent"/>
+                    <BoxView HeightRequest="0" Background="Transparent" Margin="0"/>
                 </CollectionView.Footer>
             </CollectionView>
             
