@@ -1,22 +1,16 @@
-﻿// ----------------------------------------------------------------------------
-// Bertuzzi.MAUI.PinchZoomImage
-// https://www.nuget.org/packages/Bertuzzi.MAUI.PinchZoomImage/
-// 
-// This software is licensed under the Microsoft Public License (Ms-PL).
-// Full license text can be found at: https://opensource.org/licenses/MS-PL
-// 
-// Copyright (c) 2022 Bertuzzi
-// ----------------------------------------------------------------------------
+﻿using System;
+using System.Threading.Tasks;
 
-namespace Bertuzzi.MAUI.PinchZoomImage
+namespace Xamarin.Forms.PinchZoomImage
 {
+
     public class PinchZoom : ContentView
     {
         private double _currentScale = 1;
         private double _startScale = 1;
         private double _xOffset = 0;
         private double _yOffset = 0;
-        private bool _secondDoubleTapp = false;
+        private bool _secondDoubleTapp = false; //boolean checking if the user doubletapped for the first time or second time
 
         public PinchZoom()
         {
@@ -77,48 +71,57 @@ namespace Bertuzzi.MAUI.PinchZoomImage
         {
             if (Content.Scale <= 1)
             {
-                // Если масштаб 1 или меньше, не позволяем перемещать
-                return;
+                return; // Панирование не требуется, если масштаб равен или меньше 1
             }
 
             switch (e.StatusType)
             {
                 case GestureStatus.Running:
-                    // Рассчитываем новое положение
-                    var newX = (e.TotalX / Scale) + _xOffset;
-                    var newY = (e.TotalY / Scale) + _yOffset;
+                    var newX = (e.TotalX * Scale) + _xOffset;
+                    var newY = (e.TotalY * Scale) + _yOffset;
 
-                    // Размеры видимой области
-                    var scaledWidth = Content.Width * Content.Scale;
-                    var scaledHeight = Content.Height * Content.Scale;
+                    var width = Content.Width * Content.Scale;
+                    var height = Content.Height * Content.Scale;
 
-                    var screenWidth = Application.Current.MainPage.Width;
-                    var screenHeight = Application.Current.MainPage.Height;
+                    var containerWidth = Width;
+                    var containerHeight = Height;
 
-                    // Ограничение по горизонтали
-                    var maxX = Math.Max(0, (scaledWidth - screenWidth) / 2);
-                    var minX = -maxX;
+                    // Ограничение по X
+                    if (width > containerWidth)
+                    {
+                        var minX = containerWidth - width; // Левая граница
+                        var maxX = 0; // Правая граница
+                        newX = Math.Max(minX, Math.Min(newX, maxX));
+                    }
+                    else
+                    {
+                        newX = 0; // Центрируем по X, если изображение меньше контейнера
+                    }
 
-                    newX = Math.Max(minX, Math.Min(maxX, newX));
+                    // Ограничение по Y
+                    if (height > containerHeight)
+                    {
+                        var minY = containerHeight - height; // Верхняя граница
+                        var maxY = 0; // Нижняя граница
+                        newY = Math.Max(minY, Math.Min(newY, maxY));
+                    }
+                    else
+                    {
+                        newY = 0; // Центрируем по Y, если изображение меньше контейнера
+                    }
 
-                    // Ограничение по вертикали
-                    var maxY = Math.Max(0, (scaledHeight - screenHeight) / 2);
-                    var minY = -maxY;
-
-                    newY = Math.Max(minY, Math.Min(maxY, newY));
-
-                    // Применяем новое положение
                     Content.TranslationX = newX;
                     Content.TranslationY = newY;
                     break;
 
                 case GestureStatus.Completed:
-                    // Сохраняем текущее положение для последующих расчетов
                     _xOffset = Content.TranslationX;
                     _yOffset = Content.TranslationY;
                     break;
             }
         }
+
+
 
 
         public async void DoubleTapped(object sender, EventArgs e)
