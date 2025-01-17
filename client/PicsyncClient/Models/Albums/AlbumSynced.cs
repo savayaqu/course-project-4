@@ -66,18 +66,5 @@ public class AlbumSynced : AlbumRemote, IAlbumLocal
             return _thumbnailPaths;
         }
     }
-
-    // Функции
-    public void Update(AlbumRemote remoteAlbum)
-    {
-        Id                  = remoteAlbum.Id;
-        Name                = remoteAlbum.Name;
-        CreatedAt           = remoteAlbum.CreatedAt;
-        RemotePicturesCount = remoteAlbum.RemotePicturesCount;
-        GrantAccessesCount  = remoteAlbum.GrantAccessesCount;
-        InvitationsCount    = remoteAlbum.InvitationsCount;
-        Owner               = remoteAlbum.Owner;
-        Preview             = remoteAlbum.Preview;
-    }
 }
 

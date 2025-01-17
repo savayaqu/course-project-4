@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Maui.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Text.Json;
 using PicsyncClient.Models;
 using PicsyncClient.Models.Albums;
 using PicsyncClient.Models.Pictures;
@@ -13,15 +14,16 @@ using PicsyncClient.Utils;
 using PicsyncClient.Enum;
 using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
-using System.Text.Json;
 
 namespace PicsyncClient.ViewModels;
 
 public partial class AlbumViewModel : ObservableObject
 {
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
     [NotifyPropertyChangedFor(nameof(CanLoadMore))]
+    [NotifyPropertyChangedFor(nameof(CanRefresh))]
+    [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RefreshCommand))]
     private bool isBusy = false;
 
     [ObservableProperty]
@@ -41,21 +43,74 @@ public partial class AlbumViewModel : ObservableObject
     public int PageSize => 30;
 
     [ObservableProperty]
-    private IAlbum album;
-
-    [ObservableProperty]
     private string? error;
 
     [ObservableProperty]
     private ObservableCollection<ItemsGroup<Models.Pictures.IPicture>> picturesGroups = [];
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLocal))]
+    [NotifyPropertyChangedFor(nameof(IsSynced))]
+    [NotifyPropertyChangedFor(nameof(IsRemote))]
+    [NotifyPropertyChangedFor(nameof(IsNonOwned))]
+    [NotifyPropertyChangedFor(nameof(IsRemoteOwned))]
+    [NotifyPropertyChangedFor(nameof(CanSync))]
+    private IAlbum album;
+
+    public bool IsLocal       => Album is IAlbumLocal;
+    public bool IsSynced      => Album is AlbumSynced;
+    public bool IsRemote      => Album is AlbumRemote;
+    public bool IsNonOwned    => Album is AlbumRemote album && album.Owner != null;
+    public bool IsRemoteOwned => Album is AlbumRemote album && album.Owner == null;
+
     public AlbumViewModel(IAlbum album)
     {
+        LoadInfoCommand.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(AsyncRelayCommand.IsRunning))
+                OnPropertyChanged(nameof(CanLoadInfo));
+        };
+
         Album = album;
+
+        LoadInfoCommand.Execute(null);
+
         if (CanLoadMore)
             LoadMoreCommand.Execute(null);
     }
 
+    public bool CanLoadInfo => !LoadInfoCommand.IsRunning;
+
+    [RelayCommand(CanExecute = nameof(CanLoadInfo))]
+    public async Task LoadInfo(CancellationToken token = default)
+    {
+        if (Album is not AlbumRemote remote) return;
+
+        (var res, var body) = await FetchAsync<AlbumResponse>(
+            HttpMethod.Get, URLs.AlbumInfo(remote.Id),
+            setError: e => Error = e,
+            cancellationToken: token
+        );
+
+        if (body == null) return;
+
+        body.Album.GrantAccesses ??= [];
+        body.Album.Invitations   ??= [];
+
+        remote.Update(body.Album);
+    }
+
+    public bool CanRefresh => !IsBusy;
+
+    [RelayCommand(CanExecute = nameof(CanRefresh))]
+    public async Task Refresh()
+    {
+        LocalOffset  = 0;
+        RemoteOffset = 0;
+        LastRemotePicturesPage = null;
+        if (CanLoadMore)
+            await LoadMoreCommand.ExecuteAsync(null);
+    }
 
     public bool CanLoadMore 
     { 
@@ -255,22 +310,22 @@ public partial class AlbumViewModel : ObservableObject
 
             //MainThread.BeginInvokeOnMainThread(() =>
             //{
-                foreach (var picture in piece)
-                {
-                    string? currGroupTitle = picture.Date?.ToString("MMMM, yyyy");
-                    string? lastGroupTitle = null;
-            
-                    int lastGroupIndex = PicturesGroups.Count - 1;
-                    if (lastGroupIndex >= 0)
-                        lastGroupTitle = PicturesGroups?[lastGroupIndex].Title;
-            
-                    if (lastGroupTitle == currGroupTitle)
-                        PicturesGroups[lastGroupIndex].Add(picture);
-                    else
-                        PicturesGroups.Add(new(currGroupTitle ?? "", [picture]));
-            
-                    Debug.WriteLine($"Added: {picture.Name}, to: {currGroupTitle}");
-                }
+            foreach (var picture in piece)
+            {
+                string? currGroupTitle = picture.Date?.ToString("MMMM, yyyy");
+                string? lastGroupTitle = null;
+        
+                int lastGroupIndex = PicturesGroups.Count - 1;
+                if (lastGroupIndex >= 0)
+                    lastGroupTitle = PicturesGroups?[lastGroupIndex].Title;
+        
+                if (lastGroupTitle == currGroupTitle)
+                    PicturesGroups[lastGroupIndex].Add(picture);
+                else
+                    PicturesGroups.Add(new(currGroupTitle ?? "", [picture]));
+        
+                Debug.WriteLine($"Added: {picture.Name}, to: {currGroupTitle}");
+            }
             //});
             Debug.WriteLine($"LoadMore: piece: {JsonSerializer.Serialize(piece)}");
 
@@ -287,10 +342,12 @@ public partial class AlbumViewModel : ObservableObject
     }
 
 
-    public bool IsLocal => Album is IAlbumLocal;
-    public bool IsSynced => Album is AlbumSynced;
-    public bool IsRemote => Album is AlbumRemote;
-    public bool IsNonOwned => Album is AlbumRemote album && album.Owner != null;
+    [RelayCommand]
+    public async Task OpenInfo()
+    {
+        AlbumInfoPopup popup = new(Album);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+    }
 
     public bool CanSync => Album.GetType() == typeof(AlbumLocal);
 
@@ -303,11 +360,76 @@ public partial class AlbumViewModel : ObservableObject
 
         AlbumSyncPopup popup = new(albumLocal);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+        if (result is not AlbumSynced album) return;
+
+        Album = album;
+        RefreshCommand.Execute(null);
+    }
+
+    public bool CanSyncManage => Album is AlbumSynced;
+
+    [RelayCommand(CanExecute = nameof(CanSyncManage))]
+    public async Task SyncManage()
+    {
+        if (Album is not AlbumSynced synced) return;
+
+        AlbumSyncManagePopup popup = new(synced);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+        if (result is not AlbumLocal local) return;
+
+        // TODO: навигировать назад и разделить на remote и local
+        Album = local;
+        RefreshCommand.Execute(null);
+    }
+
+    public bool CanAccessManage => Album is AlbumRemote;
+
+    [RelayCommand(CanExecute = nameof(CanAccessManage))]
+    public async Task AccessManage()
+    {
+        if (Album is not AlbumRemote remote) return;
+
+        AlbumAccessManagePopup popup = new(remote);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+    }
+
+    public bool CanUnjoin => Album is AlbumRemote;
+
+    [RelayCommand(CanExecute = nameof(CanUnjoin))]
+    public async Task Unjoin(CancellationToken token = default)
+    {
+        if (Album is not AlbumRemote remote) return;
+        /*
+
+        bool isAgree = await Shell.Current.DisplayAlert("Отписка", "Вы уверены что хотите отписаться от этого альбома?");
+
+        if ()
+
+        HttpResponseMessage res = await FetchAsync(
+            HttpMethod.Delete, URLs.AlbumAccess(remote.Id),
+            f => IsBusy = f, e => Error = e,
+            cancellationToken: token
+        );
+
+        if (!res.IsSuccessStatusCode) return;
+
+        await Shell.Current.GoToAsync("..");
+        */
+
+        AlbumAccessManagePopup popup = new(remote);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+        if (result is bool isExit && !isExit) return;
+        await Shell.Current.GoToAsync("..");
     }
 
 
+
+
     [ObservableProperty]
-    private int columnCount = 3;
+    private int columnCount = 1;
 
     [ObservableProperty]
     private double? requestColumnWidth = 120;
@@ -324,6 +446,7 @@ public partial class AlbumViewModel : ObservableObject
         ColumnWidth = containerWidth / ColumnCount;
         Debug.WriteLine($"=== ChgColW ===\n{ColumnWidth} = {containerWidth} / {ColumnCount}");
     }
+
 
     [RelayCommand]
     private async void OpenViewer(Models.Pictures.IPicture picture)

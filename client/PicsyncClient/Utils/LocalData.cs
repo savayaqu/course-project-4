@@ -240,6 +240,7 @@ public static class LocalData
                         // Ищем в локальной БД есть ли альбом как синхронизирующийся
                         stopwatch.Restart();
                         album = DB.Table<AlbumSynced>().FirstOrDefault(a => a.LocalPath == albumPath);
+                        System.Diagnostics.Debug.WriteLine($"FillPictures: DB.Table<AlbumSynced>().FirstOrDefault: {((album is AlbumSynced synced) ? synced.Id : string.Empty)}");
                         iterationTimes["DB.Table<AlbumSynced>.FirstOrDefault"] = stopwatch.ElapsedTicks * (1_000_000_000 / Stopwatch.Frequency);
 
                         isInSync = album != null;

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using MauiContentButton;
 using Microsoft.Extensions.Logging;
 using PicsyncClient.Components.Popups;
 using PicsyncClient.ViewModels.Popups;
@@ -13,6 +14,7 @@ namespace PicsyncClient
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
+                .AddMauiContentButtonHandler()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

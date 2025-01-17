@@ -4,7 +4,8 @@
              xmlns:pinch="clr-namespace:Xamarin.Forms.PinchZoomImage"
              x:Class="PicsyncAdmin.Views.FullScreenImagePage"
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
-             Title="FullScreenImagePage">
+             Title="FullScreenImagePage"
+             Background="Black">
     <ContentPage.Content>
         <Grid>
             <!-- Картинка с возможностью масштабирования -->
@@ -15,7 +16,7 @@
             </pinch:PinchZoom>
 
             <!-- Шапка с кнопками -->
-            <Grid x:Name="Header" BackgroundColor="#66000000" Padding="10" IsVisible="True" Opacity="1">
+            <Grid x:Name="Header" BackgroundColor="#66000000" Padding="10" IsVisible="True" Opacity="1" HeightRequest="65" VerticalOptions="Start">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>

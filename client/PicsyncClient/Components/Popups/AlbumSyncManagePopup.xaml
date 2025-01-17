@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+          xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+          x:Class="PicsyncClient.Components.Popups.AlbumSyncManagePopup"
+          Color="Transparent">
+    <tk:Popup.Resources>
+        <ResourceDictionary>
+            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
+            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
+        </ResourceDictionary>
+    </tk:Popup.Resources>
+    <Grid MaximumWidthRequest="350">
+        <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
+            <StackLayout>
+                <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
+                    <Label Text="Синхронизация" FontSize="18" VerticalOptions="Center"/>
+                    <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
+                            Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
+                </Grid>
+
+                <Border Padding="10" Stroke="Red"
+                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="6"/>
+                    </Border.StrokeShape>
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <HorizontalStackLayout Spacing="5">
+                            <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                <Image.Behaviors>
+                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                </Image.Behaviors>
+                            </Image>
+                            <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding Error}"/>
+                    </StackLayout>
+                </Border>
+
+                <Button Text="Отменить синхронизацию" Command="{Binding DesyncCommand}" BackgroundColor="{StaticResource Red}"/>
+            </StackLayout>
+        </Frame>
+    </Grid>
+</tk:Popup>

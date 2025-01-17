@@ -31,6 +31,7 @@ public partial class AlbumSyncPopupViewModel : ObservableObject
         _popup = popup;
         AlbumForSync = album;
         AlbumNameDefault = album.Name;
+        AlbumNameNew = AlbumNameDefault;
         RequestRemoteAlbumsCommand.Execute(null);
     }
 
@@ -47,7 +48,11 @@ public partial class AlbumSyncPopupViewModel : ObservableObject
         if (body == null) return;
 
         AlbumsRemoteOwn = new(body.Own);
+        bool canSetNewName = AlbumNameDefault == AlbumNameNew;
         AlbumNameDefault = GetUniqueName(body.Own.Select(a => a.Name).ToList(), AlbumForSync.Name);
+        if (canSetNewName)
+            AlbumNameNew = AlbumNameDefault;
+        
         AlbumsListIsVisible = AlbumsRemoteOwn.Count > 0;
     }
 
@@ -96,7 +101,7 @@ public partial class AlbumSyncPopupViewModel : ObservableObject
         LocalData.Albums.Add(syncedAlbum);
         DB.Insert(syncedAlbum);
 
-        _popup.Close();
+        _popup.Close(syncedAlbum);
     }
 
     public static string GetUniqueName(List<string> existingNames, string newName)

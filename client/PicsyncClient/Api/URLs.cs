@@ -8,12 +8,37 @@ public static class URLs
 {
     public static Uri BASE_URL => ServerData.Url;
     public static Uri API_URL => new(BASE_URL + "/api");
+    public static Uri Settings => API_URL;
+
 
     public static Uri Albums => 
         new($"{API_URL}/albums");
 
     public static Uri AlbumInfo(ulong albumId) => 
         new($"{Albums}/{albumId}");
+
+
+    public static Uri AlbumInvite(ulong albumId) =>
+        new($"{AlbumInfo(albumId)}/invite");
+
+    public static Uri Invitations =>
+        new($"{API_URL}/invitation");
+
+    public static Uri Invitation(string inviteCode) =>
+        new($"{Invitations}/{inviteCode}");
+
+    public static Uri InvitationAlbum(string inviteCode) =>
+        new($"{Invitation}/album");
+
+    public static Uri InvitationJoin(string inviteCode) =>
+        new($"{Invitation}/join");
+
+    public static Uri Accesses =>
+        new($"{API_URL}/accesses");
+
+    public static Uri AlbumAccess(ulong albumId, ulong? userId = null) =>
+        new($"{AlbumInfo(albumId)}/accesses" + (userId != null ? $"/{userId}" : ""));
+
 
     public static Uri AlbumPictures(ulong albumId) => 
         new($"{AlbumInfo(albumId)}/pictures");
@@ -76,5 +101,4 @@ public static class URLs
 
         return new($"{PictureInfo(albumId, pictureId)}/thumb/{orient}{size}{signatureString}");
     }
-    public static Uri Settings => API_URL;
 }

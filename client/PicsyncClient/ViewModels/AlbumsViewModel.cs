@@ -1,5 +1,7 @@
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PicsyncClient.Components.Popups;
 using PicsyncClient.Enum;
 using PicsyncClient.Models.Albums;
 using PicsyncClient.Models.Response;
@@ -55,17 +57,14 @@ public partial class AlbumsViewModel : ObservableObject
     public bool CanRequestAlbums => !(RequestAlbumsCommand.IsRunning || IsFetch);
 
     [RelayCommand(CanExecute = nameof(CanRequestAlbums), IncludeCancelCommand = true)]
-    private async Task RequestAlbums(CancellationToken token = default)
+    private async Task<bool> RequestAlbums(CancellationToken token = default)
     {
         var remoteTask = RequestRemoteAlbumsCommand.ExecuteAsync(token);
         var localTask  = RequestLocalAlbumsCommand.ExecuteAsync(null);
 
         await Task.WhenAll(localTask, remoteTask);
 
-        //if (localTask .IsFaulted ||
-        //    remoteTask.IsFaulted) return; // TODO: переделать(bool результат)/вынести
-
-        if (Error != null) return;
+        if (!HasPermissions || Error != null) return false;
 
         List<AlbumSynced> syncedAlbumsFromLocal = new(AlbumsSynced);
         AlbumsSynced.Clear();
@@ -89,7 +88,6 @@ public partial class AlbumsViewModel : ObservableObject
             syncedAlbumsFromLocal.Remove(syncedTrue);
         }
 
-        Debug.WriteLine("RequestAlbums: syncedAlbumsFromLocal END: \n" + JsonSerializer.Serialize(syncedAlbumsFromLocal));
         // Оставшиейся в syncedAlbumsFromLocal более не синхронизируются
         foreach (var nonSynced in syncedAlbumsFromLocal)
         {
@@ -103,6 +101,7 @@ public partial class AlbumsViewModel : ObservableObject
 
             DB.Delete(nonSynced);
         }
+        return true;
     }
 
 
@@ -135,12 +134,19 @@ public partial class AlbumsViewModel : ObservableObject
     public bool canUpdateLocal = false;
 
     [RelayCommand(CanExecute = nameof(CanUpdateLocal))]
-    public async Task RequestLocalAlbums()
+    public async Task<bool> RequestLocalAlbums()
     {
         // Если не разрешено или не поддерживается — произойдёт исключение
-        HasPermissions = await LocalData.CheckPermissions();
-        if (!HasPermissions) 
-            throw new UnauthorizedAccessException("Пользователь не выдавал разрешения на чтение");
+        try
+        {
+            HasPermissions = await LocalData.CheckPermissions();
+            if (!HasPermissions)
+                return false;
+        }
+        catch (PlatformNotSupportedException ex)
+        {
+            return false;
+        }
 
         if (LocalData.Status == LocalLoadStatus.NotLoad)
         {
@@ -155,17 +161,22 @@ public partial class AlbumsViewModel : ObservableObject
                 await Task.Delay(1000);
             }
         }
+        else if (LocalData.Status == LocalLoadStatus.Loaded && CanUpdateLocal)
+        {
+            await LocalData.FillPictures();
+        }
         CanUpdateLocal = true;
         AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
         AlbumsSynced = new(LocalData.Albums.OfType<AlbumSynced>().ToList());
+        return true;
     }
 
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanRequestRemote))]
     [NotifyPropertyChangedFor(nameof(CanRequestAlbums))]
-    [NotifyCanExecuteChangedFor(nameof (RequestAlbumsCommand))] 
-    [NotifyCanExecuteChangedFor(nameof (RequestRemoteAlbumsCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RequestAlbumsCommand))] 
+    [NotifyCanExecuteChangedFor(nameof(RequestRemoteAlbumsCommand))]
     private bool isFetch = false;
 
     [ObservableProperty] 
@@ -198,6 +209,14 @@ public partial class AlbumsViewModel : ObservableObject
     private async Task GoToAlbum(IAlbum album)
     {
         await Shell.Current.Navigation.PushAsync(new AlbumPage(album));
+    }
+
+
+    [RelayCommand]
+    private async Task OpenInvitationPreview()
+    {
+        InvitationPreviewPopup popup = new();
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
     }
 
 

@@ -34,7 +34,7 @@
                                TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
                                IsEnabled="{Binding CanRequestAlbums}">
                             <Label.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding RequestAlbumsCommand}"/>
+                                <TapGestureRecognizer Command="{Binding RequestAlbumsCommand}" />
                             </Label.GestureRecognizers>
                         </Label>
                     </HorizontalStackLayout>
@@ -76,7 +76,7 @@
                                             <HorizontalStackLayout>
                                                 <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
                                                 <Label Text="{Binding NameDuplicaIndex, StringFormat=' ({0})'}" VerticalTextAlignment="End" 
-                                                    IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
+                                                       IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
                                                 <Label Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14" VerticalTextAlignment="End"/>
                                             </HorizontalStackLayout>
                                             <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray" FontSize="11"
@@ -251,7 +251,7 @@
             <Label Text="Ввести код приглашения" TextDecorations="Underline" FontSize="14" Padding="10" HorizontalOptions="Center"
                    TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
                 <Label.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenInviteEnterCommand}"/>
+                    <TapGestureRecognizer Command="{Binding OpenInvitationPreviewCommand}"/>
                 </Label.GestureRecognizers>
             </Label>
 
