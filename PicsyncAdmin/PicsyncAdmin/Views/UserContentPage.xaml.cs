@@ -7,9 +7,6 @@ namespace PicsyncAdmin.Views;
 
 public partial class UserContentPage : ContentPage
 {
-    private UserContentViewModel ViewModel => (UserContentViewModel)BindingContext;
-
-
     public UserContentPage(Album album)
     {
         InitializeComponent();
@@ -26,5 +23,4 @@ public partial class UserContentPage : ContentPage
         }
     }
 }
-
 

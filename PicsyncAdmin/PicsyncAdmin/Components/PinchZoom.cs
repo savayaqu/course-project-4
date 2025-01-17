@@ -1,16 +1,24 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿// ----------------------------------------------------------------------------
+// Bertuzzi.MAUI.PinchZoomImage
+// https://www.nuget.org/packages/Bertuzzi.MAUI.PinchZoomImage/
+// 
+// This software is licensed under the Microsoft Public License (Ms-PL).
+// Full license text can be found at: https://opensource.org/licenses/MS-PL
+// 
+// Copyright (c) 2022 Bertuzzi
+// ----------------------------------------------------------------------------
 
-namespace Xamarin.Forms.PinchZoomImage
+using PicsyncAdmin.ViewModels;
+
+namespace Bertuzzi.MAUI.PinchZoomImage
 {
-
     public class PinchZoom : ContentView
     {
         private double _currentScale = 1;
         private double _startScale = 1;
         private double _xOffset = 0;
         private double _yOffset = 0;
-        private bool _secondDoubleTapp = false; //boolean checking if the user doubletapped for the first time or second time
+        private bool _secondDoubleTapp = false;
 
         public PinchZoom()
         {
@@ -22,8 +30,12 @@ namespace Xamarin.Forms.PinchZoomImage
             panGesture.PanUpdated += OnPanUpdated;
             GestureRecognizers.Add(panGesture);
 
-            var tapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
-            tapGesture.Tapped += DoubleTapped;
+            var doubleTapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+            doubleTapGesture.Tapped += DoubleTapped;
+            GestureRecognizers.Add(doubleTapGesture);
+
+            var tapGesture = new TapGestureRecognizer();
+            tapGesture.Tapped += Tapped;
             GestureRecognizers.Add(tapGesture);
         }
 
@@ -66,63 +78,90 @@ namespace Xamarin.Forms.PinchZoomImage
                     break;
             }
         }
-
+        private async void Tapped(object sender, EventArgs e)
+        {
+            // Проверяем, что экземпляр UserContentViewModel существует
+            if (UserContentViewModel.Instance != null)
+            {
+                // Вызываем команду ToggleControlsVisibility
+                UserContentViewModel.Instance.ToggleControlsVisibilityCommand.Execute(null);
+            }
+        }
         public void OnPanUpdated(object sender, PanUpdatedEventArgs e)
         {
-            if (Content.Scale <= 1)
+            if (Content.Scale == 1)
             {
-                return; // Панирование не требуется, если масштаб равен или меньше 1
+                return;
             }
 
             switch (e.StatusType)
             {
                 case GestureStatus.Running:
+
                     var newX = (e.TotalX * Scale) + _xOffset;
                     var newY = (e.TotalY * Scale) + _yOffset;
 
-                    var width = Content.Width * Content.Scale;
-                    var height = Content.Height * Content.Scale;
+                    var width = (Content.Width * Content.Scale);
+                    var height = (Content.Height * Content.Scale);
 
-                    var containerWidth = Width;
-                    var containerHeight = Height;
+                    var canMoveX = width > Application.Current.MainPage.Width;
+                    var canMoveY = height > Application.Current.MainPage.Height;
 
-                    // Ограничение по X
-                    if (width > containerWidth)
+                    if (canMoveX)
                     {
-                        var minX = containerWidth - width; // Левая граница
-                        var maxX = 0; // Правая граница
-                        newX = Math.Max(minX, Math.Min(newX, maxX));
+                        var minX = (width - (Application.Current.MainPage.Width / 2)) * -1;
+                        var maxX = Math.Min(Application.Current.MainPage.Width / 2, width / 2);
+
+                        if (newX < minX)
+                        {
+                            newX = minX;
+                        }
+
+                        if (newX > maxX)
+                        {
+                            newX = maxX;
+                        }
                     }
                     else
                     {
-                        newX = 0; // Центрируем по X, если изображение меньше контейнера
+                        newX = 0;
                     }
 
-                    // Ограничение по Y
-                    if (height > containerHeight)
+                    if (canMoveY)
                     {
-                        var minY = containerHeight - height; // Верхняя граница
-                        var maxY = 0; // Нижняя граница
-                        newY = Math.Max(minY, Math.Min(newY, maxY));
+                        var minY = (height - (Application.Current.MainPage.Height / 2)) * -1;
+                        var maxY = Math.Min(Application.Current.MainPage.Width / 2, height / 2);
+
+                        if (newY < minY)
+                        {
+                            newY = minY;
+                        }
+
+                        if (newY > maxY)
+                        {
+                            newY = maxY;
+                        }
                     }
                     else
                     {
-                        newY = 0; // Центрируем по Y, если изображение меньше контейнера
+                        newY = 0;
                     }
 
                     Content.TranslationX = newX;
                     Content.TranslationY = newY;
                     break;
-
                 case GestureStatus.Completed:
                     _xOffset = Content.TranslationX;
                     _yOffset = Content.TranslationY;
                     break;
+                case GestureStatus.Started:
+                    break;
+                case GestureStatus.Canceled:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-
-
-
 
         public async void DoubleTapped(object sender, EventArgs e)
         {
