@@ -1,11 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Models.Response;
-using PicsyncAdmin.Views;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 
 namespace PicsyncAdmin.ViewModels
@@ -22,16 +21,33 @@ namespace PicsyncAdmin.ViewModels
         {
             Instance = this;
             Album = album;
-            _= LoadData();
+            _ = LoadData();
         }
 
         [ObservableProperty]
         private ObservableCollection<Picture> albumPictures = new();
 
+        [ObservableProperty]
+        private bool isFullScreenVisible;
+
+        [ObservableProperty]
+        private bool areControlsVisible = true;
+        [ObservableProperty]
+        private Picture? currentPicture;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(NextImageCommand))]
+        [NotifyCanExecuteChangedFor(nameof(PreviousImageCommand))]
+        private int currentIndex;
+        private bool CanLoadData() => !IsFetch;
+
+        public bool CanGoToPrevious() => CurrentIndex > 0;
+        public bool CanGoToNext() => CurrentIndex < PicturesCount - 1;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(LoadDataCommand))]
         private bool isFetch = false;
+
         [ObservableProperty]
         private string statusMessage;
 
@@ -48,6 +64,7 @@ namespace PicsyncAdmin.ViewModels
         private bool isMainImageVisible;
 
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(NextImageCommand))]
         private int picturesCount;
 
         [ObservableProperty]
@@ -143,19 +160,106 @@ namespace PicsyncAdmin.ViewModels
         }
 
         [RelayCommand]
-        public async Task ViewImage(Picture picture)
+        private void ViewImage(Picture picture)
+        {
+            CurrentPicture = picture;
+            CurrentIndex = AlbumPictures.IndexOf(picture);
+            IsFullScreenVisible = true;
+            Shell.SetNavBarIsVisible(Shell.Current, false);
+            Shell.SetTabBarIsVisible(Shell.Current.CurrentPage, false);
+        }
+
+        [RelayCommand]
+        private void CloseFullScreen()
+        {
+            IsFullScreenVisible = false;
+            CurrentPicture = null;
+            Shell.SetNavBarIsVisible(Shell.Current, true);
+            Shell.SetTabBarIsVisible(Shell.Current, true);
+        }
+
+        [RelayCommand]
+        public void ToggleControlsVisibility()
+        {
+            AreControlsVisible = !AreControlsVisible;
+        }
+
+        [RelayCommand]
+        public async Task DeleteImage()
+        {
+            var confirmDelete = await Shell.Current.DisplayAlert("Подтверждение", "Вы уверены, что хотите удалить это изображение?", "Да", "Нет");
+
+            if (!confirmDelete) return;
+
+            var response = await Fetch.DoAsync(
+                HttpMethod.Delete,
+                $"/albums/{Album.Id}/pictures/{CurrentPicture.Id}",
+                setError: msg => Debug.WriteLine(msg)
+            );
+
+            if (response.IsSuccessStatusCode)
+            {
+                await Shell.Current.DisplayAlert("Удаление", "Изображение удалено.", "Ок");
+                AlbumPictures.Remove(CurrentPicture);
+
+                // Обновляем текущую картинку
+                if (CanGoToNext()) // Если можно перейти к следующему изображению
+                {
+                    _ = NextImage();
+                }
+                else if (CanGoToPrevious()) // Если нет следующего, переходим к предыдущему
+                {
+                    PreviousImage();
+                }
+                else
+                {
+                    // Если не осталось изображений, возвращаем на главную страницу или выполняем другие действия
+                    await Shell.Current.GoToAsync("//HomePage");
+                }
+            }
+            else
+            {
+                await Shell.Current.DisplayAlert("Ошибка", "Не удалось удалить изображение.", "Ок");
+            }
+        }
+
+
+        [RelayCommand(CanExecute = nameof(CanGoToPrevious))]
+        private void PreviousImage()
+        {
+            CurrentIndex--;
+            CurrentPicture = AlbumPictures[CurrentIndex];
+        }
+
+        [RelayCommand(CanExecute = nameof(CanGoToNext))]
+        private async Task NextImage()
         {
             try
             {
-                if (picture == null) throw new ArgumentNullException(nameof(picture));
-                await Shell.Current.Navigation.PushModalAsync(new FullScreenImagePage(picture, Album.Id));
+                Debug.WriteLine("CanLoadMore" + CanLoadMore);
+                Debug.WriteLine("CanGoToNext" + CanGoToNext());
+
+                // Проверяем, можно ли загрузить больше картинок
+                if (CanGoToNext() && CanLoadMore && CurrentIndex == AlbumPictures.Count-1)
+                {
+                    await LoadData();  // Загружаем больше данных, если это возможно
+                }
+
+                // После загрузки новых картинок (или если их не было), переходим к следующей картинке
+                if (CanGoToNext())
+                {
+                    CurrentIndex++;
+                    CurrentPicture = AlbumPictures[CurrentIndex];
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка в ViewImage: {ex.Message}");
-                await Shell.Current.DisplayAlert("Ошибка", "Не удалось открыть изображение.", "Ок");
+                // Логируем ошибку и показываем уведомление пользователю
+                Debug.WriteLine($"Ошибка при переходе к следующему изображению: {ex.Message}");
+                await Shell.Current.DisplayAlert("Ошибка", "Произошла ошибка при загрузке следующего изображения.", "OK");
             }
         }
+
 
 
         [RelayCommand(CanExecute = nameof(CanLoadData))]
@@ -225,8 +329,5 @@ namespace PicsyncAdmin.ViewModels
                 StatusMessage = "Произошла ошибка при загрузке данных.";
             }
         }
-
-
-        private bool CanLoadData() => !IsFetch;
     }
 }
