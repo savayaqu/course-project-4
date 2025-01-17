@@ -89,8 +89,8 @@ Route
     ->prefix('invitation/{invitation}')
     ->group(function ($invitations) {           // [ПРИГЛАШЕНИЕ]
         $invitations->get('album', 'album');    // Просмотр содержимого альбома по приглашению
-        $invitations->get('join' , 'join');     // Присоединиться к альбому (добавление доступа)
-        $invitations->delete(''  , 'destroy');  // Удалить СВОЙ код приглашения
+        $invitations->post('join', 'join');     // Присоединиться к альбому (добавление доступа)
+        $invitations->delete(  '', 'destroy');  // Удалить СВОЙ код приглашения
     });
     $authorized
     ->controller(AccessController::class)
