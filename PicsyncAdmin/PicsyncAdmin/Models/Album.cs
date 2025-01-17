@@ -9,6 +9,7 @@ namespace PicsyncAdmin.Models
     public class Album
     {
         public ulong Id { get; set; }
+        public int? Total { get; set; } 
         public required string Name { get; set; }
         public required User User { get; set; }
     }

@@ -38,9 +38,8 @@
                    Padding="20" />
 
             <!-- Кнопка обновления -->
-            <Button HeightRequest="50" WidthRequest="5000"
-                    ImageSource="refresh.png"
-                    Text="Test"
+            <ImageButton HeightRequest="50" WidthRequest="5000"
+                    Source="refresh.png"
                     Command="{Binding ResetComplaintsCommand}" />
             <Label 
                     Text="{Binding StatusMessage}" 
