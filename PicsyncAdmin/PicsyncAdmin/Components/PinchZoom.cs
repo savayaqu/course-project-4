@@ -136,8 +136,10 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     if (canMoveY)
                     {
                         // Если изображение больше видимой области, разрешаем перемещение с ограничениями
-                        var minY = imageHeight - scaledHeight; // Верхняя граница
-                        var maxY = 0; // Нижняя граница
+                        var empty = (DisplayMaxHeight - imageHeight) / 2;
+
+                        var minY = imageHeight - scaledHeight + empty; // Верхняя граница
+                        var maxY = 0 - empty; // Нижняя граница
 
                         Debug.WriteLine($"minY: {minY}, maxY: {maxY}");
 

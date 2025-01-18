@@ -182,7 +182,34 @@ namespace PicsyncAdmin.ViewModels
         public void ToggleControlsVisibility()
         {
             AreControlsVisible = !AreControlsVisible;
+
+            // Платформо-специфичное управление статус-баром и навигационной панелью
+#if ANDROID
+            var activity = Platform.CurrentActivity;
+            if (activity != null)
+            {
+                if (AreControlsVisible)
+                {
+                    // Показать статус-бар и навигационную панель
+                    activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
+                }
+                else
+                {
+                    // Скрыть статус-бар и навигационную панель
+                    activity.Window.DecorView.SystemUiVisibility =
+                        (Android.Views.StatusBarVisibility)(
+                            Android.Views.SystemUiFlags.HideNavigation |
+                            Android.Views.SystemUiFlags.Fullscreen |
+                            Android.Views.SystemUiFlags.ImmersiveSticky
+                        );
+                }
+            }
+#elif IOS
+    UIKit.UIApplication.SharedApplication.SetStatusBarHidden(!AreControlsVisible, UIKit.UIStatusBarAnimation.Fade);
+#endif
         }
+
+
 
         [RelayCommand]
         public async Task DeleteImage()

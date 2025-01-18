@@ -7,6 +7,9 @@
              x:Class="PicsyncAdmin.Views.UserContentPage"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Title="Контент пользователя">
+    <Page.Behaviors>
+        
+    </Page.Behaviors>
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
@@ -49,7 +52,7 @@
         <!-- Полноэкранный режим -->
         <!-- Полноэкранный режим -->
         <Grid IsVisible="{Binding IsFullScreenVisible}">
-            <Grid Padding="10" ZIndex="1" IsVisible="{Binding AreControlsVisible}">
+            <Grid Padding="10, 10, 10, 0" ZIndex="1" IsVisible="{Binding AreControlsVisible}">
                 <!-- Определение строк и столбцов -->
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
