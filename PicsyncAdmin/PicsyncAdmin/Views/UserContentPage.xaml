@@ -102,10 +102,13 @@
                      VerticalOptions="Center"/>
             </Grid>
 
+            <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                <pinch:PinchZoom>
+                    <Image Source="{Binding CurrentPicture.Path}" Aspect = "AspectFit"/>
+                </pinch:PinchZoom>
+            </StackLayout>
             <!-- Отображение изображения -->
-            <pinch:PinchZoom>
-                <Image Source="{Binding CurrentPicture.Path}" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            </pinch:PinchZoom>
+            
 
         </Grid>
 

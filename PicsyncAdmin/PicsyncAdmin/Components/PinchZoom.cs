@@ -1,4 +1,5 @@
-﻿using PicsyncAdmin.ViewModels;
+﻿using System.Diagnostics;
+using PicsyncAdmin.ViewModels;
 
 namespace Bertuzzi.MAUI.PinchZoomImage
 {
@@ -86,21 +87,33 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     var newY = (e.TotalY * Scale) + _yOffset;
 
                     // Получаем размеры видимой области (вашего ContentView или страницы)
-                    var visibleWidth = this.Width;
-                    var visibleHeight = this.Height;
+                    var imageWidth = this.Width;
+                    var imageHeight = this.Height;
+                    var DisplayMaxHeight = DeviceDisplay.Current.MainDisplayInfo.Height / DeviceDisplay.Current.MainDisplayInfo.Density;
+                    var DisplayMaxWidth = DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density;
+
+                    Debug.WriteLine("DisplayMaxHeight: " + DisplayMaxHeight);
+                    Debug.WriteLine("DisplayMaxWidth: " + DisplayMaxWidth);
 
                     // Получаем размеры изображения с учетом масштаба
                     var scaledWidth = Content.Width * Content.Scale;
                     var scaledHeight = Content.Height * Content.Scale;
 
-                    // Проверяем, можно ли перемещать изображение по горизонтали и вертикали
-                    var canMoveX = scaledWidth > visibleWidth;
-                    var canMoveY = scaledHeight > visibleHeight;
+                    // Логируем ключевые переменные
+                    Debug.WriteLine($"imageWidth: {imageWidth}, imageHeight: {imageHeight}");
+                    Debug.WriteLine($"scaledWidth: {scaledWidth}, scaledHeight: {scaledHeight}");
+                    Debug.WriteLine($"newX: {newX}, newY: {newY}");
 
+                    // Проверяем, можно ли перемещать изображение по горизонтали и вертикали
+                    var canMoveX = scaledWidth > imageWidth;
+                    var canMoveY = scaledHeight > imageHeight && DisplayMaxHeight <= scaledHeight;
+
+                    Debug.WriteLine($"canMoveX: {canMoveX}, canMoveY: {canMoveY}");
+
+                    // Ограничение по горизонтали (X)
                     if (canMoveX)
                     {
-                        // Ограничиваем перемещение по горизонтали
-                        var minX = visibleWidth - scaledWidth; // Левая граница
+                        var minX = imageWidth - scaledWidth; // Левая граница
                         var maxX = 0; // Правая граница
 
                         if (newX < minX)
@@ -116,14 +129,17 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     else
                     {
                         // Если изображение меньше видимой области, центрируем его
-                        newX = (visibleWidth - scaledWidth) / 2;
+                        newX = (imageWidth - scaledWidth) / 2;
                     }
 
+                    // Ограничение по вертикали (Y)
                     if (canMoveY)
                     {
-                        // Ограничиваем перемещение по вертикали
-                        var minY = visibleHeight - scaledHeight; // Верхняя граница
+                        // Если изображение больше видимой области, разрешаем перемещение с ограничениями
+                        var minY = imageHeight - scaledHeight; // Верхняя граница
                         var maxY = 0; // Нижняя граница
+
+                        Debug.WriteLine($"minY: {minY}, maxY: {maxY}");
 
                         if (newY < minY)
                         {
@@ -137,9 +153,12 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     }
                     else
                     {
-                        // Если изображение меньше видимой области, центрируем его
-                        newY = (visibleHeight - scaledHeight) / 2;
+                        // Если перемещение по вертикали запрещено, центрируем изображение по вертикали
+                        Debug.WriteLine("Перемещение по вертикали запрещено. Центрируем изображение по вертикали.");
+                        newY = (imageHeight - scaledHeight) / 2; // Центрируем изображение
                     }
+
+                    Debug.WriteLine($"Итоговые значения: newX: {newX}, newY: {newY}");
 
                     // Применяем новые координаты
                     Content.TranslationX = newX;
@@ -162,6 +181,7 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     throw new ArgumentOutOfRangeException();
             }
         }
+
 
         public async void DoubleTapped(object sender, EventArgs e)
         {
