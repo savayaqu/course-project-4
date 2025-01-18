@@ -1,14 +1,4 @@
-﻿// ----------------------------------------------------------------------------
-// Bertuzzi.MAUI.PinchZoomImage
-// https://www.nuget.org/packages/Bertuzzi.MAUI.PinchZoomImage/
-// 
-// This software is licensed under the Microsoft Public License (Ms-PL).
-// Full license text can be found at: https://opensource.org/licenses/MS-PL
-// 
-// Copyright (c) 2022 Bertuzzi
-// ----------------------------------------------------------------------------
-
-using PicsyncAdmin.ViewModels;
+﻿using PicsyncAdmin.ViewModels;
 
 namespace Bertuzzi.MAUI.PinchZoomImage
 {
@@ -38,7 +28,10 @@ namespace Bertuzzi.MAUI.PinchZoomImage
             tapGesture.Tapped += Tapped;
             GestureRecognizers.Add(tapGesture);
         }
-
+        private async void Tapped(object sender, EventArgs e)
+        {
+            UserContentViewModel.Instance.ToggleControlsVisibilityCommand.Execute(null);
+        }
         private void PinchUpdated(object sender, PinchGestureUpdatedEventArgs e)
         {
             switch (e.Status)
@@ -78,15 +71,7 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     break;
             }
         }
-        private async void Tapped(object sender, EventArgs e)
-        {
-            // Проверяем, что экземпляр UserContentViewModel существует
-            if (UserContentViewModel.Instance != null)
-            {
-                // Вызываем команду ToggleControlsVisibility
-                UserContentViewModel.Instance.ToggleControlsVisibilityCommand.Execute(null);
-            }
-        }
+
         public void OnPanUpdated(object sender, PanUpdatedEventArgs e)
         {
             if (Content.Scale == 1)
@@ -97,20 +82,26 @@ namespace Bertuzzi.MAUI.PinchZoomImage
             switch (e.StatusType)
             {
                 case GestureStatus.Running:
-
                     var newX = (e.TotalX * Scale) + _xOffset;
                     var newY = (e.TotalY * Scale) + _yOffset;
 
-                    var width = (Content.Width * Content.Scale);
-                    var height = (Content.Height * Content.Scale);
+                    // Получаем размеры видимой области (вашего ContentView или страницы)
+                    var visibleWidth = this.Width;
+                    var visibleHeight = this.Height;
 
-                    var canMoveX = width > Application.Current.MainPage.Width;
-                    var canMoveY = height > Application.Current.MainPage.Height;
+                    // Получаем размеры изображения с учетом масштаба
+                    var scaledWidth = Content.Width * Content.Scale;
+                    var scaledHeight = Content.Height * Content.Scale;
+
+                    // Проверяем, можно ли перемещать изображение по горизонтали и вертикали
+                    var canMoveX = scaledWidth > visibleWidth;
+                    var canMoveY = scaledHeight > visibleHeight;
 
                     if (canMoveX)
                     {
-                        var minX = (width - (Application.Current.MainPage.Width / 2)) * -1;
-                        var maxX = Math.Min(Application.Current.MainPage.Width / 2, width / 2);
+                        // Ограничиваем перемещение по горизонтали
+                        var minX = visibleWidth - scaledWidth; // Левая граница
+                        var maxX = 0; // Правая граница
 
                         if (newX < minX)
                         {
@@ -124,13 +115,15 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     }
                     else
                     {
-                        newX = 0;
+                        // Если изображение меньше видимой области, центрируем его
+                        newX = (visibleWidth - scaledWidth) / 2;
                     }
 
                     if (canMoveY)
                     {
-                        var minY = (height - (Application.Current.MainPage.Height / 2)) * -1;
-                        var maxY = Math.Min(Application.Current.MainPage.Width / 2, height / 2);
+                        // Ограничиваем перемещение по вертикали
+                        var minY = visibleHeight - scaledHeight; // Верхняя граница
+                        var maxY = 0; // Нижняя граница
 
                         if (newY < minY)
                         {
@@ -144,20 +137,27 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     }
                     else
                     {
-                        newY = 0;
+                        // Если изображение меньше видимой области, центрируем его
+                        newY = (visibleHeight - scaledHeight) / 2;
                     }
 
+                    // Применяем новые координаты
                     Content.TranslationX = newX;
                     Content.TranslationY = newY;
                     break;
+
                 case GestureStatus.Completed:
+                    // Сохраняем текущее смещение для следующего перемещения
                     _xOffset = Content.TranslationX;
                     _yOffset = Content.TranslationY;
                     break;
+
                 case GestureStatus.Started:
                     break;
+
                 case GestureStatus.Canceled:
                     break;
+
                 default:
                     throw new ArgumentOutOfRangeException();
             }
