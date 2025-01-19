@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('album_id')->constrained()->cascadeOnDelete();
             $table->string   ('link')->unique();
             $table->integer  ('join_limit')->nullable();
-            $table->dateTime ('expires_at');
+            $table->dateTime ('expires_at')->nullable();
             $table->timestamps();
         });
     }
