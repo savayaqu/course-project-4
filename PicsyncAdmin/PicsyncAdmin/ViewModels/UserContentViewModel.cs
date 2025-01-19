@@ -263,15 +263,11 @@ namespace PicsyncAdmin.ViewModels
         {
             try
             {
-                Debug.WriteLine("CanLoadMore" + CanLoadMore);
-                Debug.WriteLine("CanGoToNext" + CanGoToNext());
-
                 // Проверяем, можно ли загрузить больше картинок
                 if (CanGoToNext() && CanLoadMore && CurrentIndex == AlbumPictures.Count-1)
                 {
                     await LoadData();  // Загружаем больше данных, если это возможно
                 }
-
                 // После загрузки новых картинок (или если их не было), переходим к следующей картинке
                 if (CanGoToNext())
                 {
@@ -281,8 +277,6 @@ namespace PicsyncAdmin.ViewModels
             }
             catch (Exception ex)
             {
-                // Логируем ошибку и показываем уведомление пользователю
-                Debug.WriteLine($"Ошибка при переходе к следующему изображению: {ex.Message}");
                 await Shell.Current.DisplayAlert("Ошибка", "Произошла ошибка при загрузке следующего изображения.", "OK");
             }
         }

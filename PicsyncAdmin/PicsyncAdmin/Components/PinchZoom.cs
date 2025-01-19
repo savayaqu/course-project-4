@@ -9,7 +9,6 @@ namespace Bertuzzi.MAUI.PinchZoomImage
         private double _startScale = 1;
         private double _xOffset = 0;
         private double _yOffset = 0;
-        private bool _secondDoubleTapp = false;
 
         public PinchZoom()
         {
@@ -105,16 +104,18 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                     Debug.WriteLine($"newX: {newX}, newY: {newY}");
 
                     // Проверяем, можно ли перемещать изображение по горизонтали и вертикали
-                    var canMoveX = scaledWidth > imageWidth;
+                    var canMoveX = scaledWidth > imageWidth && DisplayMaxWidth <= scaledWidth;
                     var canMoveY = scaledHeight > imageHeight && DisplayMaxHeight <= scaledHeight;
 
                     Debug.WriteLine($"canMoveX: {canMoveX}, canMoveY: {canMoveY}");
+                    var emptyWidth = (DisplayMaxWidth - imageWidth) / 2;
+                    var emptyHeight = (DisplayMaxHeight - imageHeight) / 2;
 
                     // Ограничение по горизонтали (X)
                     if (canMoveX)
                     {
-                        var minX = imageWidth - scaledWidth; // Левая граница
-                        var maxX = 0; // Правая граница
+                        var minX = imageWidth - scaledWidth + emptyWidth; // Левая граница
+                        var maxX = 0 - emptyWidth; // Правая граница
 
                         if (newX < minX)
                         {
@@ -131,15 +132,12 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                         // Если изображение меньше видимой области, центрируем его
                         newX = (imageWidth - scaledWidth) / 2;
                     }
-
                     // Ограничение по вертикали (Y)
                     if (canMoveY)
                     {
                         // Если изображение больше видимой области, разрешаем перемещение с ограничениями
-                        var empty = (DisplayMaxHeight - imageHeight) / 2;
-
-                        var minY = imageHeight - scaledHeight + empty; // Верхняя граница
-                        var maxY = 0 - empty; // Нижняя граница
+                        var minY = imageHeight - scaledHeight + emptyHeight; // Верхняя граница
+                        var maxY = 0 - emptyHeight; // Нижняя граница
 
                         Debug.WriteLine($"minY: {minY}, maxY: {maxY}");
 
@@ -187,42 +185,39 @@ namespace Bertuzzi.MAUI.PinchZoomImage
 
         public async void DoubleTapped(object sender, EventArgs e)
         {
-            var multiplicator = Math.Pow(2, 1.0 / 10.0);
+            var multiplicator = 2;
             _startScale = Content.Scale;
             Content.AnchorX = 0;
             Content.AnchorY = 0;
 
-            for (var i = 0; i < 10; i++)
+            if (_currentScale == 1) // если это не второй двойной тап, увеличиваем масштаб
             {
-                if (!_secondDoubleTapp) //if it's not the second double tapp we enlarge the scale
-                {
-                    _currentScale *= multiplicator;
-                }
-                else //if it's the second double tap we make the scale smaller again 
-                {
-                    _currentScale /= multiplicator;
-                }
-
-                var renderedX = Content.X + _xOffset;
-                var deltaX = renderedX / Width;
-                var deltaWidth = Width / (Content.Width * _startScale);
-                var originX = (0.5 - deltaX) * deltaWidth;
-
-                var renderedY = Content.Y + _yOffset;
-                var deltaY = renderedY / Height;
-                var deltaHeight = Height / (Content.Height * _startScale);
-                var originY = (0.5 - deltaY) * deltaHeight;
-
-                var targetX = _xOffset - (originX * Content.Width) * (_currentScale - _startScale);
-                var targetY = _yOffset - (originY * Content.Height) * (_currentScale - _startScale);
-
-                Content.TranslationX = Math.Min(0, Math.Max(targetX, -Content.Width * (_currentScale - 1)));
-                Content.TranslationY = Math.Min(0, Math.Max(targetY, -Content.Height * (_currentScale - 1)));
-
-                Content.Scale = _currentScale;
-                await Task.Delay(10);
+                _currentScale *= multiplicator;
             }
-            _secondDoubleTapp = !_secondDoubleTapp;
+            else // если это второй двойной тап, возвращаем масштаб к 1
+            {
+                _currentScale = 1; // Устанавливаем масштаб в 1
+            }
+
+            var renderedX = Content.X + _xOffset;
+            var deltaX = renderedX / Width;
+            var deltaWidth = Width / (Content.Width * _startScale);
+            var originX = (0.5 - deltaX) * deltaWidth;
+
+            var renderedY = Content.Y + _yOffset;
+            var deltaY = renderedY / Height;
+            var deltaHeight = Height / (Content.Height * _startScale);
+            var originY = (0.5 - deltaY) * deltaHeight;
+
+            var targetX = _xOffset - (originX * Content.Width) * (_currentScale - _startScale);
+            var targetY = _yOffset - (originY * Content.Height) * (_currentScale - _startScale);
+
+            Content.TranslationX = Math.Min(0, Math.Max(targetX, -Content.Width * (_currentScale - 1)));
+            Content.TranslationY = Math.Min(0, Math.Max(targetY, -Content.Height * (_currentScale - 1)));
+
+            Content.Scale = _currentScale;
+            await Task.Delay(10);
+
             _xOffset = Content.TranslationX;
             _yOffset = Content.TranslationY;
         }
