@@ -11,4 +11,12 @@ public partial class InvitationPreviewPopup : Popup
 		InitializeComponent();
 		BindingContext = new InvitationPreviewPopupViewModel(this);
     }
+
+    private void CollectionView_SizeChanged(object sender, EventArgs e)
+    {
+        if (sender is not CollectionView collection ||
+            BindingContext is not InvitationPreviewPopupViewModel viewModel) return;
+
+        viewModel.CalculateColumnsWidthCommand.Execute(collection.Width);
+    }
 }

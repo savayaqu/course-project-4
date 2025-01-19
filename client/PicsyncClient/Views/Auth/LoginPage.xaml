@@ -2,12 +2,18 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:PicsyncClient.ViewModels.Auth"
              x:Class="PicsyncClient.Views.Auth.LoginPage">
     <ContentPage.Resources>
         <ResourceDictionary>
             <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
         </ResourceDictionary>
+        
     </ContentPage.Resources>
+    <ContentPage.BindingContext>
+        <vm:LoginViewModel/>
+    </ContentPage.BindingContext>
+    
     <ScrollView>
         <StackLayout Spacing="10" Padding="10" VerticalOptions="Center" MaximumWidthRequest="400">
             <Label Text="Авторизация" HorizontalTextAlignment="Center" FontSize="24"/>

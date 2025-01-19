@@ -2,8 +2,10 @@
 <tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
           xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-          xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+          xmlns:vm="clr-namespace:PicsyncClient.ViewModels.Popups"
+          xmlns:mpic="clr-namespace:PicsyncClient.Models.Pictures"
           x:Class="PicsyncClient.Components.Popups.InvitationPreviewPopup"
+          x:DataType="vm:InvitationPreviewPopupViewModel"
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
@@ -12,34 +14,66 @@
         </ResourceDictionary>
     </tk:Popup.Resources>
     <Grid>
-        <Frame MaximumWidthRequest="350" Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
-            <StackLayout>
+        <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
+            <Grid RowDefinitions="auto,*,auto" MaximumWidthRequest="350">
                 <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
-                    <Label Text="Десинхронизировать" FontSize="18" VerticalOptions="Center"/>
+                    <Label Text="Приглашение" FontSize="18" VerticalOptions="Center"/>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
                             Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
                 </Grid>
 
-                <Border Padding="10" Stroke="Red"
-                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
-                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="6"/>
-                    </Border.StrokeShape>
-                    <StackLayout Grid.Column="1" Spacing="5">
-                        <HorizontalStackLayout Spacing="5">
-                            <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
-                                <Image.Behaviors>
-                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                </Image.Behaviors>
-                            </Image>
-                            <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding Error}"/>
-                    </StackLayout>
-                </Border>
+                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}">
+                    <StackLayout x:Name="InternalContainer" Spacing="5">
+                        <Border Padding="10" Stroke="Red"
+                                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                                IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="6"/>
+                            </Border.StrokeShape>
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Error}"/>
+                            </StackLayout>
+                        </Border>
 
-            </StackLayout>
+                        <Grid ColumnDefinitions="*,5,*">
+                            <Button Text="Из буфера" Command="{Binding PasteCommand}"/>
+                            <Button Text="Очистить"  Command="{Binding ClearCommand}" Grid.Column="2"/>
+                        </Grid>
+                        <Entry Text="{Binding Code}" Placeholder="Введите код приглашения"/>
+                        <Button Text="Получить альбом" Command="{Binding CheckCommand}"/>
+
+                        <StackLayout IsVisible="{Binding Album, Converter={StaticResource IsNotNullConverter}}" Spacing="5">
+                            <HorizontalStackLayout>
+                                <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold"/>
+                                <Label Text="{Binding Album.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="16" VerticalOptions="End"/>
+                            </HorizontalStackLayout>
+
+                            <CollectionView ItemsSource="{Binding Pictures}" SizeChanged="CollectionView_SizeChanged">
+                                <CollectionView.ItemsLayout>
+                                    <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" />
+                                </CollectionView.ItemsLayout>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="mpic:PictureRemote">
+                                        <Grid HeightRequest="{Binding ColumnWidth, Source={RelativeSource AncestorType={x:Type vm:InvitationPreviewPopupViewModel}}}">
+                                            <Image Margin="1" Source="{Binding ThumbnailPath}" Aspect="AspectFill"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </StackLayout>
+                    </StackLayout>
+                </ScrollView>
+
+                <Button Text="Вступить" Command="{Binding JoinCommand}" Grid.Row="2" IsVisible="{Binding Album, Converter={StaticResource IsNotNullConverter}}"/>
+            </Grid>
         </Frame>
     </Grid>
 </tk:Popup>

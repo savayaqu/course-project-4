@@ -7,7 +7,7 @@ public partial class SignupPage : ContentPage
 	public SignupPage()
 	{
 		InitializeComponent();
-        BindingContext = new SignupViewModel();
+        //BindingContext = new SignupViewModel();
     }
 
     private void FocusToEntry2(object sender, EventArgs e) => Entry2.Focus();

@@ -7,7 +7,7 @@ public partial class ServerSelectorPage : ContentPage
 	public ServerSelectorPage()
 	{
 		InitializeComponent();
-		BindingContext = new ServerSelectorViewModel();
+		//BindingContext = new ServerSelectorViewModel();
     }
 
     private void TryNewConnect(object sender, EventArgs e)

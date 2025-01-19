@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
+using System.Windows.Input;
 
 namespace PicsyncClient.ViewModels.Popups;
 
@@ -34,15 +35,19 @@ public partial class InvitationCreatePopupViewModel : ObservableObject
     public bool CanConfirm => !IsBusy;
 
     [RelayCommand]
-    public async void Confirm()
+    public async Task Confirm()
     {
-        if (JoinLimit == 0) JoinLimit = null;
+        if (JoinLimit <= 0) JoinLimit = null;
+
+        InvationCreateRequest reqBody = new(JoinLimit, ExpiresAt);
+        Debug.WriteLine("InvitationCreate: reqBody: " + JsonSerializer.Serialize(reqBody));
 
         (var res, var body) = await FetchAsync<InvitationResponse>(
             HttpMethod.Post, URLs.AlbumInvite(Album.Id),
             f => IsBusy = f, e => Error = e,
-            new InvationCreateRequest(JoinLimit, ExpiresAt),
-            cancellationToken: _cancelTokenSource.Token
+            reqBody,
+            cancellationToken: _cancelTokenSource.Token,
+            serialize: true
         );
 
         if (body == null) return;
@@ -56,4 +61,16 @@ public partial class InvitationCreatePopupViewModel : ObservableObject
         _cancelTokenSource.Cancel();
         _popup.Close();
     }
+
+    [ObservableProperty] private bool expiresNever = true;
+    [ObservableProperty] private bool expiresAfterTime;
+    [ObservableProperty] private bool expiresAtDateTime;
+    [ObservableProperty] private bool noJoinLimit = true;
+    [ObservableProperty] private bool hasJoinLimit;
+
+    [RelayCommand] public void SelectExpiresNever     ()  => ExpiresNever      = true;
+    [RelayCommand] public void SelectExpiresAfterTime ()  => ExpiresAfterTime  = true;
+    [RelayCommand] public void SelectExpiresAtDateTime()  => ExpiresAtDateTime = true;
+    [RelayCommand] public void SelectNoJoinLimit      ()  => NoJoinLimit       = true;
+    [RelayCommand] public void SelectHasJoinLimit     ()  => HasJoinLimit      = true;
 }

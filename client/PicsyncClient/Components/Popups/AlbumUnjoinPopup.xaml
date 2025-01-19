@@ -39,12 +39,12 @@
                     </StackLayout>
                 </Border>
 
-                <Label Text="Вы уверены что хотите отменить синхронизацию этого альбома?" Margin="5"/>
-                <Button Text="Пожаловаться" Command="{Binding ComplaintCommand}" BackgroundColor="{StaticResource Red}"/>
+                <Label Text="Вы уверены что хотите отписаться от этого альбома?" Margin="5"/>
                 <Grid ColumnDefinitions="*,5,*">
-                    <Button Text="Отписаться"  Command="{Binding ConfirmCommand}" BackgroundColor="{StaticResource Red}"/>
-                    <Button Text="Отмена" Command="{Binding  CancelCommand}" Grid.Column="2"/>
+                    <Button Text="Отписаться"   Command="{Binding ConfirmCommand}"   BackgroundColor="{StaticResource Red}"/>
+                    <Button Text="Пожаловаться" Command="{Binding ComplaintCommand}" BackgroundColor="{StaticResource Red}" Grid.Column="2"/>
                 </Grid>
+                <Button Text="Отмена" Command="{Binding  CancelCommand}"/>
             </StackLayout>
         </Frame>
     </Grid>

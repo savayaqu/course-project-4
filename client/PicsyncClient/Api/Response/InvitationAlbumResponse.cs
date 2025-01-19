@@ -6,6 +6,6 @@ namespace PicsyncClient.Models.Response;
 
 public class InvitationAlbumResponse
 {
-    [JsonPropertyName("album"   )] public AlbumRemote         Album    { get; set; }
-    [JsonPropertyName("pictures")] public List<PictureRemote> Pictures { get; set; }
+    [JsonPropertyName("album"   )] public required AlbumRemote         Album    { get; set; }
+    [JsonPropertyName("pictures")] public required List<PictureRemote> Pictures { get; set; }
 }

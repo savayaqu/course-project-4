@@ -21,6 +21,8 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
     [ObservableProperty] private bool?       isBusy;
     [ObservableProperty] private string?     error;
     [ObservableProperty] private AlbumRemote album;
+    [ObservableProperty] private ObservableCollection<Invitation> invitations;
+    [ObservableProperty] private ObservableCollection<User> grantAccesses;
 
     private readonly Popup _popup;
 
@@ -28,6 +30,8 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
     {
         _popup = popup;
         Album = album;
+        Invitations   = new(Album.Invitations   ?? []);
+        GrantAccesses = new(Album.GrantAccesses ?? []);
     }
 
     [RelayCommand]
@@ -38,6 +42,7 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
 
         if (result is not Invitation invitation) return;
 
+        Invitations.Add(invitation);
         Album.Invitations ??= [];
         Album.Invitations.Add(invitation);
     }
@@ -59,6 +64,7 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
 
         if (!res.IsSuccessStatusCode) return;
 
+        Invitations.Remove(invitation);
         Album.Invitations?.Remove(invitation);
     }
 
@@ -73,6 +79,7 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
 
         if (!res.IsSuccessStatusCode) return;
 
+        GrantAccesses.Remove(user);
         Album.GrantAccesses?.Remove(user);
     }
 

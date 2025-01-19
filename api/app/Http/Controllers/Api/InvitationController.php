@@ -25,6 +25,8 @@ class InvitationController extends Controller
         $expiresAt = $request->input('expiresAt');
         $timeLimit = $request->input('timeLimit');
 
+        $expiresDate = null;
+
         if ($expiresAt)
             $expiresDate = $expiresAt;
 
@@ -46,16 +48,30 @@ class InvitationController extends Controller
         $invitation->failOnExpires();
         $invitation->load(['album', 'album.user']);
         $pictures = Picture
-            ::where('album_id', $invitation->album->id)
+            ::where('album_id', $invitation->album_id)
             ->orderBy('date', 'DESC')
             ->limit(30)
             ->get();
+
+        $album = Album
+            ::where('id', $invitation->album_id)
+            ->withCount([
+                'pictures',
+            ])
+            ->with([
+                'pictures' => fn ($query) => $query->orderBy('date', 'DESC')->limit(4),
+                'user',
+            ])
+            ->first();
+
         $res = [
-            'album' => AlbumResource::make($invitation->album),
+            'invitation' => $invitation,
+            'album' => AlbumResource::make($album),
             'pictures' => PictureResource::collection($pictures),
         ];
 
-        if ($invitation?->album?->user?->id == Auth::id())
+
+        if (Auth::id() != null && $invitation?->album?->user?->id == Auth::id())
             $res['invite'] = InvitationResource::make($invitation);
 
         return response()->json($res);

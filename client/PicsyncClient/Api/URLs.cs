@@ -28,10 +28,10 @@ public static class URLs
         new($"{Invitations}/{inviteCode}");
 
     public static Uri InvitationAlbum(string inviteCode) =>
-        new($"{Invitation}/album");
+        new($"{Invitation(inviteCode)}/album");
 
     public static Uri InvitationJoin(string inviteCode) =>
-        new($"{Invitation}/join");
+        new($"{Invitation(inviteCode)}/join");
 
     public static Uri Accesses =>
         new($"{API_URL}/accesses");
@@ -99,6 +99,9 @@ public static class URLs
             ? $"?sign={signature}"
             : string.Empty;
 
-        return new($"{PictureInfo(albumId, pictureId)}/thumb/{orient}{size}{signatureString}");
+        string str = $"{PictureInfo(albumId, pictureId)}/thumb/{orient}{size}{signatureString}";
+
+        Debug.WriteLine($"URLs: PictureThumbnail: {str}");
+        return new(str);
     }
 }

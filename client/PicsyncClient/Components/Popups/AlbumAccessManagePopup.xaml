@@ -7,13 +7,14 @@
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
-            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
-            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
+            <tk:IsNotNullConverter            x:Key="IsNotNullConverter"/>
+            <tk:InvertedBoolConverter         x:Key="InvertedBoolConverter"/>
+            <tk:IsListNotNullOrEmptyConverter x:Key="IsListNotNullOrEmptyConverter" />
         </ResourceDictionary>
     </tk:Popup.Resources>
     <Grid>
         <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
-            <Grid RowDefinitions="auto,*">
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*">
                 <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
                     <Label Text="Доступы" FontSize="18" VerticalOptions="Center"/>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
@@ -21,7 +22,7 @@
                 </Grid>
 
                 <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}">
-                    <StackLayout x:Name="InternalContainer">
+                    <StackLayout x:Name="InternalContainer" Spacing="5">
                         <Border Padding="10" Stroke="Red"
                                 Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                                 IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
@@ -43,9 +44,9 @@
 
                         <Grid ColumnDefinitions="*,auto">
                             <Label Text="Приглашения" Margin="0,0,0,5" VerticalOptions="Center"/>
-                            <Button Text="Создать" Command="{Binding InvitationCreateCommand}" HeightRequest="30" Padding="0" WidthRequest="100" Grid.Column="1"/>
+                            <Button Text="Создать" Command="{Binding InvitationCreateCommand}" HeightRequest="30" Padding="4" WidthRequest="100" Grid.Column="1"/>
                         </Grid>
-                        <CollectionView ItemsSource="{Binding Album.Invitations}" Margin="0,5">
+                        <CollectionView ItemsSource="{Binding Invitations}" Margin="0,5">
                             <CollectionView.ItemsLayout>
                                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
                             </CollectionView.ItemsLayout>
@@ -91,15 +92,15 @@
                             </CollectionView.ItemTemplate>
                         </CollectionView>
 
-                        <CollectionView ItemsSource="{Binding Album.GrantAccesses}">
+                        <CollectionView ItemsSource="{Binding GrantAccesses}" IsVisible="{Binding Album.GrantAccesses, Converter={StaticResource IsListNotNullOrEmptyConverter}}">
                             <CollectionView.Header>
                                 <Label Text="Вступившие" Margin="0,10,0,5"/>
                             </CollectionView.Header>
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Frame>
-                                        <FlexLayout>
-                                            <Label>
+                                    <Frame Padding="5">
+                                        <Grid ColumnDefinitions="*,auto">
+                                            <Label VerticalOptions="Center" Margin="10,5,5,5">
                                                 <Label.FormattedText>
                                                     <FormattedString>
                                                         <Span Text="{Binding Nickname}"/>
@@ -107,9 +108,9 @@
                                                     </FormattedString>
                                                 </Label.FormattedText>
                                             </Label>
-                                            <Button Text="Отозвать" CommandParameter="{Binding .}"
+                                            <Button Text="Отозвать" CommandParameter="{Binding .}" Padding="10,5" Grid.Column="1"
                                                 Command="{Binding AccessRemoveCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumAccessManagePopupViewModel}}}"/>
-                                        </FlexLayout>
+                                        </Grid>
                                     </Frame>
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>

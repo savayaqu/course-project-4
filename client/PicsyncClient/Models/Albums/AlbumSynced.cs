@@ -29,7 +29,7 @@ public class AlbumSynced : AlbumRemote, IAlbumLocal
     [Ignore]
     public List<IPictureLocal> LocalPictures { get; set; } = [];
 
-    public  string LocalPath { get; set; }
+    public string LocalPath { get; set; }
 
     // Геттеры
     public override int PicturesCount => (LocalPictures?.Count ?? 0) + RemotePicturesCount; // TODO: бред
