@@ -63,6 +63,7 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                         Content.TranslationY = Math.Min(0, Math.Max(targetY, -Content.Height * (_currentScale - 1)));
 
                         Content.Scale = _currentScale;
+                        Debug.WriteLine(_currentScale);
                         break;
                     }
                 case GestureStatus.Completed:

@@ -50,8 +50,8 @@
         </ScrollView>
 
         <!-- Полноэкранный режим -->
-        <Grid IsVisible="{Binding IsFullScreenVisible}">
-            <Grid Padding="10, 10, 10, 0" ZIndex="1" IsVisible="{Binding AreControlsVisible}">
+        <Grid IsVisible="{Binding IsFullScreenVisible}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+            <Grid  ZIndex="2" IsVisible="{Binding AreControlsVisible}">
                 <!-- Определение строк и столбцов -->
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -64,7 +64,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Верхняя панель -->
-                <StackLayout Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="3" Padding="10">
+                <StackLayout ZIndex="1" Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="3" Spacing="10" BackgroundColor="{AppThemeBinding Light='#96FFFFFF', Dark='#96000000'}">
                     <ImageButton Source="arrow_left.png"
                          Command="{Binding CloseFullScreenCommand}"
                          HorizontalOptions="Start"
