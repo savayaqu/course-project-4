@@ -1,16 +1,15 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using PicsyncAdmin.ViewModels;
 
-namespace Xamarin.Forms.PinchZoomImage
+namespace Bertuzzi.MAUI.PinchZoomImage
 {
-
     public class PinchZoom : ContentView
     {
         private double _currentScale = 1;
         private double _startScale = 1;
         private double _xOffset = 0;
         private double _yOffset = 0;
-        private bool _secondDoubleTapp = false; //boolean checking if the user doubletapped for the first time or second time
+        private bool _secondDoubleTapp = false;
 
         public PinchZoom()
         {
@@ -22,11 +21,18 @@ namespace Xamarin.Forms.PinchZoomImage
             panGesture.PanUpdated += OnPanUpdated;
             GestureRecognizers.Add(panGesture);
 
-            var tapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
-            tapGesture.Tapped += DoubleTapped;
+            var doubleTapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 2 };
+            doubleTapGesture.Tapped += DoubleTapped;
+            GestureRecognizers.Add(doubleTapGesture);
+
+            var tapGesture = new TapGestureRecognizer();
+            tapGesture.Tapped += Tapped;
             GestureRecognizers.Add(tapGesture);
         }
-
+        private async void Tapped(object sender, EventArgs e)
+        {
+            UserContentViewModel.Instance.ToggleControlsVisibilityCommand.Execute(null);
+        }
         private void PinchUpdated(object sender, PinchGestureUpdatedEventArgs e)
         {
             switch (e.Status)
@@ -69,9 +75,9 @@ namespace Xamarin.Forms.PinchZoomImage
 
         public void OnPanUpdated(object sender, PanUpdatedEventArgs e)
         {
-            if (Content.Scale <= 1)
+            if (Content.Scale == 1)
             {
-                return; // Панирование не требуется, если масштаб равен или меньше 1
+                return;
             }
 
             switch (e.StatusType)
@@ -80,48 +86,103 @@ namespace Xamarin.Forms.PinchZoomImage
                     var newX = (e.TotalX * Scale) + _xOffset;
                     var newY = (e.TotalY * Scale) + _yOffset;
 
-                    var width = Content.Width * Content.Scale;
-                    var height = Content.Height * Content.Scale;
+                    // Получаем размеры видимой области (вашего ContentView или страницы)
+                    var imageWidth = this.Width;
+                    var imageHeight = this.Height;
+                    var DisplayMaxHeight = DeviceDisplay.Current.MainDisplayInfo.Height / DeviceDisplay.Current.MainDisplayInfo.Density;
+                    var DisplayMaxWidth = DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density;
 
-                    var containerWidth = Width;
-                    var containerHeight = Height;
+                    Debug.WriteLine("DisplayMaxHeight: " + DisplayMaxHeight);
+                    Debug.WriteLine("DisplayMaxWidth: " + DisplayMaxWidth);
 
-                    // Ограничение по X
-                    if (width > containerWidth)
+                    // Получаем размеры изображения с учетом масштаба
+                    var scaledWidth = Content.Width * Content.Scale;
+                    var scaledHeight = Content.Height * Content.Scale;
+
+                    // Логируем ключевые переменные
+                    Debug.WriteLine($"imageWidth: {imageWidth}, imageHeight: {imageHeight}");
+                    Debug.WriteLine($"scaledWidth: {scaledWidth}, scaledHeight: {scaledHeight}");
+                    Debug.WriteLine($"newX: {newX}, newY: {newY}");
+
+                    // Проверяем, можно ли перемещать изображение по горизонтали и вертикали
+                    var canMoveX = scaledWidth > imageWidth;
+                    var canMoveY = scaledHeight > imageHeight && DisplayMaxHeight <= scaledHeight;
+
+                    Debug.WriteLine($"canMoveX: {canMoveX}, canMoveY: {canMoveY}");
+
+                    // Ограничение по горизонтали (X)
+                    if (canMoveX)
                     {
-                        var minX = containerWidth - width; // Левая граница
+                        var minX = imageWidth - scaledWidth; // Левая граница
                         var maxX = 0; // Правая граница
-                        newX = Math.Max(minX, Math.Min(newX, maxX));
+
+                        if (newX < minX)
+                        {
+                            newX = minX;
+                        }
+
+                        if (newX > maxX)
+                        {
+                            newX = maxX;
+                        }
                     }
                     else
                     {
-                        newX = 0; // Центрируем по X, если изображение меньше контейнера
+                        // Если изображение меньше видимой области, центрируем его
+                        newX = (imageWidth - scaledWidth) / 2;
                     }
 
-                    // Ограничение по Y
-                    if (height > containerHeight)
+                    // Ограничение по вертикали (Y)
+                    if (canMoveY)
                     {
-                        var minY = containerHeight - height; // Верхняя граница
-                        var maxY = 0; // Нижняя граница
-                        newY = Math.Max(minY, Math.Min(newY, maxY));
+                        // Если изображение больше видимой области, разрешаем перемещение с ограничениями
+                        var empty = (DisplayMaxHeight - imageHeight) / 2;
+
+                        var minY = imageHeight - scaledHeight + empty; // Верхняя граница
+                        var maxY = 0 - empty; // Нижняя граница
+
+                        Debug.WriteLine($"minY: {minY}, maxY: {maxY}");
+
+                        if (newY < minY)
+                        {
+                            newY = minY;
+                        }
+
+                        if (newY > maxY)
+                        {
+                            newY = maxY;
+                        }
                     }
                     else
                     {
-                        newY = 0; // Центрируем по Y, если изображение меньше контейнера
+                        // Если перемещение по вертикали запрещено, центрируем изображение по вертикали
+                        Debug.WriteLine("Перемещение по вертикали запрещено. Центрируем изображение по вертикали.");
+                        newY = (imageHeight - scaledHeight) / 2; // Центрируем изображение
                     }
 
+                    Debug.WriteLine($"Итоговые значения: newX: {newX}, newY: {newY}");
+
+                    // Применяем новые координаты
                     Content.TranslationX = newX;
                     Content.TranslationY = newY;
                     break;
 
                 case GestureStatus.Completed:
+                    // Сохраняем текущее смещение для следующего перемещения
                     _xOffset = Content.TranslationX;
                     _yOffset = Content.TranslationY;
                     break;
+
+                case GestureStatus.Started:
+                    break;
+
+                case GestureStatus.Canceled:
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
-
-
 
 
         public async void DoubleTapped(object sender, EventArgs e)

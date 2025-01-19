@@ -3,51 +3,118 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
              xmlns:local="clr-namespace:PicsyncAdmin.Converters"
+             xmlns:pinch="clr-namespace:Bertuzzi.MAUI.PinchZoomImage"
              x:Class="PicsyncAdmin.Views.UserContentPage"
-             Title="UserContentPage">
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Title="Контент пользователя">
+    <Page.Behaviors>
+        
+    </Page.Behaviors>
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
         </ResourceDictionary>
     </ContentPage.Resources>
-    <ScrollView>
-        <VerticalStackLayout Spacing="10" Padding="20">
-            <Button Text="Создать предупреждение" Command="{Binding IssueWarningCommand}"/>
-            <Button Text="Забанить" Command="{Binding BlockUserCommand}"/>
+    <Grid BackgroundColor="Black">
+        <!-- Основной контент -->
+        <ScrollView IsVisible="{Binding IsFullScreenVisible, Converter={StaticResource InverseBooleanConverter}}">
+            <VerticalStackLayout Spacing="10" Padding="20">
+                <Button Text="Создать предупреждение" Command="{Binding IssueWarningCommand}" />
+                <Button Text="Забанить" Command="{Binding BlockUserCommand}" />
 
-            <Label Text="{Binding AlbumName, StringFormat='Изображения альбома: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
-            <Label Text="{Binding UserName, StringFormat='Владелец альбома: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
-            <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб на альбом: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
-            <Label Text="{Binding PicturesCount, StringFormat='Изображений в альбоме: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+                <Label Text="{Binding AlbumName, StringFormat='Изображения альбома: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+                <Label Text="{Binding UserName, StringFormat='Владелец альбома: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+                <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб на альбом: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
+                <Label Text="{Binding PicturesCount, StringFormat='Изображений в альбоме: {0}'}" FontSize="12" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
 
-            <Label 
-                Text="{Binding StatusMessage}" 
-                FontSize="Medium" 
-                HorizontalOptions="Center" 
-                VerticalOptions="Center" 
-                IsVisible="{Binding IsFetch}" />
-            <!-- Коллекция изображений -->
-            <CollectionView ItemsSource="{Binding AlbumPictures}" x:Name="ImageCollection">
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" 
-                                     HorizontalItemSpacing="5" 
-                                     x:Name="AdaptiveGridLayout" />
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Image Source="{Binding Path}" 
-                               Aspect="AspectFit" 
-                               Margin="5"
-                               >
-                            <Image.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UserContentViewModel}}, Path=ViewImageCommand}"
-                                                      CommandParameter="{Binding .}" />
-                            </Image.GestureRecognizers>
-                        </Image>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-            <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadDataCommand}"/>
-        </VerticalStackLayout>
-    </ScrollView>
+                <Label Text="{Binding StatusMessage}" FontSize="Medium" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsFetch}" />
+
+                <!-- Коллекция изображений -->
+                <CollectionView ItemsSource="{Binding AlbumPictures}" x:Name="ImageCollection">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" HorizontalItemSpacing="5" x:Name="AdaptiveGridLayout"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding Path}" Aspect="AspectFit" Margin="5">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UserContentViewModel}}, Path=ViewImageCommand}" CommandParameter="{Binding .}" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadDataCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Полноэкранный режим -->
+        <!-- Полноэкранный режим -->
+        <Grid IsVisible="{Binding IsFullScreenVisible}">
+            <Grid Padding="10, 10, 10, 0" ZIndex="1" IsVisible="{Binding AreControlsVisible}">
+                <!-- Определение строк и столбцов -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Верхняя панель -->
+                <StackLayout Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="3" Opacity="0.3" Padding="10">
+                    <ImageButton Source="arrow_left.png"
+                         Command="{Binding CloseFullScreenCommand}"
+                         HorizontalOptions="Start"
+                         BackgroundColor="Transparent" 
+                         Opacity="0.8"
+                         Margin="10"/>
+
+                    <Label Text="{Binding CurrentPicture.Name}" 
+                   HorizontalOptions="CenterAndExpand" 
+                   VerticalOptions="Center" 
+                   FontSize="Medium" 
+                   LineBreakMode="TailTruncation" 
+                   TextColor="White" />
+
+                    <ImageButton Source="trash.png"
+                         Command="{Binding DeleteImageCommand}"
+                         HorizontalOptions="End"
+                         BackgroundColor="Transparent"
+                         Opacity="0.8"
+                         Margin="10"/>
+                </StackLayout>
+
+                <!-- Кнопка "Влево" -->
+                <ImageButton Source="chevron_left.png"
+                     Opacity="0.5"
+                     Command="{Binding PreviousImageCommand}"
+                     Grid.Row="1"
+                     Grid.Column="0"
+                     VerticalOptions="Center"/>
+
+                <!-- Кнопка "Вправо" -->
+                <ImageButton Source="chevron_right.png"
+                     Opacity="0.5"
+                     Command="{Binding NextImageCommand}"
+                     Grid.Row="1"
+                     Grid.Column="2"
+                     VerticalOptions="Center"/>
+            </Grid>
+
+            <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
+                <pinch:PinchZoom>
+                    <Image Source="{Binding CurrentPicture.Path}" Aspect = "AspectFit"/>
+                </pinch:PinchZoom>
+            </StackLayout>
+            <!-- Отображение изображения -->
+            
+
+        </Grid>
+
+
+    </Grid>
 </ContentPage>
