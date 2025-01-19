@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+             xmlns:vm="clr-namespace:PicsyncClient.ViewModels.Auth"
              x:Class="PicsyncClient.Views.Auth.ServerSelectorPage">
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -10,8 +10,14 @@
             <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
+    
+    <ContentPage.BindingContext>
+        <vm:ServerSelectorViewModel/>
+    </ContentPage.BindingContext>
+    
     <ScrollView>
         <StackLayout Spacing="10" Padding="10" VerticalOptions="Center" MaximumWidthRequest="500">
+            
             <Label Text="Выбор сервера" HorizontalTextAlignment="Center" FontSize="24"/>
 
             <Border Padding="10" Stroke="Red"
@@ -46,43 +52,45 @@
                     </Label.GestureRecognizers>
                 </Label>
             </StackLayout>
-            
-            <StackLayout IsVisible="{Binding PastUrlsIsVisible}" Spacing="10">
-                <Label Text="Прошлые сервера" HorizontalTextAlignment="Center" Margin="0,10,0,0"/>
-                <CollectionView ItemsSource="{Binding PastUrls}">
-                    <CollectionView.ItemsLayout>
-                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame Padding="5">
-                                <Grid ColumnDefinitions="*,auto,auto">
-                                    <Grid.GestureRecognizers>
-                                        <TapGestureRecognizer 
-                                            Command="{Binding TryPastConnectCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
-                                            CommandParameter="{Binding .}"/>
-                                    </Grid.GestureRecognizers>
-                                    <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0,0,0"/>
-                                    <Button Grid.Column="1" HeightRequest="32" WidthRequest="32" ImageSource="trash_2.png" Padding="8"
-                                            CommandParameter="{Binding .}"
-                                            Command="{Binding DeletePastUrlCommand, Source={RelativeSource AncestorType={x:Type vm:Auth.ServerSelectorViewModel}}}"
-                                            Background="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-                                        <Button.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="Red"/>
-                                        </Button.Behaviors>
-                                    </Button>
-                                    <Image Grid.Column="2" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
-                                        <Image.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light=Black, Dark=White}"/>
-                                        </Image.Behaviors>
-                                    </Image>
-                                </Grid>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </StackLayout>
-            
+
+            <CollectionView ItemsSource="{Binding PastUrls}" IsVisible="{Binding PastUrlsIsVisible}">
+                <CollectionView.HeaderTemplate>
+                    <DataTemplate>
+                        <Label Text="Прошлые сервера" HorizontalTextAlignment="Center" Margin="0,10"/>
+                    </DataTemplate>
+                </CollectionView.HeaderTemplate>
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Padding="5">
+                            <Grid ColumnDefinitions="*,auto,auto">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                        Command="{Binding TryPastConnectCommand, Source={RelativeSource AncestorType={x:Type vm:ServerSelectorViewModel}}}"
+                                        CommandParameter="{Binding .}"/>
+                                </Grid.GestureRecognizers>
+                                <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0,0,0"/>
+                                <Button Grid.Column="1" HeightRequest="32" WidthRequest="32" ImageSource="trash_2.png" Padding="8"
+                                        CommandParameter="{Binding .}"
+                                        Command="{Binding DeletePastUrlCommand, Source={RelativeSource AncestorType={x:Type vm:ServerSelectorViewModel}}}"
+                                        Background="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                    <Button.Behaviors>
+                                        <tk:IconTintColorBehavior TintColor="Red"/>
+                                    </Button.Behaviors>
+                                </Button>
+                                <Image Grid.Column="2" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
+                                    <Image.Behaviors>
+                                        <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light=Black, Dark=White}"/>
+                                    </Image.Behaviors>
+                                </Image>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
         </StackLayout>
     </ScrollView>
 </ContentPage>

@@ -393,6 +393,7 @@ public partial class AlbumViewModel : ObservableObject
 
         AlbumAccessManagePopup popup = new(remote);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        OnPropertyChanged(nameof(Album));
     }
 
     public bool CanUnjoin => Album is AlbumRemote;
@@ -424,8 +425,6 @@ public partial class AlbumViewModel : ObservableObject
         if (result is bool isExit && !isExit) return;
         await Shell.Current.GoToAsync("..");
     }
-
-
 
 
     [ObservableProperty]

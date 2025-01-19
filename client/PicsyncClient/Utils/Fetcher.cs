@@ -104,6 +104,10 @@ public static class Fetcher
         CancellationToken cancellationToken = default
     ) {
         HttpResponseMessage response = await FetchAsync(method, path, setIsFetch, setError, body, serialize, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+            return (response, default(T));
+
         try
         {
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);

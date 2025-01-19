@@ -6,9 +6,6 @@
              xmlns:cv="clr-namespace:PicsyncClient.Converters"
              xmlns:m="clr-namespace:PicsyncClient.Models"
              x:Class="PicsyncClient.Views.AlbumsPage">
-    <ContentPage.BindingContext>
-        <vm:AlbumsViewModel/>
-    </ContentPage.BindingContext>
     <ContentPage.Resources>
         <ResourceDictionary>
             <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
@@ -19,6 +16,11 @@
             <cv:FalseOnUriRoot         x:Key="FalseOnUriRoot"/>
         </ResourceDictionary>
     </ContentPage.Resources>
+
+    <ContentPage.BindingContext>
+        <vm:AlbumsViewModel/>
+    </ContentPage.BindingContext>
+
     <ScrollView>
         <StackLayout Margin="5,0">
 

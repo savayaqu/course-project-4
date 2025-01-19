@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:vm="clr-namespace:PicsyncClient.ViewModels.Auth"
              xmlns:cv="clr-namespace:PicsyncClient.Converters"
              x:Class="PicsyncClient.Views.Auth.SignupPage">
     <ContentPage.Resources>
@@ -10,6 +11,11 @@
             <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
+    
+    <ContentPage.BindingContext>
+        <vm:SignupViewModel/>
+    </ContentPage.BindingContext>
+    
     <ScrollView>
         <StackLayout Spacing="10" Padding="10" VerticalOptions="Center" MaximumWidthRequest="400">
             <Label Text="Регистрация" HorizontalTextAlignment="Center" FontSize="24"/>
