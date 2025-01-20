@@ -16,6 +16,7 @@ namespace PicsyncAdmin.Models
         [JsonPropertyName("size")] public int Size { get; set; }
 
         [JsonPropertyName("date")][System.Text.Json.Serialization.JsonConverter(typeof(CustomDateTimeConverter))] public DateTime Date { get; set; }
+        [JsonPropertyName("complaintCount")] public int ComplaintCount { get; set; }
 
         [JsonPropertyName("width")] public int Width { get; set; }
         [JsonPropertyName("height")] public int Height { get; set; }

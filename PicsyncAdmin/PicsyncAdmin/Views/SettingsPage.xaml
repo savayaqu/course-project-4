@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PicsyncAdmin.Views.SettingsPage"
+             xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
+             Title="Настройки">
+    <ScrollView>
+        <StackLayout Padding="20" Spacing="15">
+            <!-- Пространство -->
+            <StackLayout Grid.Row="2" Spacing="10" Padding="20">
+                <Label Text="Использовано пространства"
+           HorizontalOptions="Center"
+           FontSize="16"
+           FontAttributes="Bold" />
+                <ProgressBar Progress="{Binding UsedPercent}"
+                 HorizontalOptions="FillAndExpand" />
+                <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="Center">
+                    <Label Text="{Binding FreeSpaceHumanReadable}"
+               VerticalOptions="Center"
+               FontSize="12" />
+                    <Label Text="/"
+               VerticalOptions="Center"
+               FontSize="12" />
+                    <Label Text="{Binding TotalSpaceHumanReadable}"
+               VerticalOptions="Center"
+               FontSize="12" />
+                    <Label Text="{Binding UsedPercentDisplay, StringFormat='{0:F0}%'}" 
+               HorizontalOptions="Center" 
+               FontSize="14" 
+               VerticalOptions="Center" />
+                </StackLayout>
+                <Label HorizontalOptions="Center" Text="{Binding Space.GotAt, StringFormat='Последнее обновление: {0}'}" />
+            </StackLayout>
+            <!-- Индикатор загрузки -->
+            <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}" />
+            <Label Text="{Binding ValidationMessage}"
+TextColor="{Binding ValidationMessageColor}"
+HorizontalOptions="Center" VerticalOptions="Center" FontSize="Large"/>
+            <!-- Поле для редактирования WarningLimitForBan -->
+            <Label Text="Количество жалоб для блокировки: "/>
+            <Entry Text="{Binding WarningLimitForBan, Mode=TwoWay}" Keyboard="Numeric" TextChanged="OnEntryTextChanged"/>
+            <!-- Поле для редактирования UploadDisablePercentage -->
+            <VerticalStackLayout>
+                <Label Text="{Binding UploadDisablePercentage, StringFormat='Блокировка загрузки при заполнении хранилища на: {0:F0}%'}" LineBreakMode="WordWrap"/>
+                <Slider Minimum="0" Maximum="100" Value="{Binding UploadDisablePercentage, Mode=TwoWay}" />
+            </VerticalStackLayout>
+
+            <!-- Список AllowedUploadMimes -->
+            <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto" ColumnSpacing="10">
+                <!-- Заголовок и кнопка -->
+                <Label Text="Разрешенные форматы картинок:" Grid.Column="0" Grid.Row="0" VerticalOptions="Center" />
+                <Button Text="Добавить" Grid.Column="1" Grid.Row="0" HorizontalOptions="Start" Command="{Binding AddMimeCommand}"/>
+
+                <!-- CollectionView с горизонтальным расположением -->
+                <CollectionView ItemsSource="{Binding Settings.AllowedUploadMimes, Mode=TwoWay}" 
+                Grid.Row="1" Grid.ColumnSpan="2">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding .}" Padding="10" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=TapCommand}"
+                                    CommandParameter="{Binding .}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+
+
+            <!-- Список AllowedPreviewSizes -->
+            <Grid ColumnDefinitions="Auto, *" RowDefinitions="Auto, Auto" ColumnSpacing="10">
+                <!-- Заголовок и кнопка -->
+                <Label Text="Разрешенные размеры превью:" Grid.Column="0" Grid.Row="0" VerticalOptions="Center" />
+                <Button Text="Добавить" Grid.Column="1" Grid.Row="0" HorizontalOptions="Start" Command="{Binding AddSizeCommand}"/>
+
+                <!-- CollectionView с горизонтальным расположением -->
+                <CollectionView ItemsSource="{Binding Settings.AllowedPreviewSizes, Mode=TwoWay}" 
+        Grid.Row="1" Grid.ColumnSpan="2">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Horizontal" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding .}" Padding="10" FontAttributes="Bold">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer 
+            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=TapCommand}"
+            CommandParameter="{Binding .}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </Grid>
+            <!-- Кнопка сохранения -->
+            <Button Text="Сохранить" Command="{Binding Source={RelativeSource AncestorType={x:Type vm:SettingsViewModel}}, Path=SaveBanSpaceCommand}"/>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>

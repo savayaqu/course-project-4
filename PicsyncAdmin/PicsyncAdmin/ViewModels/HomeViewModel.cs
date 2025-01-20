@@ -12,6 +12,8 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using ObservableObject = CommunityToolkit.Mvvm.ComponentModel.ObservableObject;
 using System.Linq;
+using PicsyncAdmin.Models.Response.PicsyncAdmin.Models.Response;
+using ApiResponse = PicsyncAdmin.Models.ApiResponse;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -30,10 +32,6 @@ namespace PicsyncAdmin.ViewModels
         [ObservableProperty]
         private double usedPercent;
         [ObservableProperty]
-        public bool canLoadMore = false;
-        [ObservableProperty]
-        private int currentPage = 1;
-        [ObservableProperty]
         private string usedSpaceHumanReadable;
         [ObservableProperty]
         private string totalSpaceHumanReadable;
@@ -41,6 +39,11 @@ namespace PicsyncAdmin.ViewModels
         private string freeSpaceHumanReadable;
         [ObservableProperty]
         private double usedPercentDisplay;
+        [ObservableProperty]
+        public bool canLoadMore = false;
+        [ObservableProperty]
+        private int currentPage = 1;
+       
         public ObservableCollection<AlbumComplaintData> Albums { get; set; } = new ObservableCollection<AlbumComplaintData>();
         public HomeViewModel()
         {
@@ -183,7 +186,7 @@ namespace PicsyncAdmin.ViewModels
                     setError: msg => Debug.WriteLine($"Error: {msg}") // Обработчик ошибок
                 );
                 var responseString = await response.Content.ReadAsStringAsync();
-                var settingsResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse>(responseString);
+                var settingsResponse = System.Text.Json.JsonSerializer.Deserialize<SettingsResponse>(responseString);
 
                 if (settingsResponse == null)
                 {

@@ -3,27 +3,49 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
              x:Class="PicsyncAdmin.Views.Auth.Login"
-             Title="Login">
+             Title="Вход">
 
     <ContentPage.BindingContext>
         <vm:LoginViewModel />
     </ContentPage.BindingContext>
-    
-    <StackLayout>
-        <StackLayout>
-            <Label Text="{Binding SelectedServer, StringFormat='Текущий сервер: {0}'}"/>
-            <Label Text="Выбрать другой сервер"
-                   HorizontalTextAlignment="Center" Margin="0,-5,0,0">
+
+    <VerticalStackLayout Padding="20" Spacing="25">
+        <Label Text="Авторизация"
+       FontSize="Medium"
+       FontAttributes="Bold"
+       HorizontalOptions="Center" />
+        <!-- Информация о сервере -->
+        <VerticalStackLayout Spacing="5">
+            <Label FontSize="Medium" Text="Выбранный сервер: "/>
+            <Label Text="{Binding SelectedServer}" 
+            FontAttributes="Bold"
+             Padding="0, 0, 10, 0"/>
+            <Border Padding="10" HorizontalOptions="End" StrokeThickness="2">
+                <Label Text="Сменить сервер"
+                   FontAttributes="Bold"
+                    FontSize="Subtitle" 
+                   HorizontalOptions="End">
                 <Label.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SelectServerCommand}"/>
+                    <TapGestureRecognizer Command="{Binding SelectServerCommand}" />
                 </Label.GestureRecognizers>
             </Label>
-        </StackLayout>
-        <StackLayout  Padding="20" VerticalOptions="Center">
-            <Entry Placeholder="Введите логин" Text="{Binding Login}" Margin="10" />
-            <Entry Placeholder="Введите пароль" Text="{Binding Password}" IsPassword="True" Margin="10" />
-            <Button Text="Войти" Command="{Binding TryLoginCommand}" Margin="10" />
-        </StackLayout>
-        
-    </StackLayout>
+            </Border>
+            
+        </VerticalStackLayout>
+
+        <!-- Поля ввода -->
+        <VerticalStackLayout Spacing="15">
+            <Entry Placeholder="Введите логин" 
+                   Text="{Binding Login}" />
+
+            <Entry Placeholder="Введите пароль" 
+                   Text="{Binding Password}" 
+                   IsPassword="True" />
+        </VerticalStackLayout>
+
+        <!-- Кнопка входа -->
+        <Button Text="Войти"
+                Command="{Binding TryLoginCommand}" 
+                HorizontalOptions="FillAndExpand" />
+    </VerticalStackLayout>
 </ContentPage>

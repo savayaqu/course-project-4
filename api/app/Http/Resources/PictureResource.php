@@ -21,6 +21,7 @@ class PictureResource extends JsonResource
             'tags'       => $this->whenLoaded('tags', fn() =>
                 $this->when($this->tags->isNotEmpty(), fn() => TagResource::collection($this->tags))
             ),
+            'complaintCount' => $this->whenCounted('complaints', fn($count) => $this->when($count, $count)),
         ];
     }
 }

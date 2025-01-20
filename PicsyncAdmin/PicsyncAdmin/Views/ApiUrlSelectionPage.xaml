@@ -3,14 +3,21 @@
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
              x:Class="PicsyncAdmin.Views.ApiUrlSelectionPage"
              Title="Выбор API URL">
+
     <ContentPage.BindingContext>
         <vm:ApiUrlSelectionViewModel />
     </ContentPage.BindingContext>
 
-    <StackLayout Padding="20">
-        
-        <!-- Кнопка для выбора URL -->
-        <Button Text="Добавить URL" Command="{Binding SaveApiUrlCommand}" />
-        <Button Text="Выбрать URL" Command="{Binding ShowApiUrlSelectionCommand}" />
-    </StackLayout>
+    <VerticalStackLayout Padding="20" Spacing="25">
+        <!-- Кнопки управления -->
+        <VerticalStackLayout Spacing="15">
+            <Button Text="Добавить новый URL"
+                    Command="{Binding SaveApiUrlCommand}"
+                    HorizontalOptions="FillAndExpand" />
+
+            <Button Text="Выбрать существующий URL"
+                    Command="{Binding ShowApiUrlSelectionCommand}"
+                    HorizontalOptions="FillAndExpand" />
+        </VerticalStackLayout>
+    </VerticalStackLayout>
 </ContentPage>

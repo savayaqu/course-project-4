@@ -36,14 +36,29 @@ class PictureController extends Controller
 
         // Проверка валидации сортировки
         $allowedSortFields = ['date', 'name', 'width', 'height', 'size'];
+
+        // Админ может делать сортировку по жалобам
+        if ($user->role->code === 'admin') {
+            if($sortBy === 'complaints') {
+                $allowedSortFields[] = 'complaints';
+            }
+        }
+
         if (!in_array($sortBy, $allowedSortFields))
             throw new ApiException('Sort must be of the following types: ' . join(', ', $allowedSortFields), 400);
 
 
         // Фильтрация по заданным параметрам
         $query = Picture::with('tags')
-            ->where('album_id', $album->id)
-            ->orderBy($sortBy, $orderBy);
+            ->withCount('complaints')
+            ->where('album_id', $album->id);
+
+        // Сортировка
+        if ($sortBy === 'complaints') {
+            $query->orderBy('complaints_count', $orderBy); // Сортировка по количеству жалоб
+        } else {
+            $query->orderBy($sortBy, $orderBy); // Сортировка по другим полям
+        }
 
         if ($tagIds) {
             $query->whereHas('tags', function ($query) use ($tagIds) {

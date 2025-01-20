@@ -56,6 +56,8 @@ namespace PicsyncAdmin.ViewModels
 
         [ObservableProperty]
         private int currentPage = 1;
+        [ObservableProperty]
+        private int complaintCount;
 
         [ObservableProperty]
         private string? mainImagePath;
@@ -165,6 +167,7 @@ namespace PicsyncAdmin.ViewModels
             CurrentPicture = picture;
             CurrentIndex = AlbumPictures.IndexOf(picture);
             IsFullScreenVisible = true;
+            Debug.WriteLine(picture.ComplaintCount);
             Shell.SetNavBarIsVisible(Shell.Current, false);
             Shell.SetTabBarIsVisible(Shell.Current.CurrentPage, false);
         }
@@ -294,10 +297,9 @@ namespace PicsyncAdmin.ViewModels
                 IsFetch = true;
 
                 // Получение списка картинок
-                var response = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}/pictures?page={CurrentPage}", setError: msg => Debug.WriteLine(msg));
+                var response = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}/pictures?reverse&sort=complaints&page={CurrentPage}", setError: msg => Debug.WriteLine(msg));
                 // Получение информации об альбоме
                 var responseAlbum = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}", setError: msg => Debug.WriteLine(msg));
-
                 IsFetch = false;
 
                 if (!response.IsSuccessStatusCode || !responseAlbum.IsSuccessStatusCode)
