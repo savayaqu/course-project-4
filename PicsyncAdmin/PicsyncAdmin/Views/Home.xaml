@@ -54,14 +54,29 @@
                     <DataTemplate>
                         <Frame Padding="10" Margin="5">
                             <VerticalStackLayout>
-                                <!-- Информация об альбоме -->
-                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
-                                <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб: {0}'}" FontSize="12" />
+                                <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
+                                    <!-- Информация об альбоме -->
+                                    <Label Text="{Binding Name}" 
+           FontSize="16" 
+           FontAttributes="Bold" 
+           Grid.Row="0" 
+           Grid.Column="0" />
 
-                                <!-- Кнопка с параметром -->
-                                <Button HorizontalOptions="End" Text="Просмотреть полностью" 
-                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
-                            CommandParameter="{Binding Album}" />
+                                    <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб: {0}'}" 
+           FontSize="12" 
+           Grid.Row="1" 
+           Grid.Column="0" />
+
+                                    <!-- Кнопка с параметром -->
+                                    <Button Text="Просмотреть полностью" 
+            HorizontalOptions="End" 
+            Grid.Row="0" 
+            Grid.Column="1" 
+            Grid.RowSpan="2" 
+            Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
+            CommandParameter="{Binding Album}" />
+                                </Grid>
+
 
                                 <!-- Список жалоб -->
                                 <CollectionView ItemsSource="{Binding Complaints}">
@@ -70,9 +85,9 @@
                                     </CollectionView.ItemsLayout>
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate>
-                                            <VerticalStackLayout Padding="5" WidthRequest="200">
+                                            <VerticalStackLayout Padding="5" MaximumWidthRequest="200">
                                                 <!-- Картинка жалобы -->
-                                                <Image WidthRequest="200" HeightRequest="200">
+                                                <Image MaximumWidthRequest="200" MaximumHeightRequest="200" >
                                                     <Image.Source>
                                                         <UriImageSource Uri="{Binding Picture.Path}" CacheValidity="10:00:00:00" />
                                                     </Image.Source>
@@ -94,9 +109,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
-
-
             <!-- Кнопка загрузки дополнительных данных -->
             <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadComplaintsCommand}" />
         </VerticalStackLayout>

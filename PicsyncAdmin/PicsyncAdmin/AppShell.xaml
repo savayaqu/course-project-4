@@ -26,5 +26,8 @@ Route="UserContentPage" />
         <Tab Title="Профиль" Icon="user.png">
             <ShellContent ContentTemplate="{DataTemplate local:Profile}" Route="Profile"/>
         </Tab>
+        <Tab Title="Настройки" Icon="settings.png">
+            <ShellContent ContentTemplate="{DataTemplate local:SettingsPage}" Route="SettingsPage"/>
+        </Tab>
     </TabBar>
 </Shell>

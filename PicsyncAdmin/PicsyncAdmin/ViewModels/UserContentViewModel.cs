@@ -56,6 +56,8 @@ namespace PicsyncAdmin.ViewModels
 
         [ObservableProperty]
         private int currentPage = 1;
+        [ObservableProperty]
+        private int complaintCount;
 
         [ObservableProperty]
         private string? mainImagePath;
@@ -165,6 +167,7 @@ namespace PicsyncAdmin.ViewModels
             CurrentPicture = picture;
             CurrentIndex = AlbumPictures.IndexOf(picture);
             IsFullScreenVisible = true;
+            Debug.WriteLine(picture.ComplaintCount);
             Shell.SetNavBarIsVisible(Shell.Current, false);
             Shell.SetTabBarIsVisible(Shell.Current.CurrentPage, false);
         }
@@ -263,15 +266,11 @@ namespace PicsyncAdmin.ViewModels
         {
             try
             {
-                Debug.WriteLine("CanLoadMore" + CanLoadMore);
-                Debug.WriteLine("CanGoToNext" + CanGoToNext());
-
                 // Проверяем, можно ли загрузить больше картинок
                 if (CanGoToNext() && CanLoadMore && CurrentIndex == AlbumPictures.Count-1)
                 {
                     await LoadData();  // Загружаем больше данных, если это возможно
                 }
-
                 // После загрузки новых картинок (или если их не было), переходим к следующей картинке
                 if (CanGoToNext())
                 {
@@ -281,8 +280,6 @@ namespace PicsyncAdmin.ViewModels
             }
             catch (Exception ex)
             {
-                // Логируем ошибку и показываем уведомление пользователю
-                Debug.WriteLine($"Ошибка при переходе к следующему изображению: {ex.Message}");
                 await Shell.Current.DisplayAlert("Ошибка", "Произошла ошибка при загрузке следующего изображения.", "OK");
             }
         }
@@ -300,10 +297,9 @@ namespace PicsyncAdmin.ViewModels
                 IsFetch = true;
 
                 // Получение списка картинок
-                var response = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}/pictures?page={CurrentPage}", setError: msg => Debug.WriteLine(msg));
+                var response = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}/pictures?reverse&sort=complaints&page={CurrentPage}", setError: msg => Debug.WriteLine(msg));
                 // Получение информации об альбоме
                 var responseAlbum = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}", setError: msg => Debug.WriteLine(msg));
-
                 IsFetch = false;
 
                 if (!response.IsSuccessStatusCode || !responseAlbum.IsSuccessStatusCode)
