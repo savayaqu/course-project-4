@@ -10,10 +10,10 @@ namespace PicsyncClient.Utils;
 
 public static class PictureSender
 {
-    public readonly static Stack<PictureLocal> PicturesQueue = [];
+    //public readonly static Stack<PictureLocal> PicturesQueue = [];
 
-    public static Task SendPicture(PictureLocal picture)
-    {
-        FetchAsync<Picture>
-    }
+    //public static Task SendPicture(PictureLocal picture)
+    //{
+    //    FetchAsync<Picture>
+    //}
 }
