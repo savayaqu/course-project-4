@@ -11,11 +11,4 @@ public partial class InvitationCreatePopup : Popup
 		InitializeComponent();
 		BindingContext = new InvitationCreatePopupViewModel(this, album);
     }
-
-    private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
-    {
-        //if (sender is not DatePicker picker) return;
-
-        e.Handled = true;
-    }
 }

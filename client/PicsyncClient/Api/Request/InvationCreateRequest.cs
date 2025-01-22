@@ -16,6 +16,11 @@ public class InvationCreateRequest
         ExpiresAt = expiresAt;
     }
 
+    public InvationCreateRequest(int? joinLimit)
+    {
+        JoinLimit = joinLimit;
+    }
+
     [JsonPropertyName("joinLimit")] public int?      JoinLimit { get; set; }
     [JsonPropertyName("timeLimit")] public int?      TimeLimit { get; set; }
     [JsonPropertyName("expiresAt")] public DateTime? ExpiresAt { get; set; }

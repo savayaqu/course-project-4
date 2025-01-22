@@ -11,36 +11,37 @@
             <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
         </ResourceDictionary>
     </tk:Popup.Resources>
-    <Grid MaximumWidthRequest="350">
+    <Grid>
         <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
-            <StackLayout>
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*">
                 <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
                     <Label Text="Синхронизация" FontSize="18" VerticalOptions="Center"/>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
                             Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
                 </Grid>
+                
+                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
+                    <StackLayout x:Name="InternalContainer" Spacing="5">
+                        <Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
+                                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                                IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Error}"/>
+                            </StackLayout>
+                        </Border>
 
-                <Border Padding="10" Stroke="Red"
-                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
-                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="6"/>
-                    </Border.StrokeShape>
-                    <StackLayout Grid.Column="1" Spacing="5">
-                        <HorizontalStackLayout Spacing="5">
-                            <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
-                                <Image.Behaviors>
-                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                </Image.Behaviors>
-                            </Image>
-                            <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding Error}"/>
+                        <Button Text="Отменить синхронизацию" Command="{Binding DesyncCommand}" BackgroundColor="{StaticResource Red}"/>
                     </StackLayout>
-                </Border>
-
-                <Button Text="Отменить синхронизацию" Command="{Binding DesyncCommand}" BackgroundColor="{StaticResource Red}"/>
-            </StackLayout>
+                </ScrollView>
+            </Grid>
         </Frame>
     </Grid>
 </tk:Popup>

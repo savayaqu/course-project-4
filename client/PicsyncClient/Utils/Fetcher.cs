@@ -92,6 +92,13 @@ public static class Fetcher
             setError?.Invoke("Время ожидания вышло");
             return new();
         }
+        catch (HttpRequestException ex)
+        {
+            setIsFetch?.Invoke(false);
+            string message = ex.Message == "Connection failure" ? "Не удалось установить соединение с сервером" : ex.Message;
+            setError?.Invoke(message);
+            return new();
+        }
     }
 
     public static async Task<(HttpResponseMessage, T?)> FetchAsync<T>(
@@ -111,6 +118,7 @@ public static class Fetcher
         try
         {
             var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
+            Debug.WriteLine("FETCH: responseJson: " + responseJson);
             var responseBody = JsonSerializer.Deserialize<T>(responseJson);
             return (response, responseBody);
         }

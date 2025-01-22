@@ -32,8 +32,8 @@ class AccessController extends Controller
         if ($user->id === $album->user_id)
             throw new ApiException('You are owner', 409);
 
-        else if ($user->id !== $album->user_id)
-            throw new ForbiddenException();
+        //else if ($user->id !== $album->user_id)
+        //    throw new ForbiddenException();
 
         $album->usersViaAccess()->detach($user->id);
         return response()->json(null, 204);

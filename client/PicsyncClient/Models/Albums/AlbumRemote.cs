@@ -29,6 +29,7 @@ public class AlbumRemote : AlbumBase
     public List<User>? GrantAccesses { get; set; }
 
     private int _grantAccessesCount = 0;
+
     [JsonPropertyName("grantAccessesCount")] 
     public int GrantAccessesCount 
     {
@@ -41,6 +42,7 @@ public class AlbumRemote : AlbumBase
     public List<Invitation>? Invitations { get; set; }
 
     private int _invitationsCount = 0;
+
     [JsonPropertyName("invitationsCount")] 
     public int InvitationsCount
     {

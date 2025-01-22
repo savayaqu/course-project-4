@@ -67,7 +67,7 @@
                                 <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
                             </Image.Behaviors>
                         </Image>
-                        <Label Text="{Binding Album.PicturesCount}" HorizontalOptions="Center" VerticalOptions="Center">
+                        <Label HorizontalOptions="Center" VerticalOptions="Center">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="{Binding Album.Owner.Nickname}"/>
@@ -152,7 +152,7 @@
                                         <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
                                     </Image.Behaviors>
                                 </Image>
-                                <Label Text="32" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <Label Text="{Binding Album.TrueLocalPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             <HorizontalStackLayout Spacing="2">
                                 <Image Source="cloud_check.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
@@ -160,7 +160,7 @@
                                         <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
                                     </Image.Behaviors>
                                 </Image>
-                                <Label Text="21K" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <Label Text="{Binding Album.SyncedPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
                             <HorizontalStackLayout Spacing="2">
                                 <Image Source="cloud.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
@@ -168,7 +168,7 @@
                                         <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
                                     </Image.Behaviors>
                                 </Image>
-                                <Label Text="9,9K" HorizontalOptions="Center"/>
+                                <Label Text="{Binding Album.TrueRemotePicturesCount}" HorizontalOptions="Center"/>
                             </HorizontalStackLayout>
                         </HorizontalStackLayout>
                         <Label Text="Синхронизация" FontSize="10" HorizontalOptions="Center" FontAttributes="Bold"/>
@@ -329,7 +329,7 @@
                                             <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
                                         </Image.Behaviors>
                                     </Image>
-                                    <Label Text="32" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label Text="{Binding Album.TrueLocalPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
                                 </HorizontalStackLayout>
                                 <HorizontalStackLayout Spacing="2">
                                     <Image Source="cloud_check.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
@@ -337,7 +337,7 @@
                                             <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
                                         </Image.Behaviors>
                                     </Image>
-                                    <Label Text="21K" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label Text="{Binding Album.SyncedPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
                                 </HorizontalStackLayout>
                                 <HorizontalStackLayout Spacing="2">
                                     <Image Source="cloud.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
@@ -345,7 +345,7 @@
                                             <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
                                         </Image.Behaviors>
                                     </Image>
-                                    <Label Text="9,9K" HorizontalOptions="Center"/>
+                                    <Label Text="{Binding Album.TrueRemotePicturesCount}" HorizontalOptions="Center"/>
                                 </HorizontalStackLayout>
                             </HorizontalStackLayout>
                             <Label Text="Синхронизация" FontSize="10" HorizontalOptions="Center" FontAttributes="Bold"/>
@@ -385,12 +385,9 @@
             <StackLayout>
                 <BoxView HeightRequest="1" BackgroundColor="Transparent"/>
 
-                <Border Padding="10" Stroke="Red" Margin="5"
+                <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
                     Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                     IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="6"/>
-                    </Border.StrokeShape>
                     <StackLayout Grid.Column="1" Spacing="5">
                         <HorizontalStackLayout Spacing="5">
                             <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">

@@ -17,7 +17,9 @@ namespace PicsyncClient.ViewModels.Popups;
 
 public partial class AlbumInfoPopupViewModel : ObservableObject
 {
-    [ObservableProperty] private IAlbum album;
+    [ObservableProperty] private bool    isBusy = false;
+    [ObservableProperty] private string? error;
+    [ObservableProperty] private IAlbum  album;
 
     private readonly Popup _popup;
 
@@ -26,6 +28,13 @@ public partial class AlbumInfoPopupViewModel : ObservableObject
         _popup = popup;
         Album = album;
     }
+
+    public bool IsLocal       => Album is IAlbumLocal;
+    public bool IsSynced      => Album is AlbumSynced;
+    public bool IsRemote      => Album is AlbumRemote;
+    public bool IsNonOwned    => Album is AlbumRemote album && album.Owner != null;
+    public bool IsRemoteOwned => Album is AlbumRemote album && album.Owner == null;
+
 
     [RelayCommand]
     public void Cancel()

@@ -217,6 +217,10 @@ public partial class AlbumsViewModel : ObservableObject
     {
         InvitationPreviewPopup popup = new();
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+        if (result is not AlbumRemote remote) return;
+
+        AlbumsRemote.Add(remote);
     }
 
 

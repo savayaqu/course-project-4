@@ -2,26 +2,190 @@
 <tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
           xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+          xmlns:cv="clr-namespace:PicsyncClient.Converters"
           xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+          xmlns:talbum="clr-namespace:PicsyncClient.Models.Albums"
           x:Class="PicsyncClient.Components.Popups.AlbumInfoPopup"
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
             <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
+            <tk:IsNullConverter        x:Key="IsNullConverter"/>
             <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
+            <cv:NonZeroToTrueConverter x:Key="NonZeroToTrueConverter"/>
         </ResourceDictionary>
     </tk:Popup.Resources>
-    <Grid MaximumWidthRequest="350">
+    <Grid>
         <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
-            <StackLayout>
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*">
                 <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
                     <Label Text="Инфо об альбоме" FontSize="18" VerticalOptions="Center"/>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
                             Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
                 </Grid>
-                
-                
-            </StackLayout>
+
+                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
+                    <StackLayout x:Name="InternalContainer" Spacing="5">
+                        <Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
+                                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                                IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Error}"/>
+                            </StackLayout>
+                        </Border>
+
+                        <StackLayout Spacing="10">
+                            <Grid ColumnDefinitions="75,10,*">
+                                <Label WidthRequest="75" Text="Название" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Grid Grid.Column="2" ColumnDefinitions="*,auto">
+                                    <Label Text="{Binding Album.Name}" FontAttributes="Bold" VerticalOptions="Center"/>
+                                    <Entry Text="{Binding NewName}" IsVisible="False"/>
+                                    <Button Grid.Column="1" ImageSource="pencil.png" HeightRequest="40" WidthRequest="40" Padding="8"
+                                            Command="{Binding StartEditName}" IsVisible="{Binding IsRemoteOwned}"/>
+                                </Grid>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*">
+                                <Label Text="Тип" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="2">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsLocal}" Value="True">
+                                            <Setter Property="Text" Value="Локальный альбом (на устройстве)" />
+                                        </DataTrigger>
+
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsNonOwned}" Value="True">
+                                            <Setter Property="Text" Value="Доступный альбом (чужой)" />
+                                        </DataTrigger>
+
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsRemoteOwned}" Value="True">
+                                            <Setter Property="Text" Value="Мой удалённый альбом (на сервере)" />
+                                        </DataTrigger>
+
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsSynced}" Value="True">
+                                            <Setter Property="Text" Value="Синхронизируемый альбом (удалённый и локальный)" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsLocal}">
+                                <Label Text="Папка" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="{Binding Album.LocalPath}"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsRemote}">
+                                <Label Text="ИД" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="{Binding Album.Id, StringFormat=' #{0}'}"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsNonOwned}">
+                                <Label Text="Владелец" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="2">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Album.Owner.Nickname}"/>
+                                            <Span Text="{Binding Album.Owner.Id, StringFormat='#{0}'}" TextColor="Gray" FontSize="12"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsRemoteOwned}">
+                                <Label Text="Создан" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <Label Grid.Column="2" Text="{Binding Album.CreatedAt}"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsRemote}">
+                                <Label Text="Картинок" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <StackLayout Grid.Column="2" Spacing="3">
+                                    <Label>
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.PicturesCount}" FontAttributes="Bold"/>
+                                                <Span Text="  всего"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label IsVisible="{Binding IsSynced}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.SyncedPicturesCount}" FontAttributes="Bold"/>
+                                                <Span Text="  синхронизированных"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label IsVisible="{Binding IsSynced}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.RemotePicturesCount}" FontAttributes="Bold"/>
+                                                <Span Text="  на сервере  ("/>
+                                                <Span Text="{Binding Album.TrueRemotePicturesCount}" FontAttributes="Bold"/>
+                                                <Span Text="  уникальных)"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label IsVisible="{Binding IsSynced}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.LocalPictures.Count}" FontAttributes="Bold"/>
+                                                <Span Text="  локальных  ("/>
+                                                <Span Text="{Binding Album.TrueLocalPicturesCount}" FontAttributes="Bold"/>
+                                                <Span Text="  не загруженных)"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </StackLayout>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="75,10,*" IsVisible="False">
+                                <Grid.Triggers>
+                                    <MultiTrigger TargetType="Grid">
+                                        <MultiTrigger.Conditions>
+                                            <BindingCondition Binding="{Binding IsRemoteOwned}" Value="True"/>
+                                            <BindingCondition Binding="{Binding Album.InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="IsVisible" Value="True"/>
+                                    </MultiTrigger>
+                                    <MultiTrigger TargetType="Grid">
+                                        <MultiTrigger.Conditions>
+                                            <BindingCondition Binding="{Binding IsRemoteOwned}" Value="True"/>
+                                            <BindingCondition Binding="{Binding Album.GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}" Value="True"/>
+                                        </MultiTrigger.Conditions>
+                                        <Setter Property="IsVisible" Value="True"/>
+                                    </MultiTrigger>
+                                </Grid.Triggers>
+                                <Label Text="Внешний доступ" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                                <StackLayout Grid.Column="2" Spacing="3" VerticalOptions="Center">
+                                    <Label IsVisible="{Binding Album.GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.InvitationsCount}" FontAttributes="Bold"/>
+                                                <Span Text="  кодов приглашений"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label IsVisible="{Binding Album.GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.GrantAccessesCount}" FontAttributes="Bold"/>
+                                                <Span Text="  вступивших пользователей"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </StackLayout>
+                            </Grid>
+                        </StackLayout>
+                    </StackLayout>
+                </ScrollView>
+            </Grid>
         </Frame>
     </Grid>
 </tk:Popup>

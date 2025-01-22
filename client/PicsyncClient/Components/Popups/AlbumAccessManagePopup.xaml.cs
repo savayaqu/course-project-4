@@ -10,5 +10,6 @@ public partial class AlbumAccessManagePopup : Popup
 	{
 		InitializeComponent();
 		BindingContext = new AlbumAccessManagePopupViewModel(this, album);
+		// TODO: На винде скролл фиговый
     }
 }

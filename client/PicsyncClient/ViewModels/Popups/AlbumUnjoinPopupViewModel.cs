@@ -32,7 +32,7 @@ public partial class AlbumUnjoinPopupViewModel : ObservableObject
     public bool CanConfirm => !IsBusy;
 
     [RelayCommand]
-    public async void Confirm(CancellationToken token = default)
+    public async Task Confirm(CancellationToken token = default)
     {
         // TODO создание жалобы
 

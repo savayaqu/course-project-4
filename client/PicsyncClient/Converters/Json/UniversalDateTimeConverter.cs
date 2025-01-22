@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Globalization;
 
 namespace PicsyncClient.Converters.Json;
 
@@ -7,16 +8,27 @@ public class UniversalDateTimeConverter : JsonConverter<DateTime?>
 {
     private static readonly string[] Formats =
     [
-        "yyyy-MM-ddTHH:mm:ss.fffZ",
-        "yyyy-MM-ddTHH:mm:ss",
-        "yyyy-MM-dd HH:mm:ss",
-        "yyyy-MM-dd"
+        "yyyy-MM-ddTHH:mm:ss.fffffffzzz", // Пример: 2025-01-20T15:52:35.6397813+07:00
+        "yyyy-MM-ddTHH:mm:ss.fffffffZ",   // Пример: 2025-01-20T15:52:35.6397813Z
+        "yyyy-MM-ddTHH:mm:ss.ffffffzzz",  // Пример: 2025-01-20T15:52:35.639781+07:00
+        "yyyy-MM-ddTHH:mm:ss.ffffffZ",    // Пример: 2025-01-20T15:52:35.639781Z
+        "yyyy-MM-ddTHH:mm:ss.fffffzzz",   // Пример: 2025-01-20T15:52:35.63978+07:00
+        "yyyy-MM-ddTHH:mm:ss.fffffZ",     // Пример: 2025-01-20T15:52:35.63978Z
+        "yyyy-MM-ddTHH:mm:ss.ffffzzz",    // Пример: 2025-01-20T15:52:35.6397+07:00
+        "yyyy-MM-ddTHH:mm:ss.ffffZ",      // Пример: 2025-01-20T15:52:35.6397Z
+        "yyyy-MM-ddTHH:mm:ss.fffzzz",     // Пример: 2025-01-20T15:52:35.639+07:00
+        "yyyy-MM-ddTHH:mm:ss.fffZ",       // Пример: 2025-01-20T15:52:35.639Z
+        "yyyy-MM-ddTHH:mm:sszzz",         // Пример: 2025-01-20T15:52:35+07:00
+        "yyyy-MM-ddTHH:mm:ssZ",           // Пример: 2025-01-20T15:52:35Z
+        "yyyy-MM-ddTHH:mm:ss",            // Пример: 2025-01-20T15:52:35
+        "yyyy-MM-dd HH:mm:ss",            // Пример: 2025-01-20 15:52:35
+        "yyyy-MM-dd"                      // Пример: 2025-01-20
     ];
 
     public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var dateString = reader.GetString();
-        if (DateTime.TryParseExact(dateString, Formats, null, System.Globalization.DateTimeStyles.None, out var date))
+        if (DateTime.TryParseExact(dateString, Formats, null, DateTimeStyles.None, out var date))
             return date;
 
         return null;

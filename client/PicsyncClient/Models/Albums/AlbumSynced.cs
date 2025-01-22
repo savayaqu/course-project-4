@@ -32,7 +32,10 @@ public class AlbumSynced : AlbumRemote, IAlbumLocal
     public string LocalPath { get; set; }
 
     // Геттеры
-    public override int PicturesCount => (LocalPictures?.Count ?? 0) + RemotePicturesCount; // TODO: бред
+    public int TrueRemotePicturesCount => RemotePicturesCount - SyncedPicturesCount;
+    public int  TrueLocalPicturesCount => LocalPictures.OfType<PictureLocal> ().Count();
+    public int     SyncedPicturesCount => LocalPictures.OfType<PictureSynced>().Count();
+    public override int  PicturesCount => TrueLocalPicturesCount + RemotePicturesCount;
 
     private List<string>? _thumbnailPaths = null;
     public override List<string> ThumbnailPaths

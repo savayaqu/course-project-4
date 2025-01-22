@@ -9,27 +9,25 @@
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
+            <tk:IsNullConverter        x:Key="IsNullConverter"/>
             <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
             <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
         </ResourceDictionary>
     </tk:Popup.Resources>
     <Grid>
         <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
-            <Grid RowDefinitions="auto,*,auto" MaximumWidthRequest="350">
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*,auto" >
                 <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
                     <Label Text="Приглашение" FontSize="18" VerticalOptions="Center"/>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
                             Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
                 </Grid>
 
-                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}">
+                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
                     <StackLayout x:Name="InternalContainer" Spacing="5">
-                        <Border Padding="10" Stroke="Red"
+                        <Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
                                 Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                                 IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="6"/>
-                            </Border.StrokeShape>
                             <StackLayout Grid.Column="1" Spacing="5">
                                 <HorizontalStackLayout Spacing="5">
                                     <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
@@ -54,6 +52,32 @@
                             <HorizontalStackLayout>
                                 <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold"/>
                                 <Label Text="{Binding Album.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="16" VerticalOptions="End"/>
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="10">
+                                <HorizontalStackLayout Spacing="4">
+                                    <Image Source="images.png" HorizontalOptions="Center" HeightRequest="16" WidthRequest="16">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="{Binding Album.PicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <HorizontalStackLayout Spacing="4">
+                                    <Image Source="user.png" HorizontalOptions="Center" HeightRequest="16" WidthRequest="16">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding Album.Owner, Converter={StaticResource IsNotNullConverter}}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding Album.Owner.Nickname}"/>
+                                                <Span Text="{Binding Album.Owner.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="12"/>
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                    <Label Text="Вы" IsVisible="{Binding Album.Owner, Converter={StaticResource IsNullConverter}}"/>
+                                </HorizontalStackLayout>
                             </HorizontalStackLayout>
 
                             <CollectionView ItemsSource="{Binding Pictures}" SizeChanged="CollectionView_SizeChanged">

@@ -332,7 +332,7 @@ namespace PicsyncAdmin.ViewModels
                 PicturesCount = albumData.Album.PicturesCount;
                 ComplaintsCount = albumData.Album.ComplaintsCount;
                 AlbumName = albumData.Album.Name;
-                UserName = albumData.Album.User.Name;
+                UserName = albumData.Album.User?.Name ?? "";
                 StatusMessage = ""; // Скрываем статус, если данные загружены
 
                 // Логика работы с картинками

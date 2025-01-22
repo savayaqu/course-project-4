@@ -98,6 +98,7 @@ public partial class AlbumViewModel : ObservableObject
         body.Album.Invitations   ??= [];
 
         remote.Update(body.Album);
+        OnPropertyChanged(nameof(Album));
     }
 
     public bool CanRefresh => !IsBusy;
@@ -419,10 +420,10 @@ public partial class AlbumViewModel : ObservableObject
         await Shell.Current.GoToAsync("..");
         */
 
-        AlbumAccessManagePopup popup = new(remote);
+        AlbumUnjoinPopup popup = new(remote);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
 
-        if (result is bool isExit && !isExit) return;
+        if (result is not bool isExit || !isExit) return;
         await Shell.Current.GoToAsync("..");
     }
 

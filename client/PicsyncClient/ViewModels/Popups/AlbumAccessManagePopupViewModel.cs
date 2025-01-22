@@ -42,6 +42,8 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
 
         if (result is not Invitation invitation) return;
 
+        Debug.WriteLine("InvitationCreate: invitation: " + JsonSerializer.Serialize(invitation));
+
         Invitations.Add(invitation);
         Album.Invitations ??= [];
         Album.Invitations.Add(invitation);
