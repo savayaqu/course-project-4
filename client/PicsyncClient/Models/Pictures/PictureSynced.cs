@@ -9,13 +9,29 @@ namespace PicsyncClient.Models.Pictures;
 public class PictureSynced : PictureRemote, IPictureLocal
 {
     // Конструкторы
+    public PictureSynced(IPictureLocal localPicture, PictureRemote remotePicture, AlbumSynced syncedAlbum)
+    {
+        LocalPath   = localPicture.LocalPath;
+
+        Id          = remotePicture.Id;
+        Name        = remotePicture.Name;
+        Hash        = remotePicture.Hash;
+        Size        = remotePicture.Size;
+        Width       = remotePicture.Width;
+        Height      = remotePicture.Height;
+        UploadedAt  = remotePicture.UploadedAt;
+        Date        = remotePicture.Date;
+
+        Album = syncedAlbum;
+    }
+
     public PictureSynced() { }
 
     // Свойства
     public string LocalPath { get; set; }
 
-    [JsonIgnore]
     [Ignore]
+    [JsonIgnore]
     public new AlbumSynced SpecificAlbum
     {
         get => (AlbumSynced)Album;
@@ -27,15 +43,15 @@ public class PictureSynced : PictureRemote, IPictureLocal
     public override string ThumbnailPath => LocalPath ?? URLs.PictureThumbnail(SpecificAlbum.Id, Id, SpecificAlbum?.Preview?.Signature).ToString();
 
     // Функции
-    public void Update(PictureRemote remotePicture)
+    public void Update(PictureRemote remote)
     {
-        Id          = remotePicture.Id;
-        Name        = remotePicture.Name;
-        Hash        = remotePicture.Hash;
-        Size        = remotePicture.Size;
-        Width       = remotePicture.Width;
-        Height      = remotePicture.Height;
-        UploadedAt  = remotePicture.UploadedAt;
-        Date        = remotePicture.Date;
+        Id          = remote.Id;
+        Name        = remote.Name;
+        Hash        = remote.Hash;
+        Size        = remote.Size;
+        Width       = remote.Width;
+        Height      = remote.Height;
+        UploadedAt  = remote.UploadedAt;
+        Date        = remote.Date;
     }
 }

@@ -114,8 +114,7 @@ class PictureController extends Controller
                 if ($validator->fails()) {
                     $errored[] = [
                         'name'    => $filename,
-                        'message' => 'Validation failed',
-                        'errors'  => $validator->errors()->toArray()['file'],
+                        'message' => $validator->errors()->toArray()['file'],
                     ];
                     continue;
                 }
@@ -166,7 +165,7 @@ class PictureController extends Controller
                 catch (Exception) {
                     $errored[] = [
                         'name' => $filename,
-                        'message' => "No sizes",
+                        'message' => 'No sizes',
                     ];
                     continue;
                 }
@@ -194,7 +193,7 @@ class PictureController extends Controller
                 // Что-то пошло не так
                 $errored[] = [
                     'name' => $filename,
-                    'message' => "Something going wrong",
+                    'message' => 'Something going wrong',
                 ];
             }
         }

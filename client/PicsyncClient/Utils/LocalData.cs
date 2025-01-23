@@ -188,7 +188,7 @@ public static class LocalData
                     };
 
                     // Добавляем картинку в список локальных картинок альбома
-                    album.LocalPictures.Add((PictureLocal)picture);
+                    album.LocalPictures.Add(picture);
 
                     // Добавляем картинку к общему списку локальных картинок
                     Pictures.Add(picture);
@@ -300,7 +300,7 @@ public static class LocalData
 
                     // Добавляем картинку в список локальных картинок альбома
                     stopwatch.Restart();
-                    album.LocalPictures.Add((PictureLocal)picture);
+                    album.LocalPictures.Add(picture);
                     iterationTimes["album.LocalPictures.Add"] = stopwatch.ElapsedTicks * (1_000_000_000 / Stopwatch.Frequency);
 
                     // Добавляем картинку к общему списку локальных картинок

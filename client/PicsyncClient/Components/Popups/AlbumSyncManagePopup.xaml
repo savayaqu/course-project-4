@@ -13,16 +13,16 @@
     </tk:Popup.Resources>
     <Grid>
         <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
-            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*">
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*,auto">
                 <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
                     <Label Text="Синхронизация" FontSize="18" VerticalOptions="Center"/>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
                             Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
                 </Grid>
                 
-                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
+                <!--<ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
                     <StackLayout x:Name="InternalContainer" Spacing="5">
-                        <Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
+                        --><!--<Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
                                 Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                                 IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
                             <StackLayout Grid.Column="1" Spacing="5">
@@ -36,11 +36,35 @@
                                 </HorizontalStackLayout>
                                 <Label Text="{Binding Error}"/>
                             </StackLayout>
-                        </Border>
-
+                        </Border>--><!--
+                        
+                        
+                        <Button Text="Начать ручное" Command="{Binding DesyncCommand}"/>
                         <Button Text="Отменить синхронизацию" Command="{Binding DesyncCommand}" BackgroundColor="{StaticResource Red}"/>
                     </StackLayout>
-                </ScrollView>
+                </ScrollView>-->
+
+                <CollectionView Grid.Row="1" ItemsSource="{Binding Uploads}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame>
+                                <StackLayout>
+                                    <Grid ColumnDefinitions="*,auto">
+                                        <Label Text="{Binding Item.Name}"/>
+                                        <Label Text="{Binding Progress}" Grid.Column="1"/>
+                                    </Grid>
+                                    <ProgressBar Progress="{Binding Progress}"/>
+                                    <Label Text="{Binding Error}" TextColor="Red"/>
+                                </StackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <StackLayout Grid.Row="2" Spacing="5">
+                    <Button Text="Начать ручное" Command="{Binding StartManualSyncCommand}"/>
+                    <Button Text="Отменить синхронизацию" Command="{Binding DesyncCommand}" BackgroundColor="{StaticResource Red}"/>
+                </StackLayout>
             </Grid>
         </Frame>
     </Grid>

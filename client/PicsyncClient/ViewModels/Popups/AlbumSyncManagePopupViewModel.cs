@@ -12,6 +12,8 @@ using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
 using PicsyncClient.Components.Popups;
+using PicsyncClient.Models.Pictures;
+using PicsyncClient.Models;
 
 namespace PicsyncClient.ViewModels.Popups;
 
@@ -24,6 +26,7 @@ public partial class AlbumSyncManagePopupViewModel : ObservableObject
     [ObservableProperty] private string  albumNameNew = "";
     [ObservableProperty] private AlbumSynced album;
     [ObservableProperty] private ObservableCollection<AlbumRemote> albumsRemoteOwn = [];
+    [ObservableProperty] private List<UploadItem<PictureLocal>> uploads = [];
 
     private readonly Popup _popup;
 
@@ -31,6 +34,7 @@ public partial class AlbumSyncManagePopupViewModel : ObservableObject
     {
         _popup = popup;
         Album = album;
+        Uploads = PictureSender.Uploads.Where(up => up.Item.Album == Album).ToList();
     }
 
     [RelayCommand]
@@ -42,6 +46,13 @@ public partial class AlbumSyncManagePopupViewModel : ObservableObject
         if (result is not AlbumLocal local) return;
 
         _popup.Close(local);
+    }
+
+    [RelayCommand]
+    public void StartManualSync()
+    {
+        PictureSender.AddPicturesToQueue(Album.LocalPictures.OfType<PictureLocal>(), Album.Id);
+        Uploads = PictureSender.Uploads.Where(up => up.Item.Album == Album).ToList();
     }
 
     [RelayCommand]
