@@ -114,7 +114,7 @@ class ComplaintController extends Controller
         if ($isExisted)
             throw new ApiException('You are already complain to this picture', 409);
 
-        Complaint::create([
+        $complaint = Complaint::create([
             'picture_id'        => $picture->id,
             'album_id'          => $album->id,
             'description'       => $request->input('description'),
@@ -122,7 +122,7 @@ class ComplaintController extends Controller
             'from_user_id'      => $user->id,
             'about_user_id'     => $album->user_id,
         ]);
-        return response()->json(null, 204);
+        return response()->json(ComplaintResource::make($complaint), 201);
     }
 
     public function storeToAlbum(ComplaintCreateRequest $request, Album $album): JsonResponse
@@ -139,14 +139,14 @@ class ComplaintController extends Controller
         if($isExisted)
             throw new ApiException('You are already complain to this album', 409);
 
-        Complaint::create([
+        $complaint = Complaint::create([
             'album_id'          => $album->id,
             'description'       => $request->input('description'),
             'complaint_type_id' => $request->input('typeId'),
             'from_user_id'      => $user->id,
             'about_user_id'     => $album->user_id,
         ]);
-        return response()->json(null, 204);
+        return response()->json(ComplaintResource::make($complaint), 201);
     }
 
     public function updateBatch(Complaint $complaint, ComplaintUpdateRequest $request): JsonResponse
