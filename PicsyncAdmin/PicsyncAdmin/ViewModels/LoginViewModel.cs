@@ -69,20 +69,27 @@ namespace PicsyncAdmin.ViewModels
                     await Shell.Current.DisplayAlert("Ошибка", "Неправильный логин или пароль", "OK");
                     return;
                 }
+                if(authResponse.User.Role == "admin")
+                {
+                    // Сохраняем пользователя и токен в AuthSession
+                    AuthSession.User = authResponse.User;
+                    AuthSession.Token = authResponse.Token;
+
+                    Debug.WriteLine($"Пользователь: {AuthSession.User}");
+                    Debug.WriteLine($"Токен: {AuthSession.Token}");
+
+                    // Сохраняем в Preferences
+                    Preferences.Set("User", JsonSerializer.Serialize(authResponse.User));
+                    Preferences.Set("Token", authResponse.Token);
+
+                    Debug.WriteLine("Навигация на MainPage...");
+                    await Shell.Current.GoToAsync("//MainPage");
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert("Ошибка", "Доступ запрещен", "OK");
+                }
                 
-                // Сохраняем пользователя и токен в AuthSession
-                AuthSession.User = authResponse.User;
-                AuthSession.Token = authResponse.Token;
-
-                Debug.WriteLine($"Пользователь: {AuthSession.User}");
-                Debug.WriteLine($"Токен: {AuthSession.Token}");
-
-                // Сохраняем в Preferences
-                Preferences.Set("User", JsonSerializer.Serialize(authResponse.User));
-                Preferences.Set("Token", authResponse.Token);
-
-                Debug.WriteLine("Навигация на MainPage...");
-                await Shell.Current.GoToAsync("//MainPage");
             }
             catch (Exception ex)
             {
