@@ -13,15 +13,15 @@ public class PictureRemote : PictureBase
     // Свойства
     [JsonPropertyName("id")] [PrimaryKey] public ulong Id { get; set; }
     [JsonPropertyName("name")] public override string Name { get; set; }
-    [JsonPropertyName("hash")] public override string? Hash { get; set; }
-    [JsonPropertyName("size")] public override ulong? Size { get; set; }
-    [JsonPropertyName("width")] public override int? Width { get; set; }
-    [JsonPropertyName("height")] public override int? Height { get; set; }
+    [JsonPropertyName("hash")] public override string Hash { get; set; }
+    [JsonPropertyName("size")] public override ulong Size { get; set; }
+    [JsonPropertyName("width")] public override int Width { get; set; }
+    [JsonPropertyName("height")] public override int Height { get; set; }
     [JsonPropertyName("uploadedAt")] public DateTime? UploadedAt { get; set; }
 
     [JsonPropertyName("date")]
     [JsonConverter(typeof(UniversalDateTimeConverter))]
-    public override DateTime? Date { get; set; }
+    public override DateTime Date { get; set; }
 
     [Ignore]
     [JsonIgnore]

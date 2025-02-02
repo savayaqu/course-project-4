@@ -5,9 +5,9 @@ namespace PicsyncClient.Views;
 
 public partial class ViewerPage : ContentPage
 {
-	public ViewerPage(Models.Pictures.IPicture picture)
+	public ViewerPage(Models.Pictures.IPicture picture, AlbumViewModel? albumViewModel = null)
 	{
 		InitializeComponent();
-        BindingContext = new ViewerViewModel(picture);
+        BindingContext = new ViewerViewModel(picture, albumViewModel);
     }
 }

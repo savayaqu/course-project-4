@@ -4,7 +4,7 @@
           xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
           xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
           xmlns:cv="clr-namespace:PicsyncClient.Converters"
-          x:Class="PicsyncClient.Components.Popups.AlbumSyncManagePopup"
+          x:Class="PicsyncClient.Components.Popups.GeneralSyncManagePopup"
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
@@ -22,13 +22,13 @@
                 <Grid ColumnDefinitions="*,auto">
                     <StackLayout>
                         <Label Text="Синхронизация" FontSize="18" VerticalOptions="Center"/>
-                        <Label Text="На фоне идёт синхронизация" FontSize="12" TextColor="Gray" IsVisible="{Binding IsUploading}"/>
+                        <Label Text="На фоне идёт синхронизация" FontSize="12" TextColor="Gray" IsVisible="{Binding Sender.IsUploading}"/>
                     </StackLayout>
                     <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
                             Padding="8" VerticalOptions="Start" Command="{Binding CloseCommand}"/>
                 </Grid>
 
-                <CollectionView Grid.Row="1" ItemsSource="{Binding UploadsObject.Uploads}">
+                <CollectionView Grid.Row="1" IsGrouped="True" ItemsSource="{Binding UploadsGroups}">
                     <CollectionView.Header>
                         <BoxView BackgroundColor="Transparent" HeightRequest="5"/>
                     </CollectionView.Header>
@@ -38,6 +38,25 @@
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
                     </CollectionView.ItemsLayout>
+                    <CollectionView.GroupHeaderTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="*,5,auto">
+                                <Label Text="{Binding Key.Album.Name}"/>
+                                <Label Grid.Column="2">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Key.UploadedCount}" FontSize="16" FontAttributes="Bold"/>
+                                            <Span Text="/"/>
+                                            <Span Text="{Binding Key.TotalCount}"/>
+                                            <Span Text=" (" TextColor="Gray"/>
+                                            <Span Text="{Binding Key.TotalBytes, Converter={StaticResource BytesToHumanConverter}}" TextColor="Gray"/>
+                                            <Span Text=")" TextColor="Gray"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.GroupHeaderTemplate>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Frame Padding="10">
@@ -61,47 +80,48 @@
                 </CollectionView>
 
                 <StackLayout Grid.Row="2" Spacing="5">
-                    <StackLayout IsVisible="{Binding UploadsObject, Converter={StaticResource IsNotNullConverter}}" Spacing="5">
+                    <StackLayout Spacing="5" IsVisible="{Binding ManageIsVisible}">
                         <Grid ColumnDefinitions="auto,*,auto">
                             <Label>
                                 <Label.FormattedText>
                                     <FormattedString>
-                                        <Span Text="{Binding UploadsObject.UploadedCount}" FontSize="16" FontAttributes="Bold"/>
+                                        <Span Text="{Binding Sender.UploadedCount}" FontSize="16" FontAttributes="Bold"/>
                                         <Span Text="/"/>
-                                        <Span Text="{Binding UploadsObject.TotalCount}"/>
+                                        <Span Text="{Binding Sender.TotalCount}"/>
                                         <Span Text=" (" TextColor="Gray"/>
-                                        <Span Text="{Binding UploadsObject.TotalBytes, Converter={StaticResource BytesToHumanConverter}}" TextColor="Gray"/>
+                                        <Span Text="{Binding Sender.UploadedBytes, Converter={StaticResource BytesToHumanConverter}}" TextColor="Gray"/>
+                                        <Span Text="/" TextColor="Gray"/>
+                                        <Span Text="{Binding Sender.TotalBytes, Converter={StaticResource BytesToHumanConverter}}" TextColor="Gray"/>
                                         <Span Text=")" TextColor="Gray"/>
                                     </FormattedString>
                                 </Label.FormattedText>
                             </Label>
-                            <Label Grid.Column="2" Text="{Binding UploadsObject.Progress, Converter={StaticResource ToPercentConverter}}"/>
+                            <Label Grid.Column="2" Text="{Binding Sender.Progress, Converter={StaticResource ToPercentConverter}}"/>
                         </Grid>
-                        <ProgressBar Progress="{Binding UploadsObject.Progress}"/>
+                        <ProgressBar Progress="{Binding Sender.Progress}"/>
                         <Label Grid.Column="2" HorizontalOptions="Center">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="осталось: " TextColor="Gray"/>
-                                    <Span Text="{Binding UploadsObject.ETA, Converter={StaticResource TimeSpanConverter}}"/>
+                                    <Span Text="{Binding Sender.ETA, Converter={StaticResource TimeSpanConverter}}"/>
                                     <Span Text=" ("/>
-                                    <Span Text="{Binding UploadsObject.AverageSpeed, Converter={StaticResource BytesToHumanConverter}}"/>
+                                    <Span Text="{Binding Sender.AverageSpeed, Converter={StaticResource BytesToHumanConverter}}"/>
                                     <Span Text="/c)"/>
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
                         <Button Text="Очистить" Command="{Binding StopOrCancelUploadCommand}">
                             <Button.Triggers>
-                                <DataTrigger TargetType="Button" Binding="{Binding IsUploading}" Value="True">
+                                <DataTrigger TargetType="Button" Binding="{Binding Sender.IsUploading}" Value="True">
                                     <Setter Property="Text" Value="Остановить"/>
                                     <Setter Property="BackgroundColor" Value="{StaticResource Red}"/>
                                 </DataTrigger>
                             </Button.Triggers>
                         </Button>
                     </StackLayout>
-                    
+
                     <StackLayout IsVisible="{Binding IsUploading, Converter={StaticResource InvertedBoolConverter}}" Spacing="5">
-                        <Button Text="Начать ручное" Command="{Binding StartManualSyncCommand}" IsVisible="{Binding UploadsObject, Converter={StaticResource IsNullConverter}}"/>
-                        <Button Text="Десинхронизировать" Command="{Binding DesyncCommand}" BackgroundColor="{StaticResource Red}"/>
+                        <Button Text="Начать ручное" Command="{Binding StartManualSyncCommand}"/>
                     </StackLayout>
                 </StackLayout>
             </Grid>

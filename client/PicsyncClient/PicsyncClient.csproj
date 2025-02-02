@@ -38,6 +38,10 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" />
@@ -95,6 +99,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Components\Popups\GeneralSyncManagePopup.xaml.cs">
+	    <DependentUpon>GeneralSyncManagePopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Components\Popups\InvitationPreviewPopup.xaml.cs">
 	    <DependentUpon>InvitationPreviewPopup.xaml</DependentUpon>
 	  </Compile>
@@ -125,6 +132,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Components\Popups\GeneralSyncManagePopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Components\Popups\InvitationPreviewPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

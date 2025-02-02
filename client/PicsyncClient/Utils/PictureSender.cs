@@ -8,82 +8,164 @@ using static PicsyncClient.Utils.LocalDB;
 using PicsyncClient.Models.Pictures;
 using System.Collections.Concurrent;
 using PicsyncClient.Models;
-using System.IO;
+using CommunityToolkit.Mvvm.ComponentModel;
+using System.Threading;
+using System.Collections.Specialized;
 using System;
 
 namespace PicsyncClient.Utils;
 
-public static class PictureSender
+public partial class PictureSender : ObservableObject
 {
-    private readonly static ConcurrentQueue<UploadItem<PictureLocal>> _uploadQueue = [];
-    private static bool _isUploading = false;
+    public static readonly PictureSender Default = new();
 
-    public readonly static ObservableCollection<UploadItem<PictureLocal>> Uploads = [];
+    public ObservableCollection<UploadsAlbum> UploadsAlbums { get; } = [];
 
-    public static void AddPicturesToQueue(IEnumerable<PictureLocal> pictures, ulong? albumId = null)
+    private CancellationTokenSource? _cts;
+
+    [ObservableProperty]
+    private bool isUploading = false;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Progress))]
+    public int uploadedCount = 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(RemainingBytes))]
+    [NotifyPropertyChangedFor(nameof(AverageSpeed))]
+    [NotifyPropertyChangedFor(nameof(ETA))]
+    public ulong uploadedBytes = 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(AverageSpeed))]
+    [NotifyPropertyChangedFor(nameof(ETA))]
+    public TimeSpan timeSpent = TimeSpan.Zero;
+
+    public double Progress => (double)UploadedCount / TotalCount;
+
+    public int TotalCount => UploadsAlbums.Aggregate(0, (sum, uplAlb) => sum + uplAlb.Uploads.Count);
+
+    public ulong TotalBytes => UploadsAlbums
+        .SelectMany(a => a.Uploads)
+        .Aggregate(0UL, (sum, u) => sum + u.Item.Size);
+
+    public ulong RemainingBytes => TotalBytes - UploadedBytes;
+
+    public ulong AverageSpeed => (ulong)(UploadedBytes / TimeSpent.TotalSeconds);
+
+    public TimeSpan ETA => AverageSpeed == 0 
+        ? TimeSpan.Zero 
+        : TimeSpan.FromSeconds((double)RemainingBytes / AverageSpeed);
+
+    private void OnUploadsChanged()
     {
-        foreach (var picture in pictures)
-        {
-            Debug.WriteLine("AddPicturesToQueue: picture: " + JsonSerializer.Serialize(picture));
-            if (albumId == null || picture.Album is not AlbumSynced)
-            {
-                Debug.WriteLine("Необходимо задать удалённый альбом для отправки!");
-                continue;
-            }
-
-            UploadItem<PictureLocal> uploadItem = new(picture);
-
-            _uploadQueue.Enqueue(uploadItem);
-            Uploads.Add(uploadItem);
-        }
-
-        StartUploadIfNotActive();
+        OnPropertyChanged(nameof(TotalCount));
+        OnPropertyChanged(nameof(TotalBytes));
+        OnPropertyChanged(nameof(Progress));
+        OnPropertyChanged(nameof(RemainingBytes));
+        OnPropertyChanged(nameof(ETA));
     }
 
-    private static void StartUploadIfNotActive()
+    public void AllManualAlbumUpload()
     {
-        Debug.WriteLine("StartUploadIfNotActive: " + _isUploading);
-        if (_isUploading) return;
+        var albums = LocalData.Albums.OfType<AlbumSynced>().ToList();
+
+        foreach (var album in albums)
+        {
+            if (album.LocalPictures.OfType<PictureLocal>().Any())
+                ManualAlbumUpload(album);
+        }
+    }
+
+    public UploadsAlbum ManualAlbumUpload(AlbumSynced album)
+    {
+        var uploadsAlbum = UploadsAlbums.Where(uplAlb => uplAlb.Album == album).FirstOrDefault();
+
+        if (uploadsAlbum == null)
+        {
+            uploadsAlbum = new(album, true);
+            UploadsAlbums.Add(uploadsAlbum);
+            OnUploadsChanged();
+            return uploadsAlbum;
+        }
+
+        var pictures = album.LocalPictures.OfType<PictureLocal>().ToList();
+        foreach (var picture in pictures)
+        {
+            if (uploadsAlbum.UploadQueue.Where(uplPic => uplPic.Item == picture).Any())
+                continue;
+
+            UploadItem<PictureLocal> uploadItem = new(picture);
+            uploadsAlbum.Uploads.Add(uploadItem);
+            uploadsAlbum.UploadQueue.Enqueue(uploadItem);
+        }
+        OnUploadsChanged();
+        return uploadsAlbum;
+    }
+
+    public void StartUploadIfNotActive()
+    {
+        Debug.WriteLine("StartUploadIfNotActive: IsUploading: " + IsUploading);
+        if (IsUploading) return;
 
         _ = ProcessUploadQueueAsync();
     }
 
-    private static async Task ProcessUploadQueueAsync()
+    private async Task ProcessUploadQueueAsync()
     {
-        _isUploading = true;
+        IsUploading = true;
+        _cts = new CancellationTokenSource();
 
         Debug.WriteLine("ProcessUploadQueueAsync: START");
 
-        while (_uploadQueue.TryDequeue(out var uploadItem))
+        foreach (var uploadsAlbum in UploadsAlbums)
         {
-            Debug.WriteLine("ProcessUploadQueueAsync: TryDequeue: " + JsonSerializer.Serialize(uploadItem));
-            await UploadPictureAsync(uploadItem);
-            Debug.WriteLine("ProcessUploadQueueAsync: TryDequeue: END");
+            if (_cts.Token.IsCancellationRequested)
+                break;
+
+            while (uploadsAlbum.UploadQueue.TryDequeue(out var uploadItem))
+            {
+
+                Debug.WriteLine("ProcessUploadQueueAsync: TryDequeue: " + JsonSerializer.Serialize(uploadItem));
+
+                await UploadPictureAsync(uploadItem, uploadsAlbum);
+
+                Debug.WriteLine("ProcessUploadQueueAsync: TryDequeue: END");
+
+                if (_cts.Token.IsCancellationRequested)
+                    break;
+            }
         }
 
         Debug.WriteLine("ProcessUploadQueueAsync: END");
 
-        _isUploading = false;
+        IsUploading = false;
+
+        _cts.Dispose();
+        _cts = null;
     }
 
-    public static async Task<bool?> UploadPictureAsync(
+    public void StopUpload()
+    {
+        _cts?.Cancel();
+        IsUploading = false;
+    }
+
+    public void ClearQueue()
+    {
+        StopUpload();
+        UploadedCount = 0;
+        UploadedBytes = 0;
+        UploadsAlbums.Clear();
+        OnUploadsChanged();
+    }
+
+    public async Task<bool?> UploadPictureAsync(
         UploadItem<PictureLocal> uploadedPicture, 
-        ulong? albumId = null, 
-        CancellationToken token = default
+        UploadsAlbum uploadsAlbum
     ) {
         var localPicture = uploadedPicture.Item;
-        AlbumSynced? syncedAlbum = null;
-
-        if (albumId == null)
-        {
-            if (localPicture.Album is not AlbumSynced album)
-            {
-                Debug.WriteLine("Необходимо задать удалённый альбом для отправки!");
-                return default;
-            }
-            syncedAlbum = album;
-            albumId = album.Id;
-        }
+        AlbumSynced syncedAlbum = uploadsAlbum.Album;
 
         ProgressStreamContent streamContent = new(File.OpenRead(localPicture.LocalPath));
         streamContent.ProgressChanged += (bytes, currBytes, totalBytes) => 
@@ -106,28 +188,37 @@ public static class PictureSender
 
         string? error = null;
 
+        var startedAt = DateTime.Now;
+        uploadedPicture.StartedAt = DateTime.Now;
+
         (var res, var body) = await FetchAsync<PicturesSendResponse>(
-            HttpMethod.Post, 
-            URLs.AlbumPictures((ulong)albumId),
+            HttpMethod.Post,
+            URLs.AlbumPictures(syncedAlbum.Id),
             setError: e => error = e,
             body: content,
-            cancellationToken: token
+            cancellationToken: _cts?.Token ?? CancellationToken.None
         );
-        
+
+        var currentTimeSpent = DateTime.Now - startedAt; // TODO: ожидание сервера игнорировать
+
+        TimeSpent += currentTimeSpent;
+        UploadedCount++;
+        UploadedBytes += uploadedPicture.Item.Size;
+        uploadsAlbum.UploadedCount++;
+        uploadedPicture.Progress = 1;
+        uploadedPicture.TimeSpent = currentTimeSpent;
+
         if (body?.Successful?.Count > 0)
         {
             var remotePicture = body.Successful[0];
 
-            uploadedPicture.Progress = 1;
-            if (syncedAlbum != null)
-            {
-                PictureSynced syncedPicture = new(localPicture, remotePicture, syncedAlbum);
-                LocalData.Pictures.Remove(localPicture);
+            PictureSynced syncedPicture = new(localPicture, remotePicture, syncedAlbum);
 
-                syncedAlbum.LocalPictures.Remove(syncedPicture);
-                syncedAlbum.LocalPictures.Add(syncedPicture);
-                DB.Insert(syncedPicture);
-            }
+            LocalData.       Pictures.ReplaceOrAdd(localPicture, syncedPicture);
+            syncedAlbum.LocalPictures.ReplaceOrAdd(localPicture, syncedPicture);
+
+            DB.Insert(syncedPicture);
+
             return true;
         }
         else if (body?.Errored?.Count > 0)
@@ -135,17 +226,55 @@ public static class PictureSender
             var errorPart = body.Errored[0];
 
             uploadedPicture.Error = errorPart.Message;
-            if (syncedAlbum != null && errorPart.Picture != null)
-            {
-                // TODO: а если две картинки с одним и тем же хешем?
-                PictureSynced syncedPicture = new(localPicture, errorPart.Picture, syncedAlbum);
-                LocalData.Pictures.Remove(localPicture);
 
-                syncedAlbum.LocalPictures.Remove(syncedPicture);
-                syncedAlbum.LocalPictures.Add(syncedPicture);
-                DB.Insert(syncedPicture);
+            if (errorPart.Picture == null) return false;
+
+            // TODO: а если две картинки с одним и тем же хешем?
+
+
+            var syncedAlready = DB
+                .Table<PictureSynced>()
+                .Where(p => 
+                    (p.Id == errorPart.Picture.Id) ||
+                    (p.Hash == errorPart.Picture.Hash)
+                )
+                .FirstOrDefault();
+
+            if (syncedAlready != null)
+            {
+                bool isDuplica = syncedAlbum.LocalPictures
+                    .OfType<PictureSynced>()
+                    .Where(p => p.Hash == errorPart.Picture.Hash)
+                    .Any();
+
+                if (isDuplica)
+                {
+                    DB.Insert(new PictureDuplica(localPicture.LocalPath));
+                    LocalData.       Pictures.Remove(localPicture);
+                    syncedAlbum.LocalPictures.Remove(localPicture);
+                    return false;
+                }
+
+                syncedAlready.Album = syncedAlbum;
+                syncedAlready.Update(localPicture);
+                syncedAlready.Update(errorPart.Picture);
+                
+                LocalData.       Pictures.ReplaceOrAdd(localPicture, syncedAlready);
+                syncedAlbum.LocalPictures.ReplaceOrAdd(localPicture, syncedAlready);
+
+                DB.Update(syncedAlready);
+
                 return true;
             }
+
+            PictureSynced syncedPicture = new(localPicture, errorPart.Picture, syncedAlbum);
+
+            LocalData.       Pictures.ReplaceOrAdd(localPicture, syncedPicture);
+            syncedAlbum.LocalPictures.ReplaceOrAdd(localPicture, syncedPicture);
+
+            DB.Insert(syncedPicture);
+
+            return true;
         }
         else
         {

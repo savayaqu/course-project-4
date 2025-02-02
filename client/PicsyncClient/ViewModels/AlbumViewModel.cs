@@ -106,6 +106,8 @@ public partial class AlbumViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanRefresh))]
     public async Task Refresh()
     {
+        OnPropertyChanged(nameof(Album));
+        PicturesGroups.Clear();
         LocalOffset  = 0;
         RemoteOffset = 0;
         LastRemotePicturesPage = null;
@@ -120,26 +122,26 @@ public partial class AlbumViewModel : ObservableObject
             if (IsBusy) return false;
             if (Album is AlbumSynced albumSynced)
             {
-                Debug.WriteLine($"CanLoadMoreCheck: {LastRemotePicturesPage == null ||
-                    albumSynced.RemotePicturesCount > RemoteOffset ||
-                    albumSynced.LocalPictures.Count > LocalOffset } = \n" +
-                    $"LastRemotePicturesPage == null {LastRemotePicturesPage == null} ||\n" +
-                    $"albumSynced.RemotePicturesCount {albumSynced.RemotePicturesCount} > RemoteOffset {RemoteOffset} ||\n" +
-                    $"albumLocal .LocalPictures.Count {albumSynced.LocalPictures.Count} > LocalOffset {  LocalOffset}");
+                //Debug.WriteLine($"CanLoadMoreCheck: {LastRemotePicturesPage == null ||
+                //    albumSynced.RemotePicturesCount > RemoteOffset ||
+                //    albumSynced.LocalPictures.Count > LocalOffset } = " +
+                //    $"LastRemotePicturesPage == null {LastRemotePicturesPage == null} || " +
+                //    $"albumSynced.RemotePicturesCount {albumSynced.RemotePicturesCount} > RemoteOffset {RemoteOffset} || " +
+                //    $"albumLocal .LocalPictures.Count {albumSynced.LocalPictures.Count} > LocalOffset {  LocalOffset}");
                 if (LastRemotePicturesPage == null ||
                     albumSynced.RemotePicturesCount > RemoteOffset || 
                     albumSynced.LocalPictures.Count > LocalOffset) return true;
             }
             else if (Album is AlbumLocal albumLocal)
             {
-                Debug.WriteLine($"CanLoadMoreCheck: {albumLocal.LocalPictures.Count > LocalOffset} = " +
-                    $"albumLocal.LocalPictures.Count {albumLocal.LocalPictures.Count} > LocalOffset {LocalOffset}");
+                //Debug.WriteLine($"CanLoadMoreCheck: {albumLocal.LocalPictures.Count > LocalOffset} = " +
+                //    $"albumLocal.LocalPictures.Count {albumLocal.LocalPictures.Count} > LocalOffset {LocalOffset}");
                 return albumLocal.LocalPictures.Count > LocalOffset;
             }
             else if (Album is AlbumRemote albumRemote)
             {
-                Debug.WriteLine($"CanLoadMoreCheck: {albumRemote.RemotePicturesCount > RemoteOffset} = " +
-                    $"albumRemote.RemotePicturesCount {albumRemote.RemotePicturesCount} > RemoteOffset {RemoteOffset}");
+                //Debug.WriteLine($"CanLoadMoreCheck: {albumRemote.RemotePicturesCount > RemoteOffset} = " +
+                //    $"albumRemote.RemotePicturesCount {albumRemote.RemotePicturesCount} > RemoteOffset {RemoteOffset}");
                 return albumRemote.RemotePicturesCount > RemoteOffset;
             }
             return false;
@@ -151,8 +153,8 @@ public partial class AlbumViewModel : ObservableObject
     {
         try
         {
-            Debug.WriteLine($"=========== LoadMore {IsBusy} ============\nOffset / Total:\n" +
-                ((Album is IAlbumLocal local) ? $"[local_] {LocalOffset}/{local.LocalPictures.Count}\n" : "") +
+            Debug.WriteLine($"=========== LoadMore (IsBusy: {IsBusy}) ============\nOffset / Total:\n" +
+                ((Album is IAlbumLocal local ) ? $"[local_] {LocalOffset }/{local .LocalPictures.Count}\n" : "") +
                 ((Album is AlbumRemote remote) ? $"[remote] {RemoteOffset}/{remote.RemotePicturesCount}\n" : ""));
 
             if (!CanLoadMore) return;
@@ -163,6 +165,13 @@ public partial class AlbumViewModel : ObservableObject
             if (Album is AlbumSynced albumSynced)
             {
                 // TODO: хочется отображать сразу локальные картинки, не дожидаясь 
+
+                Debug.WriteLine("local of album: " + JsonSerializer.Serialize(albumSynced.LocalPictures));
+                Debug.WriteLine("\n");
+                //Debug.WriteLine("synced only: " + JsonSerializer.Serialize(albumSynced.LocalPictures.OfType<PictureSynced>()));
+
+                var syncedPictures = albumSynced.LocalPictures
+                    .OfType<PictureSynced>();
 
                 piece = new(PageSize);
                 while (piece.Count < PageSize)
@@ -208,6 +217,7 @@ public partial class AlbumViewModel : ObservableObject
 
                                 LastRemotePicturesPage = picturesPage;
                             }
+                            Debug.WriteLine("return from server: " + JsonSerializer.Serialize(picturesPage));
                         }
                         if (RemoteOffset < albumSynced.RemotePicturesCount)
                             remotePicture = LastRemotePicturesPage?.Pictures[RemoteOffset - PageSize * (RemoteOffset / PageSize)];
@@ -216,15 +226,15 @@ public partial class AlbumViewModel : ObservableObject
                     // Проверяем, существует ли локальная копия удалённой картинки
                     if (remotePicture != null)
                     {
-                        var syncedPicture = albumSynced.LocalPictures
-                            .OfType<PictureSynced>()
-                            .FirstOrDefault(l => l.Id == remotePicture.Id);
+                        var syncedPicture = syncedPictures.FirstOrDefault(l => l.Id == remotePicture.Id);
 
                         if (syncedPicture != null)
                         {
+                            Debug.WriteLine("finded synced of remote picture: " + JsonSerializer.Serialize(syncedPicture));
                             syncedPicture.Update(remotePicture);
                             DB.Update(syncedPicture);
                             remotePicture = null;
+                            RemoteOffset++;
                         }
                     }
 
@@ -235,11 +245,13 @@ public partial class AlbumViewModel : ObservableObject
                         {
                             LocalOffset++;
                             piece.Add(localPicture);
+                            Debug.WriteLine($"Add: /{localPicture.Name}");
                         }
                         else
                         {
                             RemoteOffset++;
                             piece.Add(remotePicture);
+                            Debug.WriteLine($"Add: #{remotePicture.Id}:{remotePicture.Name}");
                         }
                     }
                     else
@@ -248,6 +260,7 @@ public partial class AlbumViewModel : ObservableObject
                         {
                             LocalOffset++;
                             piece.Add(localPicture);
+                            Debug.WriteLine($"Add: /{localPicture.Name}");
                         }
                         else
                         {
@@ -307,13 +320,15 @@ public partial class AlbumViewModel : ObservableObject
                 throw new NotImplementedException();
             }
 
+            Debug.WriteLine("piece: " + JsonSerializer.Serialize(piece));
+
             //Debug.WriteLine($"FirstInPage: {piece?[0]?.Name}");
 
             //MainThread.BeginInvokeOnMainThread(() =>
             //{
             foreach (var picture in piece)
             {
-                string? currGroupTitle = picture.Date?.ToString("MMMM, yyyy");
+                string? currGroupTitle = picture.Date.ToString("MMMM, yyyy");
                 string? lastGroupTitle = null;
         
                 int lastGroupIndex = PicturesGroups.Count - 1;
@@ -449,8 +464,8 @@ public partial class AlbumViewModel : ObservableObject
 
 
     [RelayCommand]
-    private async void OpenViewer(Models.Pictures.IPicture picture)
+    private async Task OpenViewer(Models.Pictures.IPicture picture)
     {
-        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture), false);
+        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture, this), false);
     }
 }

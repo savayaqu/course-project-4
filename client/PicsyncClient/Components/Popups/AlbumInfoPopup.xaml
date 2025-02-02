@@ -103,7 +103,7 @@
                                 <Label Grid.Column="2" Text="{Binding Album.CreatedAt}"/>
                             </Grid>
 
-                            <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsRemote}">
+                            <Grid ColumnDefinitions="75,10,*">
                                 <Label Text="Картинок" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
                                 <StackLayout Grid.Column="2" Spacing="3">
                                     <Label>

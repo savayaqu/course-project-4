@@ -23,4 +23,12 @@ public partial class LoginPage : ContentPage
         if (BindingContext is LoginViewModel vm)
             vm.TryLoginCommand.Execute(null);
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is LoginViewModel vm)
+            vm.Update();
+    }
 }

@@ -1,5 +1,6 @@
 using PicsyncClient.Utils;
 using PicsyncClient.ViewModels;
+using System.Diagnostics;
 
 namespace PicsyncClient.Views;
 
@@ -24,12 +25,26 @@ public partial class AlbumsPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+
+        if (BindingContext is not AlbumsViewModel viewModel)
+        {
+            Debug.WriteLine("Почему-то не тот BindingContext в AlbumsPage");
+#if DEBUG
+            throw new Exception("Почему-то не тот BindingContext в AlbumsPage");
+#else
+            return;
+#endif
+        }
+
         var newUserId = AuthData.User?.Id;
 
-        if (userId == newUserId ||
-            BindingContext is not AlbumsViewModel viewModel) return;
+        if (userId != newUserId)
+        {
+            userId = newUserId;
+            viewModel.Reset();
+            return;
+        }
 
-        userId = newUserId;
-        viewModel.Reset();
+        //viewModel.LightUpdate(); // TODO: Clear статичных списков и переназначение списков во ViewModel жрёт производительность на переотображение превью
     }
 }

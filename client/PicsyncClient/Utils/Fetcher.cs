@@ -1,4 +1,5 @@
 ﻿using PicsyncClient.Models.Response;
+using System;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Threading;
@@ -7,9 +8,9 @@ namespace PicsyncClient.Utils;
 
 public static class Fetcher
 {
-    private readonly static HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(5) };
+    private readonly static HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(30) };
 
-    public static async Task<HttpResponseMessage> FetchAsync(
+    public static async Task<HttpResponseMessage?> FetchAsync(
         HttpMethod method,
         dynamic path,
         Action<bool>? setIsFetch = null,
@@ -66,6 +67,9 @@ public static class Fetcher
             // Запрашиваем
             var response = await _httpClient.SendAsync(request, cancellationToken);
 
+            Debug.WriteLine($"FETCH: SendAsync: {(int)response.StatusCode} ({response.ReasonPhrase})\n"
+                + (await response.Content.ReadAsStringAsync(cancellationToken)));
+
             // Обрабатываем ответ
             if (!response.IsSuccessStatusCode)
             {
@@ -78,7 +82,7 @@ public static class Fetcher
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine("Fetcher: responseJsonErr: " + ex.Message);
+                    Debug.WriteLine("FETCH: responseJsonErr: " + ex.Message);
                     setError?.Invoke($"Пришёл плохой ответ {(int)response.StatusCode} ({response.ReasonPhrase})");
                     //setError?.Invoke("Не удалось прочитать ошибку"); // TODO: FIXME: удалить setError
                 }
@@ -86,22 +90,24 @@ public static class Fetcher
             setIsFetch?.Invoke(false);
             return response;
         }
-        catch (TaskCanceledException)
+        catch (TaskCanceledException ex)
         {
             setIsFetch?.Invoke(false);
             setError?.Invoke("Время ожидания вышло");
-            return new();
+            Debug.WriteLine($"FETCH: TaskCanceledException: {ex.Message}");
+            return null;
         }
         catch (HttpRequestException ex)
         {
             setIsFetch?.Invoke(false);
             string message = ex.Message == "Connection failure" ? "Не удалось установить соединение с сервером" : ex.Message;
+            Debug.WriteLine($"FETCH: HttpRequestException: {message}");
             setError?.Invoke(message);
-            return new();
+            return null;
         }
     }
 
-    public static async Task<(HttpResponseMessage, T?)> FetchAsync<T>(
+    public static async Task<(HttpResponseMessage?, T?)> FetchAsync<T>(
         HttpMethod method,
         dynamic path,
         Action<bool>? setIsFetch = null,
@@ -112,8 +118,11 @@ public static class Fetcher
     ) {
         HttpResponseMessage response = await FetchAsync(method, path, setIsFetch, setError, body, serialize, cancellationToken);
 
+        if (response == null)
+            return (default, default);
+
         if (!response.IsSuccessStatusCode)
-            return (response, default(T));
+            return (response, default);
 
         try
         {
@@ -127,7 +136,7 @@ public static class Fetcher
             if (response.IsSuccessStatusCode)
                 setError?.Invoke($"Не удалось прочитать тело успешного ответа\n{ex.Message}");
 
-            return (response, default(T));
+            return (response, default);
         }
     }
 }

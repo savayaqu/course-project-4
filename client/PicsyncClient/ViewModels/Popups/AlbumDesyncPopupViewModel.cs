@@ -11,6 +11,8 @@ using System.Diagnostics;
 using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
+using PicsyncClient.Models.Pictures;
+using Microsoft.Maui.Graphics;
 
 namespace PicsyncClient.ViewModels.Popups;
 
@@ -50,6 +52,19 @@ public partial class AlbumDesyncPopupViewModel : ObservableObject
             );
 
             if (Error != null) return;
+        }
+
+        var syncedPictures = AlbumForDesync.LocalPictures.OfType<PictureSynced>().ToList();
+
+        foreach (var syncedPicture in syncedPictures)
+        {
+            PictureLocal localPicture = new(syncedPicture);
+
+            DB.Delete(syncedPicture);
+
+            AlbumForDesync.LocalPictures.ReplaceOrAdd(syncedPicture, localPicture);
+
+            LocalData.Pictures.ReplaceOrAdd(syncedPicture, localPicture);
         }
 
         DB.Delete(AlbumForDesync);

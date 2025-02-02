@@ -1,18 +1,37 @@
 using PicsyncClient.Models.Albums;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace PicsyncClient.Models.Pictures;
 
 public class PictureLocal : PictureBase, IPictureLocal
 {
+    // Конструкторы
+    [SetsRequiredMembers]
+    public PictureLocal(IPictureLocal localPicture) : this()
+    {
+        LocalPath = localPicture.LocalPath;
+        Album     = localPicture.Album;
+
+        Name   = localPicture.Name;
+        Hash   = localPicture.Hash;
+        Size   = localPicture.Size;
+        Width  = localPicture.Width;
+        Height = localPicture.Height;
+        Date   = localPicture.Date;
+    }
+
+    public PictureLocal() { }
+
     // Свойства
     public override string Name => Path.GetFileName(LocalPath);
-    public required string LocalPath { get; set; }
+    public string LocalPath { get; set; }
 
     [JsonIgnore]
-    public AlbumLocal SpecificAlbum
+    public IAlbumLocal SpecificAlbum
     {
-        get => (AlbumLocal)Album;
+        get => (IAlbumLocal)Album;
         set => Album = value;
     }
 

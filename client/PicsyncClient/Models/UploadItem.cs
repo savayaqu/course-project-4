@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
 
 namespace PicsyncClient.Models;
 
@@ -16,6 +15,12 @@ public partial class UploadItem<TItem>() : ObservableObject
 
     [ObservableProperty]
     public string? error;
+
+    [ObservableProperty]
+    public DateTime? startedAt;
+
+    [ObservableProperty]
+    public TimeSpan? timeSpent;
 
     [ObservableProperty]
     public double  progress  = 0;

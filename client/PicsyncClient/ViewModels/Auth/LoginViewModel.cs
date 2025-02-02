@@ -4,6 +4,7 @@ using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
 using System.Net;
+using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 
 namespace PicsyncClient.ViewModels.Auth;
@@ -64,7 +65,7 @@ public partial class LoginViewModel : ObservableObject
             }
             else if (body?.Token == null || body?.User == null)
             {
-                Error = "Ошибка сервера: " + "Не пришли данные";
+                Error = "Ошибка сервера: " + "Не пришли данные " + await res.Content.ReadAsStringAsync();
                 return;
             }
             Password = "";
@@ -86,5 +87,9 @@ public partial class LoginViewModel : ObservableObject
         Debug.WriteLine("RESPONSE: " + JsonSerializer.Serialize(res));
         Debug.WriteLine("CONTENT: " + JsonSerializer.Serialize(await res.Content.ReadAsStringAsync()));
         */
+    }
+    public void Update()
+    {
+        OnPropertyChanged(nameof(Url));
     }
 }

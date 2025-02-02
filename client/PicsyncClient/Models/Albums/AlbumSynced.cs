@@ -12,8 +12,9 @@ public class AlbumSynced : AlbumRemote, IAlbumLocal
     [SetsRequiredMembers]
     public AlbumSynced(IAlbumLocal local, AlbumRemote remote)
     {
-        Id   = remote.Id;
-        Name = remote.Name;
+        Id        = remote.Id;
+        Name      = remote.Name;
+        CreatedAt = remote.CreatedAt;
 
         LocalPath        = local.LocalPath;
         LocalPictures    = local.LocalPictures;

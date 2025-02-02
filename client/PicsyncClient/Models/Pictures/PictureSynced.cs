@@ -54,4 +54,8 @@ public class PictureSynced : PictureRemote, IPictureLocal
         UploadedAt  = remote.UploadedAt;
         Date        = remote.Date;
     }
+    public void Update(IPictureLocal local)
+    {
+        LocalPath = local.LocalPath;
+    }
 }

@@ -9,5 +9,5 @@ public class User
     [JsonPropertyName("login"   )] public string?         Login    { get; set; }
     [JsonPropertyName("password")] public string?         Password { get; set; }
     [JsonPropertyName("name"    )] public required string Nickname { get; set; }
-    [JsonPropertyName("role"    )] public RoleEnum        Role     { get; set; } = RoleEnum.User;
+    [JsonPropertyName("role"    )] public string?         Role     { get; set; } = "user";
 }

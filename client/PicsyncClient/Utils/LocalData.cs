@@ -5,6 +5,8 @@ using static PicsyncClient.Utils.LocalDB;
 using System.Diagnostics;
 using System.Text;
 using System.Collections.ObjectModel;
+using PicsyncClient.Models;
+
 #if ANDROID
 using Android;
 using Android.OS;
@@ -173,8 +175,11 @@ public static class LocalData
                     IPictureLocal? picture = null;
 
                     // Ищем в локальной БД есть ли картинка как синхронизированная
-                    if (isInSync)
+                    if (isInSync) 
+                    {
                         picture = DB.Table<PictureSynced>().FirstOrDefault(p => p.LocalPath == picturePath);
+                        picture.Album = album;
+                    }
 
                     // Создаём новый объект альбома если в БД нет, т.е. ещё не синхронизирована
                     picture ??= new PictureLocal()
@@ -277,8 +282,17 @@ public static class LocalData
                     // Ищем в локальной БД есть ли картинка как синхронизированная
                     if (isInSync)
                     {
+                        var duplica = DB.Table<PictureDuplica>().FirstOrDefault(p => p.Path == picturePath);
+                        if (duplica != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"LocalData: ИСКЛЮЧЕНО: {picturePath}");
+                            continue;
+                        }
+
                         stopwatch.Restart();
                         picture = DB.Table<PictureSynced>().FirstOrDefault(p => p.LocalPath == picturePath);
+                        if (picture != null)
+                            picture.Album = album;
                         iterationTimes["DB.Table<PictureSynced>.FirstOrDefault"] = stopwatch.ElapsedTicks * (1_000_000_000 / Stopwatch.Frequency);
                     }
 

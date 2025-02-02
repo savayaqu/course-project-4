@@ -19,14 +19,9 @@ namespace PicsyncClient.ViewModels.Popups;
 
 public partial class AlbumSyncManagePopupViewModel : ObservableObject
 {
-    [ObservableProperty] private bool    isBusy = false;
-    [ObservableProperty] private bool    albumsListIsVisible = false;
     [ObservableProperty] private string? error;
-    [ObservableProperty] private string  albumNameDefault = "";
-    [ObservableProperty] private string  albumNameNew = "";
-    [ObservableProperty] private AlbumSynced album;
-    [ObservableProperty] private ObservableCollection<AlbumRemote> albumsRemoteOwn = [];
-    [ObservableProperty] private List<UploadItem<PictureLocal>> uploads = [];
+    [ObservableProperty] private AlbumSynced   album;
+    [ObservableProperty] private UploadsAlbum? uploadsObject = null;
 
     private readonly Popup _popup;
 
@@ -34,12 +29,29 @@ public partial class AlbumSyncManagePopupViewModel : ObservableObject
     {
         _popup = popup;
         Album = album;
-        Uploads = PictureSender.Uploads.Where(up => up.Item.Album == Album).ToList();
+        UploadsObject = PictureSender.Default.UploadsAlbums.Where(up => up.Album == Album).FirstOrDefault();
+
+        PictureSender.Default.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == "IsUploading")
+                OnPropertyChanged(nameof(IsUploading));
+        };
     }
+
+    public bool IsUploading => PictureSender.Default.IsUploading;
 
     [RelayCommand]
     public async Task Desync()
     {
+        if (IsUploading)
+            PictureSender.Default.StopUpload();
+
+        if (UploadsObject != null)
+        {
+            PictureSender.Default.UploadsAlbums.Remove(UploadsObject);
+            UploadsObject = null;
+        }
+
         AlbumDesyncPopup popup = new(Album);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
 
@@ -51,12 +63,28 @@ public partial class AlbumSyncManagePopupViewModel : ObservableObject
     [RelayCommand]
     public void StartManualSync()
     {
-        PictureSender.AddPicturesToQueue(Album.LocalPictures.OfType<PictureLocal>(), Album.Id);
-        Uploads = PictureSender.Uploads.Where(up => up.Item.Album == Album).ToList();
+        UploadsObject = PictureSender.Default.ManualAlbumUpload(Album);
+        PictureSender.Default.StartUploadIfNotActive();
     }
 
     [RelayCommand]
-    public void Cancel()
+    public void StopOrCancelUpload()
+    {
+        if (IsUploading)
+        {
+            PictureSender.Default.StopUpload();
+            return;
+        }
+
+        if (UploadsObject != null)
+        {
+            PictureSender.Default.UploadsAlbums.Remove(UploadsObject);
+            UploadsObject = null;
+        }
+    }
+
+    [RelayCommand]
+    public void Close()
     {
         _popup.Close();
     }

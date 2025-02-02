@@ -96,8 +96,7 @@ public partial class AlbumsViewModel : ObservableObject
 
             AlbumsLocal.Add(localAlbum);
 
-            LocalData.Albums.Remove(nonSynced);
-            LocalData.Albums.Add(localAlbum);
+            LocalData.Albums.ReplaceOrAdd(nonSynced, localAlbum);
 
             DB.Delete(nonSynced);
         }
@@ -171,6 +170,18 @@ public partial class AlbumsViewModel : ObservableObject
         return true;
     }
 
+    [RelayCommand]
+    public void LightUpdate()
+    {
+        if (HasPermissions)
+        {
+            AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
+            AlbumsSynced = new(LocalData.Albums.OfType<AlbumSynced>().ToList());
+        }
+
+        AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
+    }
+
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanRequestRemote))]
@@ -187,20 +198,13 @@ public partial class AlbumsViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(CanRequestRemote), IncludeCancelCommand = true)]
     public async Task RequestRemoteAlbums(CancellationToken token = default)
     {
-        (var res, var body) = await FetchAsync<AlbumsResponse>(
-            HttpMethod.Get, URLs.Albums,
-            isFetch => IsFetch = isFetch,
-            error   => Error   = error,
+        await RemoteAlbumsData.FillAlbums(
+            setIsFetch: f => IsFetch = f,
+            setError: e => Error = e,
             cancellationToken: token
         );
-        if (body == null)
-        {
-            Debug.WriteLine($"RequestRemoteAlbums: body empty\n{JsonSerializer.Serialize(res)}");
-            //throw new HttpRequestException("Нужный ответ не пришёл");
-            return;
-        }
 
-        AlbumsRemote = new(body.Own.Concat(body.Accessible));
+        AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
         Debug.WriteLine(AlbumsRemote[0]?.ThumbnailPaths[0]);
     }
 

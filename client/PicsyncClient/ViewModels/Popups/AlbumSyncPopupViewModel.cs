@@ -96,9 +96,13 @@ public partial class AlbumSyncPopupViewModel : ObservableObject
         }
 
         AlbumSynced syncedAlbum = new(AlbumForSync, remoteAlbum);
+
         RemoteAlbumsData.AlbumsOwn.Remove(remoteAlbum);
-        LocalData.Albums.Remove(AlbumForSync);
-        LocalData.Albums.Add(syncedAlbum);
+        LocalData.Albums.ReplaceOrAdd(AlbumForSync, syncedAlbum);
+
+        foreach (var picture in syncedAlbum.LocalPictures)
+            picture.Album = syncedAlbum;
+
         DB.Insert(syncedAlbum);
 
         _popup.Close(syncedAlbum);

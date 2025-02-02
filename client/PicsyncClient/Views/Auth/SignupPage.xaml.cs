@@ -22,4 +22,12 @@ public partial class SignupPage : ContentPage
         if (BindingContext is SignupViewModel vm)
             vm.TrySignupCommand.Execute(null);
     }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (BindingContext is SignupViewModel vm)
+            vm.Update();
+    }
 }

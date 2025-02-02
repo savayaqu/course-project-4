@@ -11,3 +11,13 @@ public class ItemsGroup<T> : ObservableCollection<T>
         Title = title;
     }
 }
+
+public class ItemsKeyGroup<TKey, TItem> : ObservableCollection<TItem>
+{
+    public TKey Key{ get; set; }
+
+    public ItemsKeyGroup(TKey key, ObservableCollection<TItem> items) : base(items)
+    {
+        Key = key;
+    }
+}

@@ -134,9 +134,9 @@ public partial class InvitationPreviewPopupViewModel : ObservableObject
     }
 
 
-    [RelayCommand]
-    private async void OpenViewer(Models.Pictures.IPicture picture)
-    {
-        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture), false);
-    }
+    //[RelayCommand]
+    //private async void OpenViewer(Models.Pictures.IPicture picture)
+    //{
+    //    await Shell.Current.Navigation.PushAsync(new ViewerPage(picture, this), false);
+    //}
 }

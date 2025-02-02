@@ -101,7 +101,7 @@ public static class URLs
 
         string str = $"{PictureInfo(albumId, pictureId)}/thumb/{orient}{size}{signatureString}";
 
-        Debug.WriteLine($"URLs: PictureThumbnail: {str}");
+        //Debug.WriteLine($"URLs: PictureThumbnail: {str}");
         return new(str);
     }
 }

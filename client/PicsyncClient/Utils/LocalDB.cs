@@ -19,6 +19,7 @@ public static class LocalDB
             _db = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "local.db"));
             _db.CreateTable<AlbumSynced>();
             _db.CreateTable<PictureSynced>();
+            _db.CreateTable<PictureDuplica>();
             return _db;
         }
     }

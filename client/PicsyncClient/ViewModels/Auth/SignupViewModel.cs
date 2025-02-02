@@ -117,4 +117,9 @@ public partial class SignupViewModel : ObservableObject
         Password != "" &&
         PasswordConfirm != "" &&
         !IsFetch;
+
+    public void Update()
+    {
+        OnPropertyChanged(nameof(Url));
+    }
 }
