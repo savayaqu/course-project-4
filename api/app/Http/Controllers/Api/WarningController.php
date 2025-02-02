@@ -32,5 +32,4 @@ class WarningController extends Controller
         $warning->delete();
         return response()->json(null, 204);
     }
-
 }

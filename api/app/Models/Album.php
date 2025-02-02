@@ -7,12 +7,14 @@ use Illuminate\Support\Facades\Hash;
 
 class Album extends Model
 {
+    // Поля
     protected $fillable = [
         'name',
         'path',
         'user_id',
     ];
 
+    // Функции
     public static function getPathStatic($userId, $albumId): string {
         return "albums/$userId/$albumId";
     }
@@ -41,6 +43,7 @@ class Album extends Model
         return $user->id .'_'. $signCode;
     }
 
+    // Связи
     public function user() {
         return $this->belongsTo(User::class);
     }

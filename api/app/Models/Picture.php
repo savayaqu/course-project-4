@@ -4,6 +4,7 @@ namespace App\Models;
 
 class Picture extends Model
 {
+    // Поля
     protected $fillable = [
         'name',
         'hash',
@@ -14,6 +15,7 @@ class Picture extends Model
         'album_id',
     ];
 
+    // Функции
     public static function getPathStatic($userId, $albumId, $name = null): string {
         return Album::getPathStatic($userId, $albumId) . "/" . $name ?? "";
     }
@@ -37,6 +39,7 @@ class Picture extends Model
             ->firstOrFailCustom();
     }
 
+    // Связи
     public function album() {
         return $this->belongsTo(Album::class);
     }

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-
 class ComplaintType extends Model
 {
     protected $fillable = ['name'];

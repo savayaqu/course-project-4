@@ -21,6 +21,7 @@ class User extends Model implements
 {
     use HasFactory, Notifiable, HasApiTokens, Authenticatable, Authorizable, CanResetPassword, MustVerifyEmail;
 
+    // Поля
     protected $fillable = [
         'name',
         'login',
@@ -29,15 +30,18 @@ class User extends Model implements
         'is_banned',
     ];
 
+    // Скрытые
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    // Установка по умолчанию
     protected $attributes = [
         'is_banned' => false,
     ];
 
+    // Модификация полей
     protected function casts(): array
     {
         return [
@@ -46,6 +50,15 @@ class User extends Model implements
         ];
     }
 
+    // Функции
+    public function ban()
+    {
+        AlbumAccess::whereIn('album_id', $this->albums()->pluck('id'))->delete();
+        Complaint::where('about_user_id', $this->id)->update(['status' => 1]);
+        $this->tokens()->delete();
+    }
+
+    // Связи
     public function role() {
         return $this->belongsTo(Role::class);
     }
@@ -59,12 +72,6 @@ class User extends Model implements
             'user_id',
             'album_id'
         );
-    }
-    public function ban()
-    {
-        AlbumAccess::whereIn('album_id', $this->albums()->pluck('id'))->delete();
-        Complaint::where('about_user_id', $this->id)->update(['status' => 1]);
-        $this->tokens()->delete();
     }
     public function complaintsFrom() {
         return $this->hasMany(Complaint::class, 'from_user_id');

@@ -6,6 +6,7 @@ use App\Exceptions\Api\ApiException;
 
 class Invitation extends Model
 {
+    // Поля
     protected $fillable = [
         'link',
         'expires_at',
@@ -13,6 +14,7 @@ class Invitation extends Model
         'join_limit',
     ];
 
+    // Функции
     public function getRouteKeyName() {
         return 'link';
     }
@@ -31,6 +33,7 @@ class Invitation extends Model
         throw new ApiException('Invitation expired', 409);
     }
 
+    // Связи
     public function album() {
         return $this->belongsTo(Album::class);
     }

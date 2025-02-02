@@ -4,6 +4,7 @@ namespace App\Models;
 
 class Complaint extends Model
 {
+    // Поля
     protected $fillable = [
         'description',
         'complaint_type_id',
@@ -14,6 +15,7 @@ class Complaint extends Model
         'status',
     ];
 
+    // Связи
     public function type() {
         return $this->belongsTo(ComplaintType::class, 'complaint_type_id');
     }

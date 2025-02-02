@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Api\ComplaintType;
 
 use App\Http\Requests\Api\ApiRequest;
-use Illuminate\Foundation\Http\FormRequest;
 
 class ComplaintTypeUpdateRequest extends ApiRequest
 {

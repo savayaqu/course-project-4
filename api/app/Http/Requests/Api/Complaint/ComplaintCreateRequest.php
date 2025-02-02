@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\Complaint;
 
 use App\Http\Requests\Api\ApiRequest;
+
 class ComplaintCreateRequest extends ApiRequest
 {
     public function rules(): array
