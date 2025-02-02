@@ -120,6 +120,6 @@ class AlbumController extends Controller
     {
         Storage::deleteDirectory($album->getPath());
         $album->delete();
-        return response()->json(['message' => 'Album deleted']);
+        return response()->json(null, 204);
     }
 }

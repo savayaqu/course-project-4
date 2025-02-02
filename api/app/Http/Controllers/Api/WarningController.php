@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Warning\WarningCreateRequest;
 use App\Http\Resources\WarningResource;
 use App\Models\User;
 use App\Models\Warning;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class WarningController extends Controller
 {
-    public function store(Request $request, User $user): JsonResponse
+    public function store(WarningCreateRequest $request, User $user): JsonResponse
     {
         if(Warning::where('user_id', $user->id)->count() >= config('settings.warning_limit_for_ban'))
         {
