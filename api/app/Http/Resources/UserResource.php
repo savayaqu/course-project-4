@@ -15,28 +15,26 @@ class UserResource extends JsonResource
         return [
             'id'    => $this->id,
             'name'  => $this->name,
-            'isBanned' => when($isAdmin, fn() => $this->is_banned),
+            $this->mergeWhen($isAdmin, [
+                'isBanned' => $this->is_banned,
+                'complaintsAboutCount' => $this->whenCounted('complaintsAbout', fn($count) =>
+                    $this->when($count, $count)
+                ),
+                'complaintsAboutAcceptedCount' => $this->whenCounted('complaintsAbout', fn() =>
+                    $this->complaintsAbout()->where('status', 1)->count()
+                ),
+                'complaintsAbout' => $this->whenLoaded ('complaintsAbout', fn() =>
+                    $this->when($this->complaintsAbout->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsAbout))
+                ),
+            ]),
             $this->mergeWhen($isThis || $isAdmin, [
                 'login' => $this->login,
                 'role'  => $this->whenLoaded('role', fn() =>
                     $this->when($this->role->code !== 'user', $this->role->code)
                 ),
-                $this->mergeWhen($isAdmin, [
-                    'complaintsAboutCount' => $this->whenCounted('complaintsAbout', fn($count) =>
-                        $this->when($count, $count)
-                    ),
-                    'complaintsAboutAcceptedCount' => $this->whenCounted('complaintsAbout', fn() =>
-                        $this->complaintsAbout()->where('status', 1)->count()
-                    ),
-                    'complaintsAbout'      => $this->whenLoaded ('complaintsAbout', fn() =>
-                        $this->when($this->complaintsAbout->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsAbout))
-                    ),
-                ]),
-                'complaintsFromCount' => $this->whenCounted('complaintsFrom', fn($count) =>
-                    $this->when($count, $count)
-                ),
-                'complaintsFromAcceptedCount' => $this->whenCounted('complaintsFrom', $this->complaintsFrom()->where('status', 1)->count()),
-                'complaintsFrom'      => $this->whenLoaded ('complaintsFrom', fn() =>
+                'complaintsFromCount'         => $this->whenCounted('complaintsFrom', fn($count) => $this->when($count, $count)),
+                'complaintsFromAcceptedCount' => $this->whenCounted('complaintsFrom', fn() => $this->complaintsFrom()->where('status', 1)->count()),
+                'complaintsFrom'              => $this->whenLoaded ('complaintsFrom', fn() =>
                     $this->when($this->complaintsFrom->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsFrom))
                 ),
                 'warningsCount' => $this->whenCounted('warnings', fn($count) => $this->when($count, $count)),
