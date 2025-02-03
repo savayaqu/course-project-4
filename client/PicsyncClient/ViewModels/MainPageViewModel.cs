@@ -19,11 +19,11 @@ namespace PicsyncClient.ViewModels;
 
 public partial class MainPageViewModel : ObservableObject
 {
-    //[ObservableProperty]
-    //private bool isBusy = false;
-
     [ObservableProperty]
     private string? error;
+
+    [ObservableProperty]
+    bool hasSynced = false;
 
     [ObservableProperty]
     private ObservableCollection<ItemsGroup<IPictureLocal>> picturesGroups = [];
@@ -50,7 +50,8 @@ public partial class MainPageViewModel : ObservableObject
     {
         await RequestLocalAlbums();
 
-        if (!AlbumsSynced.Any()) return;
+        HasSynced = AlbumsSynced.Any();
+        if (!HasSynced) return;
 
         PicturesGroups.Clear();
         PicturesCursors = null;
@@ -70,6 +71,24 @@ public partial class MainPageViewModel : ObservableObject
 
     [ObservableProperty]
     private bool hasPermissions = false;
+
+
+    [RelayCommand]
+    public async Task GoToAlbums()
+    {
+        try
+        {
+            HasPermissions = await LocalData.RequestPermissions();
+            if (HasPermissions)
+                _ = Shell.Current.GoToAsync("//Albums");
+            else
+                _ = Shell.Current.DisplayAlert("Ошибка", "Вы должны дать разрешение на просмотр локальных картинок", "OK");
+        }
+        catch (PlatformNotSupportedException ex)
+        {
+            _ = Shell.Current.DisplayAlert("Ошибка", ex.Message, "OK");
+        }
+    }
 
     public async Task RequestLocalAlbums()
     {
