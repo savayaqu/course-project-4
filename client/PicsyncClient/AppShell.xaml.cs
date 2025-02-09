@@ -15,6 +15,17 @@ public partial class AppShell : Shell
 
     public AppShell()
     {
+        InitializeComponent();
+
+        Debug.WriteLine($"ServerData.Url {ServerData.Url}, AuthData.Token {AuthData.Token}");
+
+        if (ServerData.Url == null)
+            GoToAsync("//ServerSelector");
+        else if (AuthData.Token == null)
+            GoToAsync("//Login");
+        else
+            GoToAsync("//Main");
+
         /*
         bool isPhone = DeviceInfo.Idiom == DeviceIdiom.Phone;
 
@@ -63,16 +74,5 @@ public partial class AppShell : Shell
                 Items.Add(flyoutItem);
             }
         }*/
-
-        InitializeComponent();
-
-        Debug.WriteLine($"ServerData.Url {ServerData.Url}, AuthData.Token {AuthData.Token}");
-
-        if (ServerData.Url == null)
-            GoToAsync("//ServerSelector");
-        else if (AuthData.Token == null)
-            GoToAsync("//Login");
-        else
-            GoToAsync("//Main");
     }
 }

@@ -110,15 +110,17 @@ public static class ServerData
                 mes => error = mes,
                 cancellationToken: cancellationToken
             );
+            if (res == null)
+                throw new Exception(error ?? "Сервер не ответил");
+
             if (!res.IsSuccessStatusCode)
-                throw new Exception($"Пришёл плохой код ({(int)res.StatusCode} {res.ReasonPhrase})" +
-                    (error != null ? $"\n{error}" : ""));
+                throw new Exception(error ?? $"Пришёл плохой код ({(int)res.StatusCode} {res.ReasonPhrase})");
 
             if (error != null)
                 throw new Exception(error);
 
             if (body == null)
-                throw new Exception($"Пришёл не тот ответ");
+                throw new Exception($"Пришёл не тот ответ, возможно сервер не является экземпляром PicSync");
 
             Url = url;
             Settings = body.Settings;

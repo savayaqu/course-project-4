@@ -4,7 +4,6 @@ using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
 using System.Net;
-using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 
 namespace PicsyncClient.ViewModels.Auth;
@@ -48,37 +47,33 @@ public partial class LoginViewModel : ObservableObject
             (var res, var body) = await FetchAsync<AuthResponse>(
                 HttpMethod.Post, "login",
                 isFetch => IsFetch = isFetch,
-                error   => Error   = error,
+                error => Error = error,
                 credentials,
                 serialize: true
             );
 
+            if (res == null)
+                throw new Exception(Error ?? "Сервер не ответил");
+
             if (res.StatusCode == HttpStatusCode.Unauthorized)
-            {
-                Error = "Неправильный логин и/или пароль";
-                return;
-            }
-            else if (!res.IsSuccessStatusCode)
-            {
-                Error = "Ошибка сервера: " + Error;
-                return;
-            }
-            else if (body?.Token == null || body?.User == null)
-            {
-                Error = "Ошибка сервера: " + "Не пришли данные " + await res.Content.ReadAsStringAsync();
-                return;
-            }
+                throw new Exception("Неправильный логин и/или пароль");
+
+            if (!res.IsSuccessStatusCode)
+                throw new Exception(Error ?? $"Пришёл плохой код ({(int)res.StatusCode} {res.ReasonPhrase})");
+
+            if (Error != null)
+                throw new Exception(Error);
+
+            if (body?.Token == null || body?.User == null)
+                throw new Exception("Ошибка сервера: не пришли нужные данные\n" 
+                    + await res.Content.ReadAsStringAsync());
+
             Password = "";
             AuthData.SaveAndNavigate(body.Token, body.User);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            Error = ex.Message switch
-            {
-                "Connection failure" => "Нет соединения с сервером",
-                _ => ex.Message,
-            };
-            return;
+            Error = ex.Message;
         }
 
         /*

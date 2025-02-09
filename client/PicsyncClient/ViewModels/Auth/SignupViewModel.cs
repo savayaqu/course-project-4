@@ -4,6 +4,7 @@ using PicsyncClient.Models.Request;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
 using System.Diagnostics;
+using System.Net;
 using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 
@@ -74,40 +75,34 @@ public partial class SignupViewModel : ObservableObject
                 serialize: true
             );
 
-            if (res.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
+            if (res == null)
+                throw new Exception(Error ?? "Сервер не ответил");
+
+            if (res.StatusCode == HttpStatusCode.UnprocessableEntity)
             {
-                try
-                {
-                    Error = "Ошибка валидации данных";
-                    var errorJson = await res.Content.ReadAsStringAsync();
-                    Debug.WriteLine("ERRJSON: " + errorJson);
-                    BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
-                }
-                catch {}
-                return;
+                var errorJson = await res.Content.ReadAsStringAsync();
+                Debug.WriteLine("ERRJSON: " + errorJson);
+                BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
+                throw new Exception("Ошибка валидации данных");
             }
-            else if (!res.IsSuccessStatusCode)
-            {
-                Error = "Ошибка сервера: " + Error;
-                return;
-            }
-            else if (body?.Token == null || body?.User == null)
-            {
-                Error = "Ошибка сервера: " + "Не пришли данные";
-                return;
-            }
+
+            if (!res.IsSuccessStatusCode)
+                throw new Exception(Error ?? $"Пришёл плохой код ({(int)res.StatusCode} {res.ReasonPhrase})");
+
+            if (Error != null)
+                throw new Exception(Error);
+
+            if (body?.Token == null || body?.User == null)
+                throw new Exception("Ошибка сервера: не пришли нужные данные\n"
+                    + await res.Content.ReadAsStringAsync());
+
             Password = "";
             PasswordConfirm = "";
             AuthData.SaveAndNavigate(body.Token, body.User);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            Error = ex.Message switch
-            {
-                "Connection failure" => "Нет соединения с сервером",
-                _ => ex.Message,
-            };
-            return;
+            Error = ex.Message;
         }
     }
 
