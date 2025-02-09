@@ -3,13 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
              xmlns:local="clr-namespace:PicsyncAdmin.Converters"
-             xmlns:pinch="clr-namespace:Bertuzzi.MAUI.PinchZoomImage"
+             xmlns:pinch="clr-namespace:PicsyncAdmin.Components"
              x:Class="PicsyncAdmin.Views.UserContentPage"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Title="Контент пользователя">
-    <Page.Behaviors>
-        
-    </Page.Behaviors>
     <ContentPage.Resources>
         <ResourceDictionary>
             <local:InverseBooleanConverter x:Key="InverseBooleanConverter" />
@@ -21,14 +18,11 @@
             <VerticalStackLayout Spacing="10" Padding="20">
                 <Button Text="Создать предупреждение" Command="{Binding IssueWarningCommand}" />
                 <Button Text="Забанить" Command="{Binding BlockUserCommand}" />
-
                 <Label Text="{Binding AlbumName, StringFormat='Изображения альбома: {0}'}"  FontSize="Subtitle" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
                 <Label Text="{Binding UserName, StringFormat='Владелец альбома: {0}'}" FontSize="Subtitle" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
                 <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб на альбом: {0}'}" FontSize="Subtitle" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
                 <Label Text="{Binding PicturesCount, StringFormat='Изображений в альбоме: {0}'}" FontSize="Subtitle" IsVisible="{Binding IsFetch, Converter={StaticResource InverseBooleanConverter}}" />
-
                 <Label Text="{Binding StatusMessage}" FontSize="Medium" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding IsFetch}" />
-
                 <!-- Коллекция изображений -->
                 <CollectionView ItemsSource="{Binding AlbumPictures}" x:Name="ImageCollection">
                     <CollectionView.ItemsLayout>
@@ -43,7 +37,6 @@
                                         <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type vm:UserContentViewModel}}, Path=ViewImageCommand}" CommandParameter="{Binding .}" />
                                     </Image.GestureRecognizers>
                                 </Image>
-
                                 <!-- Оверлей с счетчиком жалоб -->
                                 <Label Text="{Binding ComplaintCount}" 
                                        TextColor="White" 
@@ -65,11 +58,9 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
-
                 <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadDataCommand}" />
             </VerticalStackLayout>
         </ScrollView>
-
         <!-- Полноэкранный режим -->
         <Grid IsVisible="{Binding IsFullScreenVisible}" BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
             <Grid  ZIndex="2" IsVisible="{Binding AreControlsVisible}">
@@ -83,7 +74,6 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-
                 <!-- Верхняя панель -->
                 <StackLayout ZIndex="1" Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="3" Spacing="10" BackgroundColor="{AppThemeBinding Light='#96FFFFFF', Dark='#96000000'}">
                     <ImageButton Source="arrow_left.png"
@@ -92,14 +82,11 @@
                          Padding="5"
                          BackgroundColor="Transparent" 
                          Margin="10"/>
-
                     <Label Text="{Binding CurrentPicture.Name}" 
                    HorizontalOptions="CenterAndExpand" 
                    VerticalOptions="Center" 
                    FontSize="Medium" 
-                   LineBreakMode="TailTruncation" 
-/>
-
+                   LineBreakMode="TailTruncation"/>
                     <ImageButton Source="trash.png"
                          Command="{Binding DeleteImageCommand}"
                          HorizontalOptions="End"
@@ -107,7 +94,6 @@
                          BackgroundColor="Transparent"
                          Margin="10"/>
                 </StackLayout>
-
                 <!-- Кнопка "Влево" -->
                 <ImageButton Source="chevron_left.png"
                      Command="{Binding PreviousImageCommand}"
@@ -117,7 +103,6 @@
                      Padding="5"
                      BackgroundColor="{AppThemeBinding Light='#96FFFFFF', Dark='#96000000'}" 
                      CornerRadius="50"/>
-
                 <!-- Кнопка "Вправо" -->
                 <ImageButton Source="chevron_right.png"
                      Command="{Binding NextImageCommand}"
@@ -134,7 +119,6 @@
                     <Image Source="{Binding CurrentPicture.OriginalPath}" Aspect = "AspectFit"/>
                 </pinch:PinchZoom>
             </Grid>
-           
         </Grid>
     </Grid>
 </ContentPage>

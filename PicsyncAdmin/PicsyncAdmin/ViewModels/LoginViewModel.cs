@@ -10,15 +10,10 @@ namespace PicsyncAdmin.ViewModels
 {
     public partial class LoginViewModel : ObservableObject
     {
-        [ObservableProperty]
-        private string? login;
-
-        [ObservableProperty]
-        private string? password;
-        [ObservableProperty]
-        private string? error;
-        [ObservableProperty]
-        private string? selectedServer = AuthSession.SelectedUrl;
+        [ObservableProperty] private string? login;
+        [ObservableProperty] private string? password;
+        [ObservableProperty] private string? error;
+        [ObservableProperty] private string? selectedServer = AuthSession.SelectedUrl;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(TryLoginCommand))]
@@ -45,9 +40,7 @@ namespace PicsyncAdmin.ViewModels
                 await Shell.Current.DisplayAlert("Ошибка", "Введите логин и пароль", "OK");
                 return;
             }
-
             IsFetch = true;
-
             try
             {
                 var loginData = new { login = Login, password = Password };
@@ -74,27 +67,19 @@ namespace PicsyncAdmin.ViewModels
                     // Сохраняем пользователя и токен в AuthSession
                     AuthSession.User = authResponse.User;
                     AuthSession.Token = authResponse.Token;
-
-                    Debug.WriteLine($"Пользователь: {AuthSession.User}");
-                    Debug.WriteLine($"Токен: {AuthSession.Token}");
-
                     // Сохраняем в Preferences
                     Preferences.Set("User", JsonSerializer.Serialize(authResponse.User));
                     Preferences.Set("Token", authResponse.Token);
-
-                    Debug.WriteLine("Навигация на MainPage...");
                     await Shell.Current.GoToAsync("//MainPage");
                 }
                 else
                 {
                     await Shell.Current.DisplayAlert("Ошибка", "Доступ запрещен", "OK");
                 }
-                
             }
             catch (Exception ex)
             {
                 await Shell.Current.DisplayAlert("Ошибка", $"Что-то пошло не так: {ex.Message}", "OK");
-                Debug.WriteLine($"Неизвестная ошибка: {ex}");
             }
         }
     }

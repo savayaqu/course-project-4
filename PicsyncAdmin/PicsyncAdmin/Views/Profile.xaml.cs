@@ -11,7 +11,6 @@ public partial class Profile : ContentPage
 	{
 		InitializeComponent();
         BindingContext = new ProfileViewModel();
-
     }
     protected override void OnAppearing()
     {

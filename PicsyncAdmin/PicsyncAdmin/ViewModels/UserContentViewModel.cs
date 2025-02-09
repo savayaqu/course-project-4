@@ -9,7 +9,6 @@ using System.Diagnostics;
 
 namespace PicsyncAdmin.ViewModels
 {
-    //TODO: в разметке расположить красиво кнопки и инфу
     public partial class UserContentViewModel : ObservableObject
     {
         public static UserContentViewModel? Instance { get; private set; }
@@ -24,23 +23,16 @@ namespace PicsyncAdmin.ViewModels
             _ = LoadData();
         }
 
-        [ObservableProperty]
-        private ObservableCollection<Picture> albumPictures = new();
-
-        [ObservableProperty]
-        private bool isFullScreenVisible;
-
-        [ObservableProperty]
-        private bool areControlsVisible = true;
-        [ObservableProperty]
-        private Picture? currentPicture;
+        [ObservableProperty] private ObservableCollection<Picture> albumPictures = new();
+        [ObservableProperty] private bool isFullScreenVisible;
+        [ObservableProperty] private bool areControlsVisible = true;
+        [ObservableProperty] private Picture? currentPicture;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(NextImageCommand))]
         [NotifyCanExecuteChangedFor(nameof(PreviousImageCommand))]
         private int currentIndex;
         private bool CanLoadData() => !IsFetch;
-
         public bool CanGoToPrevious() => CurrentIndex > 0;
         public bool CanGoToNext() => CurrentIndex < PicturesCount - 1;
 
@@ -48,44 +40,38 @@ namespace PicsyncAdmin.ViewModels
         [NotifyCanExecuteChangedFor(nameof(LoadDataCommand))]
         private bool isFetch = false;
 
-        [ObservableProperty]
-        private string statusMessage;
-
-        [ObservableProperty]
-        private bool canLoadMore = false;
-
-        [ObservableProperty]
-        private int currentPage = 1;
-        [ObservableProperty]
-        private int complaintCount;
-
-        [ObservableProperty]
-        private string? mainImagePath;
-
-        [ObservableProperty]
-        private bool isMainImageVisible;
+        [ObservableProperty] private string statusMessage;
+        [ObservableProperty] private bool canLoadMore = false;
+        [ObservableProperty] private int currentPage = 1;
+        [ObservableProperty] private int complaintCount;
+        [ObservableProperty] private string? mainImagePath;
+        [ObservableProperty] private bool isMainImageVisible;
 
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(NextImageCommand))]
         private int picturesCount;
 
-        [ObservableProperty]
-        private int complaintsCount;
-
-        [ObservableProperty]
-        private string albumName;
-
-        [ObservableProperty]
-        private string userName;
+        [ObservableProperty] private int complaintsCount;
+        [ObservableProperty] private string albumName;
+        [ObservableProperty] private string userName;
 
         [RelayCommand]
         public async Task IssueWarning()
         {
             string comment = await Shell.Current.DisplayPromptAsync("Создание предупреждения", "Комментарий");
 
-            var warningResponse = await Fetch.DoAsync(HttpMethod.Post, $"/users/{Album.User.Id}/warnings", setError: msg => Debug.WriteLine(msg), body: new { comment = comment }, serialize: true);
+            var warningResponse = await Fetch.DoAsync(
+                HttpMethod.Post,
+                $"/users/{Album.User.Id}/warnings",
+                setError: msg => Debug.WriteLine(msg),
+                body: new { comment = comment },
+                serialize: true);
 
-            var complaintResponse = await Fetch.DoAsync(HttpMethod.Post, $"/complaints/{Album.User.Id}", setError: msg => Debug.WriteLine(msg), body: new { status = 1 }, serialize: true);
+            var complaintResponse = await Fetch.DoAsync(HttpMethod.Post,
+                $"/complaints/{Album.User.Id}",
+                setError: msg => Debug.WriteLine(msg),
+                body: new { status = 1 },
+                serialize: true);
 
             if (warningResponse.IsSuccessStatusCode && complaintResponse.IsSuccessStatusCode)
             {
@@ -109,7 +95,10 @@ namespace PicsyncAdmin.ViewModels
 
             if (!result) return;
 
-            var response = await Fetch.DoAsync(HttpMethod.Delete, $"/albums/{Album.Id}", setError: msg => Debug.WriteLine(msg));
+            var response = await Fetch.DoAsync(
+                HttpMethod.Delete,
+                $"/albums/{Album.Id}",
+                setError: msg => Debug.WriteLine(msg));
 
             if (response.IsSuccessStatusCode)
             {
@@ -132,7 +121,12 @@ namespace PicsyncAdmin.ViewModels
 
             if (!result) return;
 
-            var response = await Fetch.DoAsync(HttpMethod.Post, $"/users/{Album.User.Id}", setError: msg => Debug.WriteLine(msg), body: new { is_banned = true }, serialize: true);
+            var response = await Fetch.DoAsync(
+                HttpMethod.Post,
+                $"/users/{Album.User.Id}",
+                setError: msg => Debug.WriteLine(msg),
+                body: new { is_banned = true },
+                serialize: true);
 
             if (response.IsSuccessStatusCode)
             {
@@ -149,7 +143,10 @@ namespace PicsyncAdmin.ViewModels
         [RelayCommand]
         public async Task RejectComplaint()
         {
-            var response = await Fetch.DoAsync(HttpMethod.Delete, $"/complaints/{Album.User.Id}", setError: msg => Debug.WriteLine(msg));
+            var response = await Fetch.DoAsync(
+                HttpMethod.Delete,
+                $"/complaints/{Album.User.Id}",
+                setError: msg => Debug.WriteLine(msg));
 
             if (response.IsSuccessStatusCode)
             {
@@ -253,7 +250,6 @@ namespace PicsyncAdmin.ViewModels
             }
         }
 
-
         [RelayCommand(CanExecute = nameof(CanGoToPrevious))]
         private void PreviousImage()
         {
@@ -284,8 +280,6 @@ namespace PicsyncAdmin.ViewModels
             }
         }
 
-
-
         [RelayCommand(CanExecute = nameof(CanLoadData))]
         public async Task LoadData()
         {
@@ -297,9 +291,17 @@ namespace PicsyncAdmin.ViewModels
                 IsFetch = true;
 
                 // Получение списка картинок
-                var response = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}/pictures?reverse&sort=complaints&page={CurrentPage}", setError: msg => Debug.WriteLine(msg));
+                var response = await Fetch.DoAsync(
+                    HttpMethod.Get,
+                    $"/albums/{Album.Id}/pictures?reverse&sort=complaints&page={CurrentPage}",
+                    setError: msg => Debug.WriteLine(msg));
+
                 // Получение информации об альбоме
-                var responseAlbum = await Fetch.DoAsync(HttpMethod.Get, $"/albums/{Album.Id}", setError: msg => Debug.WriteLine(msg));
+                var responseAlbum = await Fetch.DoAsync(
+                    HttpMethod.Get,
+                    $"/albums/{Album.Id}",
+                    setError: msg => Debug.WriteLine(msg));
+
                 IsFetch = false;
 
                 if (!response.IsSuccessStatusCode || !responseAlbum.IsSuccessStatusCode)

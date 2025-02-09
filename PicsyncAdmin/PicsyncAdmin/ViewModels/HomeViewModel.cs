@@ -1,19 +1,15 @@
 ﻿
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
 using PicsyncAdmin.Helpers;
 using PicsyncAdmin.Models;
 using PicsyncAdmin.Models.Response;
-using PicsyncAdmin.Views;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Net.Http.Json;
-using System.Text.Json;
-using ObservableObject = CommunityToolkit.Mvvm.ComponentModel.ObservableObject;
-using System.Linq;
 using PicsyncAdmin.Models.Response.PicsyncAdmin.Models.Response;
-using ApiResponse = PicsyncAdmin.Models.ApiResponse;
+using PicsyncAdmin.Views;
+using ObservableObject = CommunityToolkit.Mvvm.ComponentModel.ObservableObject;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -25,24 +21,16 @@ namespace PicsyncAdmin.ViewModels
         private readonly string? _token = AuthSession.Token;
         private readonly HttpClient _httpClient;
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(LoadComplaintsCommand))]
+        [NotifyCanExecuteChangedFor(nameof(LoadComplaintsCommand))] 
         private bool isFetch = false;
-        [ObservableProperty]
-        private string statusMessage;
-        [ObservableProperty]
-        private double usedPercent;
-        [ObservableProperty]
-        private string usedSpaceHumanReadable;
-        [ObservableProperty]
-        private string totalSpaceHumanReadable;
-        [ObservableProperty]
-        private string freeSpaceHumanReadable;
-        [ObservableProperty]
-        private double usedPercentDisplay;
-        [ObservableProperty]
-        public bool canLoadMore = false;
-        [ObservableProperty]
-        private int currentPage = 1;
+        [ObservableProperty] private string statusMessage;
+        [ObservableProperty] private double usedPercent;
+        [ObservableProperty] private string usedSpaceHumanReadable;
+        [ObservableProperty] private string totalSpaceHumanReadable;
+        [ObservableProperty] private string freeSpaceHumanReadable;
+        [ObservableProperty] private double usedPercentDisplay;
+        [ObservableProperty] public bool canLoadMore = false;
+        [ObservableProperty] private int currentPage = 1;
        
         public ObservableCollection<AlbumComplaintData> Albums { get; set; } = new ObservableCollection<AlbumComplaintData>();
         public HomeViewModel()
@@ -213,8 +201,5 @@ namespace PicsyncAdmin.ViewModels
                 await Shell.Current.DisplayAlert($"Error loading settings", ex.Message, "OK");
             }
         }
-
-
-
     }
 }

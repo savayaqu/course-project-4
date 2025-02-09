@@ -8,6 +8,5 @@ public partial class ApiUrlSelectionPage : ContentPage
 	{
 		InitializeComponent();
         BindingContext = new ApiUrlSelectionViewModel();
-
     }
 }

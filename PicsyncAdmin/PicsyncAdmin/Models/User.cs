@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace PicsyncAdmin.Models
 {
+    // Класс описывающий таблицу users
     public class User
     {
-
-        // Класс описывающий таблицу users
         [JsonPropertyName("id")]                    public ulong? Id { get; set; }
         [JsonPropertyName("name")]                  public string? Name { get; set; }
         [JsonPropertyName("login")]                 public string? Login {  get; set; }

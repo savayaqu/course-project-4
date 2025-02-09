@@ -1,14 +1,13 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PicsyncAdmin.Helpers;
-using System.Diagnostics;
-using System.Text.Json;
 using PicsyncAdmin.Models.Response.PicsyncAdmin.Models.Response;
 using Settings = PicsyncAdmin.Models.Settings;
 using Space = PicsyncAdmin.Models.Space;
-using System.Text.RegularExpressions;
-using System;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -201,12 +200,10 @@ namespace PicsyncAdmin.ViewModels
         public async Task LoadSettingsAsync()
         {
             IsLoading = true;
-
             try
             {
                 var response = await Fetch.DoAsync(HttpMethod.Get, "/settings", setError: msg => Debug.WriteLine(msg));
                 var responseString = await response.Content.ReadAsStringAsync();
-
                 if (!string.IsNullOrEmpty(responseString))
                 {
                     var settingsResponse = JsonSerializer.Deserialize<SettingsResponse>(responseString);
@@ -241,7 +238,6 @@ namespace PicsyncAdmin.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading settings: {ex.Message}");
-                // Возможно, стоит добавить уведомление пользователя или логирование
             }
             finally
             {

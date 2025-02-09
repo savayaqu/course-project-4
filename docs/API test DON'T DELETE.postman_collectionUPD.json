@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "5d21f839-04c2-4915-8f2b-9dbb27882ebe",
+		"_postman_id": "19e48a15-563d-4432-af6e-e5fdc504d105",
 		"name": "API test DON'T DELETE",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "38992338",
-		"_collection_link": "https://wepics.postman.co/workspace/PicSync~050ca731-5476-4ad5-a8a3-e7e2919d2489/collection/38992338-5d21f839-04c2-4915-8f2b-9dbb27882ebe?action=share&source=collection_link&creator=38992338"
+		"_collection_link": "https://wepics.postman.co/workspace/PicSync~050ca731-5476-4ad5-a8a3-e7e2919d2489/collection/38992338-19e48a15-563d-4432-af6e-e5fdc504d105?action=share&source=collection_link&creator=38992338"
 	},
 	"item": [
 		{
@@ -196,6 +196,9 @@
 									"});\r",
 									"pm.test(\"Проверка времени ответа\", function () {\r",
 									"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+									"});\r",
+									"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+									"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -1103,6 +1106,9 @@
 											"});\r",
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+											"});\r",
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -2189,7 +2195,9 @@
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
 											"});\r",
-											""
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -2706,6 +2714,9 @@
 													"});\r",
 													"pm.test(\"Проверка времени ответа\", function () {\r",
 													"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+													"});\r",
+													"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+													"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 													"});"
 												],
 												"type": "text/javascript",
@@ -2911,6 +2922,9 @@
 													"});\r",
 													"pm.test(\"Проверка времени ответа\", function () {\r",
 													"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+													"});\r",
+													"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+													"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 													"});"
 												],
 												"type": "text/javascript",
@@ -3505,6 +3519,9 @@
 											"});\r",
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+											"});\r",
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -5291,7 +5308,9 @@
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
 											"});\r",
-											""
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -6259,8 +6278,9 @@
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
 											"});\r",
-											"\r",
-											""
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -6393,7 +6413,9 @@
 													"pm.test(\"Проверка времени ответа\", function () {\r",
 													"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
 													"});\r",
-													""
+													"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+													"    pm.expect(pm.response.text()).to.equal(\"\");\r",
+													"});"
 												],
 												"type": "text/javascript",
 												"packages": {}
@@ -6812,7 +6834,7 @@
 			]
 		},
 		{
-			"name": "Жалобы ДОДЕЛАТЬ",
+			"name": "Жалобы",
 			"item": [
 				{
 					"name": "Типы",
@@ -7729,6 +7751,9 @@
 													"});\r",
 													"pm.test(\"Проверка времени ответа\", function () {\r",
 													"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+													"});\r",
+													"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+													"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 													"});"
 												],
 												"type": "text/javascript",
@@ -9407,6 +9432,9 @@
 											"});\r",
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+											"});\r",
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 											"});"
 										],
 										"type": "text/javascript",
@@ -9992,6 +10020,9 @@
 											"});\r",
 											"pm.test(\"Проверка времени ответа\", function () {\r",
 											"    pm.expect(pm.response.responseTime).to.be.below(500); \r",
+											"});\r",
+											"pm.test(\"Проверка, что тело ответа пустое\", function () {\r",
+											"    pm.expect(pm.response.text()).to.equal(\"\");\r",
 											"});"
 										],
 										"type": "text/javascript",

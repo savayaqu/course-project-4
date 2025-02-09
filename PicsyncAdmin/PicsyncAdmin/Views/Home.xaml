@@ -30,24 +30,22 @@
                            VerticalOptions="Center" />
                 </StackLayout>
             </StackLayout>
-
             <!-- Заголовок -->
             <Label Text="Нерассмотренные жалобы"
                    HorizontalOptions="Center"
                    FontSize="20"
                    Padding="20" />
-
             <!-- Кнопка обновления -->
-            <ImageButton HeightRequest="50" WidthRequest="5000"
-                    Source="refresh.png"
-                    Command="{Binding ResetComplaintsCommand}" />
-            <Label 
-                    Text="{Binding StatusMessage}" 
-                    FontSize="Medium" 
-                    TextColor="Gray" 
-                    HorizontalOptions="Center" 
-                    VerticalOptions="Center" 
-                    IsVisible="{Binding IsFetch}" />
+            <ImageButton HeightRequest="50" 
+                         WidthRequest="5000"
+                         Source="refresh.png"
+                         Command="{Binding ResetComplaintsCommand}" />
+            <Label Text="{Binding StatusMessage}" 
+                   FontSize="Medium" 
+                   TextColor="Gray" 
+                   HorizontalOptions="Center" 
+                   VerticalOptions="Center" 
+                   IsVisible="{Binding IsFetch}" />
             <!-- Список жалоб -->
             <CollectionView ItemsSource="{Binding Albums}">
                 <CollectionView.ItemTemplate>
@@ -57,27 +55,23 @@
                                 <Grid ColumnDefinitions="*, Auto" RowDefinitions="Auto, Auto">
                                     <!-- Информация об альбоме -->
                                     <Label Text="{Binding Name}" 
-           FontSize="16" 
-           FontAttributes="Bold" 
-           Grid.Row="0" 
-           Grid.Column="0" />
-
+                                           FontSize="16" 
+                                           FontAttributes="Bold" 
+                                           Grid.Row="0" 
+                                           Grid.Column="0" />
                                     <Label Text="{Binding ComplaintsCount, StringFormat='Жалоб: {0}'}" 
-           FontSize="12" 
-           Grid.Row="1" 
-           Grid.Column="0" />
-
+                                           FontSize="12" 
+                                           Grid.Row="1" 
+                                           Grid.Column="0" />
                                     <!-- Кнопка с параметром -->
                                     <Button Text="Просмотреть полностью" 
-            HorizontalOptions="End" 
-            Grid.Row="0" 
-            Grid.Column="1" 
-            Grid.RowSpan="2" 
-            Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
-            CommandParameter="{Binding Album}" />
+                                            HorizontalOptions="End" 
+                                            Grid.Row="0" 
+                                            Grid.Column="1" 
+                                            Grid.RowSpan="2" 
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:HomeViewModel}}, Path=NavigateToUserContentPageCommand}" 
+                                            CommandParameter="{Binding Album}" />
                                 </Grid>
-
-
                                 <!-- Список жалоб -->
                                 <CollectionView ItemsSource="{Binding Complaints}">
                                     <CollectionView.ItemsLayout>
@@ -87,7 +81,7 @@
                                         <DataTemplate>
                                             <VerticalStackLayout Padding="5" MaximumWidthRequest="200">
                                                 <!-- Картинка жалобы -->
-                                                <Image MaximumWidthRequest="200" MaximumHeightRequest="200" >
+                                                <Image MaximumWidthRequest="200" MaximumHeightRequest="200">
                                                     <Image.Source>
                                                         <UriImageSource Uri="{Binding Picture.Path}" CacheValidity="10:00:00:00" />
                                                     </Image.Source>
@@ -97,7 +91,7 @@
                                                     <Label Text="{Binding FromUser.Name, StringFormat='Пожаловался: {0}'}" FontSize="12" />
                                                     <Label Text="{Binding Type, StringFormat='Тип жалобы: {0}'}" FontSize="12" />
                                                     <Label Text="{Binding Description, StringFormat='Описание: {0}'}" FontSize="12" 
-                                               LineBreakMode="WordWrap" MaxLines="2" />
+                                                           LineBreakMode="WordWrap" MaxLines="2" />
                                                     <Label Text="{Binding StatusDescription}" FontSize="12" />
                                                 </StackLayout>
                                             </VerticalStackLayout>
@@ -110,7 +104,9 @@
                 </CollectionView.ItemTemplate>
             </CollectionView>
             <!-- Кнопка загрузки дополнительных данных -->
-            <Button Text="Загрузить ещё" IsVisible="{Binding CanLoadMore}" Command="{Binding LoadComplaintsCommand}" />
+            <Button Text="Загрузить ещё" 
+                    IsVisible="{Binding CanLoadMore}" 
+                    Command="{Binding LoadComplaintsCommand}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
