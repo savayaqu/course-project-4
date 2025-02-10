@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using PicsyncAdmin.ViewModels;
 
-namespace Bertuzzi.MAUI.PinchZoomImage
+namespace PicsyncAdmin.Components
 {
     public class PinchZoom : ContentView
     {
@@ -56,8 +56,8 @@ namespace Bertuzzi.MAUI.PinchZoomImage
                         var deltaHeight = Height / (Content.Height * _startScale);
                         var originY = (e.ScaleOrigin.Y - deltaY) * deltaHeight;
 
-                        var targetX = _xOffset - (originX * Content.Width) * (_currentScale - _startScale);
-                        var targetY = _yOffset - (originY * Content.Height) * (_currentScale - _startScale);
+                        var targetX = _xOffset - originX * Content.Width * (_currentScale - _startScale);
+                        var targetY = _yOffset - originY * Content.Height * (_currentScale - _startScale);
 
                         Content.TranslationX = Math.Min(0, Math.Max(targetX, -Content.Width * (_currentScale - 1)));
                         Content.TranslationY = Math.Min(0, Math.Max(targetY, -Content.Height * (_currentScale - 1)));
@@ -83,12 +83,12 @@ namespace Bertuzzi.MAUI.PinchZoomImage
             switch (e.StatusType)
             {
                 case GestureStatus.Running:
-                    var newX = (e.TotalX * Scale) + _xOffset;
-                    var newY = (e.TotalY * Scale) + _yOffset;
+                    var newX = e.TotalX * Scale + _xOffset;
+                    var newY = e.TotalY * Scale + _yOffset;
 
                     // Получаем размеры видимой области (вашего ContentView или страницы)
-                    var imageWidth = this.Width;
-                    var imageHeight = this.Height;
+                    var imageWidth = Width;
+                    var imageHeight = Height;
                     var DisplayMaxHeight = DeviceDisplay.Current.MainDisplayInfo.Height / DeviceDisplay.Current.MainDisplayInfo.Density;
                     var DisplayMaxWidth = DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density;
 
@@ -210,8 +210,8 @@ namespace Bertuzzi.MAUI.PinchZoomImage
             var deltaHeight = Height / (Content.Height * _startScale);
             var originY = (0.5 - deltaY) * deltaHeight;
 
-            var targetX = _xOffset - (originX * Content.Width) * (_currentScale - _startScale);
-            var targetY = _yOffset - (originY * Content.Height) * (_currentScale - _startScale);
+            var targetX = _xOffset - originX * Content.Width * (_currentScale - _startScale);
+            var targetY = _yOffset - originY * Content.Height * (_currentScale - _startScale);
 
             Content.TranslationX = Math.Min(0, Math.Max(targetX, -Content.Width * (_currentScale - 1)));
             Content.TranslationY = Math.Min(0, Math.Max(targetY, -Content.Height * (_currentScale - 1)));

@@ -4,11 +4,6 @@
              xmlns:vm="clr-namespace:PicsyncAdmin.ViewModels"
              x:Class="PicsyncAdmin.Views.Auth.Login"
              Title="Авторизация">
-
-    <ContentPage.BindingContext>
-        <vm:LoginViewModel />
-    </ContentPage.BindingContext>
-
     <VerticalStackLayout Padding="20" Spacing="25">
         <!-- Информация о сервере -->
         <VerticalStackLayout Spacing="5">
@@ -21,24 +16,20 @@
                    FontAttributes="Bold"
                     FontSize="Subtitle" 
                    HorizontalOptions="End">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding SelectServerCommand}" />
-                </Label.GestureRecognizers>
-            </Label>
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding SelectServerCommand}" />
+                    </Label.GestureRecognizers>
+                </Label>
             </Border>
-            
         </VerticalStackLayout>
-
         <!-- Поля ввода -->
         <VerticalStackLayout Spacing="15">
             <Entry Placeholder="Введите логин" 
                    Text="{Binding Login}" />
-
             <Entry Placeholder="Введите пароль" 
                    Text="{Binding Password}" 
                    IsPassword="True" />
         </VerticalStackLayout>
-
         <!-- Кнопка входа -->
         <Button Text="Войти"
                 Command="{Binding TryLoginCommand}" 

@@ -1,13 +1,8 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PicsyncAdmin.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PicsyncAdmin.ViewModels
 {
@@ -17,20 +12,13 @@ namespace PicsyncAdmin.ViewModels
         [ObservableProperty]
         private ObservableCollection<string> savedApiUrls = new ObservableCollection<string>();
         // Поле для ввода URL
-        [ObservableProperty]
-        public string apiUrlEntry;
+        [ObservableProperty] public string apiUrlEntry;
         // Выбранный URL
-        [ObservableProperty]
-        public string selectedApiUrl;
+        [ObservableProperty] public string selectedApiUrl;
 
         // Конструктор
         public ApiUrlSelectionViewModel()
         {
-            // Очистить коллекцию
-            //SavedApiUrls.Clear();
-            // Записать пустой список в локальное хранилище
-            //Preferences.Set("savedApiUrls", string.Empty);
-
             LoadSavedApiUrls();
         }
         [RelayCommand]
@@ -51,8 +39,6 @@ namespace PicsyncAdmin.ViewModels
                 }
             }
         }
-
-
         private void LoadSavedApiUrls()
         {
             var savedUrls = Preferences.Get("savedApiUrls", string.Empty);
@@ -78,7 +64,6 @@ namespace PicsyncAdmin.ViewModels
                         "Сохранить и выбрать", // Первый вариант
                         "Сохранить"           // Второй вариант
                     );
-
                     if (result == "Сохранить и выбрать")
                     {
                         // Сохраняем URL и выбираем его
@@ -178,6 +163,5 @@ namespace PicsyncAdmin.ViewModels
                 }
             }
         }
-
     }
 }

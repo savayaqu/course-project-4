@@ -3,22 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="PicsyncAdmin.Views.Profile"
              Title="Профиль">
-
     <VerticalStackLayout Padding="20" Spacing="15">
         <Entry Placeholder="Имя" Text="{Binding Name}" />
         <Entry Placeholder="Логин" Text="{Binding Login}" />
         <Entry Placeholder="Новый пароль" Text="{Binding Password}" IsPassword="True" />
         <Entry Placeholder="Повторите пароль" Text="{Binding ConfirmPassword}" IsPassword="True" />
-
         <Label Text="{Binding ValidationMessage}"
        TextColor="{Binding ValidationMessageColor}"
        HorizontalOptions="Center" />
-
         <HorizontalStackLayout Spacing="10">
             <Button Text="Сохранить" Command="{Binding SaveChangesCommand}" />
             <Button Text="Выход" Command="{Binding LogoutCommand}" />
         </HorizontalStackLayout>
-
     </VerticalStackLayout>
 </ContentPage>
 

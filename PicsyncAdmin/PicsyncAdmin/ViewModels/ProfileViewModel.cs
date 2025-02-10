@@ -1,16 +1,12 @@
-﻿using System.Net.Http.Json;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Diagnostics;
 using PicsyncAdmin.Helpers;
-using PicsyncAdmin.Models.Response;
 
 namespace PicsyncAdmin.ViewModels
 {
     public partial class ProfileViewModel : ObservableObject
     {
-        private readonly string? _token = AuthSession.Token;
-
         [ObservableProperty] private string? name;
 
         [ObservableProperty] private string? login;
@@ -35,7 +31,6 @@ namespace PicsyncAdmin.ViewModels
         {
             ValidationMessage = null;
             ValidationMessageColor = Colors.Red; // По умолчанию ошибки будут красными
-
             try
             {
                 if (Password != ConfirmPassword)
@@ -43,19 +38,15 @@ namespace PicsyncAdmin.ViewModels
                     ValidationMessage = "Пароли не совпадают";
                     return;
                 }
-
                 var payload = new { Name, Login, Password };
                 var response = await Fetch.DoAsync(HttpMethod.Post, "/users/me", setError: msg => ValidationMessage = msg, body: payload, serialize: true);
-
                 if (response.IsSuccessStatusCode)
                 {
                     // Обновляем данные пользователя в сессии
                     AuthSession.User!.Name = Name;
                     AuthSession.User!.Login = Login;
-
                     ValidationMessage = "Изменения сохранены успешно.";
                     ValidationMessageColor = Colors.Green; // Успешное сообщение зелёным
-
                     // Очищаем сообщение через 3 секунды
                     await Task.Delay(3000);
                     ValidationMessage = null;
@@ -75,11 +66,9 @@ namespace PicsyncAdmin.ViewModels
         private async Task LogoutAsync()
         {
             bool isExit = false;
-
             try
             {
                 var response = await Fetch.DoAsync(HttpMethod.Post, "/logout", setError: msg => Debug.WriteLine(msg));
-
                 if (!response.IsSuccessStatusCode)
                 {
                     throw new Exception($"Ошибка {response.StatusCode}");
@@ -98,9 +87,7 @@ namespace PicsyncAdmin.ViewModels
                     "Нет"
                 );
             }
-
             if (!isExit) return;
-
             AuthSession.ClearSession();
             await Shell.Current.GoToAsync("//ApiUrlSelectionPage");
         }
