@@ -4,6 +4,7 @@ namespace PicsyncClient.Models;
 
 // Copyright (C) 2018 Bretbas@cyberforum.ru
 // https://www.cyberforum.ru/post12425617.html
+// Modified
 
 public delegate void ProgressHandler(long bytes, long currentBytes, long totalBytes);
 
@@ -43,9 +44,9 @@ class ProgressStreamContent : StreamContent
         }
     }
 
-    protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
+    protected override async Task SerializeToStreamAsync(Stream? stream, TransportContext? context)
     {
-        if (stream == null) throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
 
         // —брасываем состо€ние внутреннего потока
         ResetInnerStream();

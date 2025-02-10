@@ -34,7 +34,7 @@
                 </StackLayout.GestureRecognizers>
                 
                 <HorizontalStackLayout>
-                    <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold"
+                    <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold" LineBreakMode="MiddleTruncation"
                            TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}"/>
                     <Label Text="{Binding Album.NameDuplicaIndex, StringFormat=' ({0})'}" FontSize="18" VerticalTextAlignment="End" IsVisible="False" 
                            TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}">
@@ -89,7 +89,7 @@
                     </HorizontalStackLayout>
                 </HorizontalStackLayout>
             </StackLayout>
-            
+
             <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center" x:Name="AfterTitleManagmentButtons" IsVisible="False">
                 <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="False" Command="{Binding AccessManageCommand}">
                     <mcb:ContentButton.Resources>

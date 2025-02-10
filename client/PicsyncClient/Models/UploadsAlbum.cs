@@ -54,7 +54,6 @@ public partial class UploadsAlbum : ObservableObject
 
     private void OnUploadsChanged (object? sender, NotifyCollectionChangedEventArgs e)
     {
-
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(TotalBytes));
         OnPropertyChanged(nameof(Progress));

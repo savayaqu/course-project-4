@@ -352,7 +352,7 @@ public partial class AlbumViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            Shell.Current.DisplayAlert("DEBUG", ex.Message, "OK");
+            _ = Shell.Current.DisplayAlert("DEBUG", ex.Message, "OK");
             Debug.WriteLine($"LoadMore: Ex:\n{ex.Message}");
         }
     }
@@ -363,6 +363,7 @@ public partial class AlbumViewModel : ObservableObject
     {
         AlbumInfoPopup popup = new(Album);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        OnPropertyChanged(nameof(Album));
     }
 
     public bool CanSync => Album.GetType() == typeof(AlbumLocal);
@@ -412,28 +413,18 @@ public partial class AlbumViewModel : ObservableObject
         OnPropertyChanged(nameof(Album));
     }
 
+    [RelayCommand]
+    private async Task OpenViewer(Models.Pictures.IPicture picture)
+    {
+        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture, this), false);
+    }
+
     public bool CanUnjoin => Album is AlbumRemote;
 
     [RelayCommand(CanExecute = nameof(CanUnjoin))]
     public async Task Unjoin(CancellationToken token = default)
     {
         if (Album is not AlbumRemote remote) return;
-        /*
-
-        bool isAgree = await Shell.Current.DisplayAlert("Отписка", "Вы уверены что хотите отписаться от этого альбома?");
-
-        if ()
-
-        HttpResponseMessage res = await FetchAsync(
-            HttpMethod.Delete, URLs.AlbumAccess(remote.Id),
-            f => IsBusy = f, e => Error = e,
-            cancellationToken: token
-        );
-
-        if (!res.IsSuccessStatusCode) return;
-
-        await Shell.Current.GoToAsync("..");
-        */
 
         AlbumUnjoinPopup popup = new(remote);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
@@ -446,26 +437,30 @@ public partial class AlbumViewModel : ObservableObject
     [ObservableProperty]
     private int columnCount = 1;
 
-    [ObservableProperty]
-    private double? requestColumnWidth = 120;
+    private double? _requestColumnWidth = 120;
+    private double? RequestColumnWidth
+    {
+        get => _requestColumnWidth;
+        set
+        {
+            SetProperty(ref _requestColumnWidth, value);
+            CalculateColumnsWidthCommand.Execute(_containerWidth);
+        }
+    }
 
     [ObservableProperty]
     private double columnWidth = 100;
 
+    private double _containerWidth = 100;
+
     [RelayCommand]
     public void CalculateColumnsWidth(double containerWidth)
     {
+        _containerWidth = containerWidth;
         if (RequestColumnWidth != null)
             ColumnCount = Math.Max((int)(containerWidth / RequestColumnWidth), 1);
 
         ColumnWidth = containerWidth / ColumnCount;
         Debug.WriteLine($"=== ChgColW ===\n{ColumnWidth} = {containerWidth} / {ColumnCount}");
-    }
-
-
-    [RelayCommand]
-    private async Task OpenViewer(Models.Pictures.IPicture picture)
-    {
-        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture, this), false);
     }
 }

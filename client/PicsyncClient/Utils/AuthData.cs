@@ -1,4 +1,5 @@
 ﻿using PicsyncClient.Models;
+using PicsyncClient.Models.Response;
 using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 
@@ -51,6 +52,30 @@ public static class AuthData
         }
     }
 
+    private static UserStats? _stats = null;
+    public static UserStats? Stats
+    {
+        get
+        {
+            if (_stats == null)
+            {
+                var setting = Preferences.Get("stats", null);
+                if (setting != null)
+                    _stats = JsonSerializer.Deserialize<UserStats>(setting);
+            }
+            return _stats;
+        }
+        set
+        {
+            _stats = value;
+
+            if (value == null)
+                Preferences.Remove("stats");
+            else
+                Preferences.Set("stats", JsonSerializer.Serialize(value));
+        }
+    }
+
     public static void SaveAndNavigate(string token, User user)
     {
         Token = token;
@@ -84,5 +109,40 @@ public static class AuthData
             User = null;
             await Shell.Current.GoToAsync("//Login");
         }
+    }
+
+    public static async Task Update(
+        Action<string?>? setError = null,
+        CancellationToken token = default
+    ) {
+        (var res, var body) = await FetchAsync<UserResponse>(
+            HttpMethod.Get, 
+            URLs.UserSelf,
+            setError: setError,
+            cancellationToken: token
+        );
+
+        if (body == null) return;
+
+        if (User != null)
+        {
+            User.Nickname = body.User.Nickname;
+            User.Login    = body.User.Login;
+        }
+        else
+        {
+            User = body.User;
+        }
+
+        if (Stats != null)
+        {
+            Stats.Update(body.User, body.Quota);
+            Preferences.Set("stats", JsonSerializer.Serialize(Stats));
+        }
+        else
+        {
+            Stats = new(body.User, body.Quota);
+        }
+
     }
 }

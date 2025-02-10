@@ -11,6 +11,12 @@ public static class URLs
     public static Uri Settings => API_URL;
 
 
+    public static Uri Users =>
+        new($"{API_URL}/users");
+
+    public static Uri UserSelf =>
+        new($"{Users}/me");
+
     public static Uri Albums => 
         new($"{API_URL}/albums");
 

@@ -99,6 +99,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Components\Popups\PictureInfoPopup.xaml.cs">
+	    <DependentUpon>PictureInfoPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Components\Popups\GeneralSyncManagePopup.xaml.cs">
 	    <DependentUpon>GeneralSyncManagePopup.xaml</DependentUpon>
 	  </Compile>
@@ -126,12 +129,21 @@
 	  <Compile Update="Components\Popups\AlbumSyncPopup.xaml.cs">
 	    <DependentUpon>AlbumSyncPopup.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\ViewerMainPage.xaml.cs">
+	    <DependentUpon>ViewerMainPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\ViewerUniversalPage.xaml.cs">
+	    <DependentUpon>ViewerUniversalPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\ViewerPage.xaml.cs">
 	    <DependentUpon>ViewerPage.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Components\Popups\PictureInfoPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Components\Popups\GeneralSyncManagePopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -175,6 +187,12 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\ViewerMainPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\ViewerUniversalPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ViewerPage.xaml">

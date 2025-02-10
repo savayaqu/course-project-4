@@ -1,9 +1,18 @@
 ﻿using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace PicsyncClient.Utils;
 
 public static class Helpers
 {
+    public static string HashUTF8toMD5HEX(string input)
+    {
+        byte[] inputBytes = System.Text.Encoding.UTF8.GetBytes(input);
+        byte[] hashBytes = MD5.HashData(inputBytes);
+
+        return Convert.ToHexString(hashBytes);
+    }
+
     public static string BytesToHuman(ulong bytes)
     {
         string[] suffixes = ["Б", "КБ", "МБ", "ГБ", "ТБ", "ПБ", "ЭБ", "ЗБ", "ИБ"];

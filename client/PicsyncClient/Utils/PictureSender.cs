@@ -178,13 +178,15 @@ public partial class PictureSender : ObservableObject
                 "pictures[0][file]", 
                 localPicture.Name 
             },
-        };
-
-        if (localPicture.Date is DateTime date)
-            content.Add(
-                new StringContent(date.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz")), 
+            {
+                new StringContent(localPicture.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffffffzzz")),
                 "pictures[0][date]"
-            );
+            },
+            {
+                new StringContent(localPicture.Name),
+                "pictures[0][name]"
+            }
+        };
 
         string? error = null;
 

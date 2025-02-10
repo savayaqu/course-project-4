@@ -2,10 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using PicsyncClient.Models.Albums;
 using PicsyncClient.Models.Pictures;
-using CommunityToolkit.Maui.Views;
-using PicsyncClient.Components.Popups;
-using PicsyncClient.Utils;
-
+using System.Collections.ObjectModel;
 
 
 #if ANDROID
@@ -15,9 +12,9 @@ using Android.Views;
 
 namespace PicsyncClient.ViewModels;
 
-public partial class ViewerViewModel : ObservableObject
+public partial class ViewerUniversalViewModel : ObservableObject
 {
-    public AlbumViewModel? AlbumViewModel { get; private set; }
+    //public AlbumViewModel? AlbumViewModel { get; private set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(MoveNextCommand))]
@@ -36,28 +33,32 @@ public partial class ViewerViewModel : ObservableObject
     private int? total;
 
     [ObservableProperty]
+    private ObservableCollection<Models.Pictures.IPicture>? listPictures;
+
+    private Func<int, Task<IList<Models.Pictures.IPicture>>>? LoadMoreFunc;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsRemote))]
     [NotifyPropertyChangedFor(nameof(IsSynced))]
     [NotifyPropertyChangedFor(nameof(IsNotSynced))]
     [NotifyPropertyChangedFor(nameof(IsUnique))]
-    private Models.Pictures.IPicture picture;
+    private Models.Pictures.IPicture? picture;
 
-    public ViewerViewModel(Models.Pictures.IPicture picture, AlbumViewModel? albumViewModel = null)
-    {
-        AlbumViewModel = albumViewModel;
+    public ViewerUniversalViewModel(
+        Models.Pictures.IPicture picture, 
+        IList<Models.Pictures.IPicture>? listPictures = null,
+        Func<int, Task<IList<Models.Pictures.IPicture>>>? loadMore = null
+    ) {
         Picture = picture;
+        ListPictures = new(listPictures);
+        LoadMoreFunc = loadMore;
 
-        if (AlbumViewModel == null 
-         || AlbumViewModel.PicturesGroups == null 
-         || AlbumViewModel.PicturesGroups.Count < 1) return;
-
-        Total = AlbumViewModel.Album.PicturesCount;
-        Position = 0;
-        foreach (var group in AlbumViewModel.PicturesGroups)
+        if (ListPictures != null)
         {
-            foreach (var pictureInGroup in group)
+            Position = 0;
+            foreach (var listPicture in ListPictures)
             {
-                if (pictureInGroup == Picture || pictureInGroup.Equals(Picture))
+                if (listPicture == Picture || listPicture.Equals(Picture))
                 {
                     return;
                 }
@@ -65,17 +66,33 @@ public partial class ViewerViewModel : ObservableObject
             }
         }
     }
+    
+    public ViewerUniversalViewModel(
+        IList<Models.Pictures.IPicture> listPictures,
+        int position = 0,
+        Func<int, Task<IList<Models.Pictures.IPicture>>>? loadMore = null
+    ) {
+        if (listPictures.Count <= 0)
+            loadMore?.Invoke(0);
 
-    public bool IsAlbumLocal       => Picture.Album is IAlbumLocal;
-    public bool IsAlbumSynced      => Picture.Album is AlbumSynced;
-    public bool IsAlbumRemote      => Picture.Album is AlbumRemote;
-    public bool IsAlbumNonOwned    => Picture.Album is AlbumRemote album && album.Owner != null;
-    public bool IsAlbumRemoteOwned => Picture.Album is AlbumRemote album && album.Owner == null;
+        // TODO: запросить список, если пустой получили
+
+        Position = position = (position >= 0 && position < listPictures.Count) ? position : 0;
+        Picture = listPictures[position];
+        LoadMoreFunc = loadMore;
+        ListPictures = new(listPictures);
+    }
+
+    public bool IsAlbumLocal       => Picture?.Album is IAlbumLocal;
+    public bool IsAlbumSynced      => Picture?.Album is AlbumSynced;
+    public bool IsAlbumRemote      => Picture?.Album is AlbumRemote;
+    public bool IsAlbumNonOwned    => Picture?.Album is AlbumRemote album && album.Owner != null;
+    public bool IsAlbumRemoteOwned => Picture?.Album is AlbumRemote album && album.Owner == null;
     
     public bool IsRemote    => Picture is PictureRemote;
     public bool IsSynced    => IsAlbumSynced && Picture is PictureSynced;
     public bool IsNotSynced => IsAlbumSynced && Picture is PictureLocal;
-    public bool IsUnique    => IsAlbumSynced && Picture.GetType() == typeof(PictureRemote);
+    public bool IsUnique    => IsAlbumSynced && Picture?.GetType() == typeof(PictureRemote);
 
     [ObservableProperty]
     private bool areControlsVisible = true;
@@ -94,13 +111,13 @@ public partial class ViewerViewModel : ObservableObject
         if (AreControlsVisible)
         {
             // Показать статус-бар и навигационную панель
-            activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
-            activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.Visible;
-            activity.Window.ClearFlags(WindowManagerFlags.Fullscreen);
-            //if (Build.VERSION.SdkInt < BuildVersionCodes.R)
-            //{
-            //    return;
-            //}
+            //activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
+            //activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.Visible;
+            //activity.Window.ClearFlags(WindowManagerFlags.Fullscreen);
+            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
+            {
+                return;
+            }
 
             activity.Window?.AddFlags(WindowManagerFlags.ForceNotFullscreen);
             activity.Window?.ClearFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutInScreen);
@@ -110,25 +127,19 @@ public partial class ViewerViewModel : ObservableObject
         }
         else
         {
-            //if (Build.VERSION.SdkInt < BuildVersionCodes.R)
-            //{
-            //    return;
-            //}
+            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
+            {
+                return;
+            }
 
             activity.Window?.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutInScreen);
             activity.Window?.ClearFlags(WindowManagerFlags.ForceNotFullscreen);
 
             var controller = activity.Window?.InsetsController;
             controller?.Hide(WindowInsets.Type.SystemBars());
-            activity.Window.AddFlags(WindowManagerFlags.Fullscreen);
-            activity.Window.DecorView.SystemUiVisibility = 
-                (StatusBarVisibility)
-                ( SystemUiFlags.LayoutStable 
-                | SystemUiFlags.LayoutHideNavigation 
-                | SystemUiFlags.LayoutFullscreen 
-                | SystemUiFlags.HideNavigation 
-                | SystemUiFlags.ImmersiveSticky
-                );
+            //activity.Window.AddFlags(WindowManagerFlags.Fullscreen);
+            //activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)
+            //    (SystemUiFlags.LayoutStable | SystemUiFlags.LayoutHideNavigation | SystemUiFlags.LayoutFullscreen | SystemUiFlags.HideNavigation | SystemUiFlags.ImmersiveSticky);
         }
         /*
         // Скрыть статус-бар и навигационную панель
@@ -142,43 +153,23 @@ public partial class ViewerViewModel : ObservableObject
         UIKit.UIApplication.SharedApplication.SetStatusBarHidden(!AreControlsVisible, UIKit.UIStatusBarAnimation.Fade);
 #endif
     }
-
-
-    [RelayCommand]
-    public async Task OpenInfo()
-    {
-        PictureInfoPopup popup = new(Picture);
-        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
-
-        if (result is bool isUnjoin && isUnjoin)
-        {
-            if (Picture is PictureRemote remote)
-                RemoteAlbumsData.AlbumsAccessible.Remove(remote.SpecificAlbum);
-
-            _ = Shell.Current.GoToAsync("//Albums");
-        }
-
-        OnPropertyChanged(nameof(Picture));
-    }
-
-    private bool CanMoveNext() => AlbumViewModel != null 
-        && Total > 0
-        && Position < Total - 1
-        && !IsBusy;
+    private bool CanMoveNext => ListPictures != null 
+                             && Total > 0
+                             && Position < Total - 1
+                             && !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanMoveNext))]
     private async Task MoveNext()
     {
-        if (AlbumViewModel == null || Position == null || Total == null)
-            return;
+        if (CanMoveNext) return;
 
         IsBusy = true;
 
         Position++;
 
-        if (Position >= AlbumViewModel.PicturesGroups.Sum(g => g.Count))
+        if (Position >= ListPictures.Count)
         {
-            await AlbumViewModel.LoadMoreCommand.ExecuteAsync(null);
+            await LoadMoreFunc?.Invoke(0);
         }
 
         UpdateCurrentPicture();
@@ -186,16 +177,15 @@ public partial class ViewerViewModel : ObservableObject
         IsBusy = false;
     }
 
-    private bool CanMovePrevious() => AlbumViewModel != null 
-        && Total > 0
-        && Position > 0
-        && !IsBusy;
+    private bool CanMovePrevious => ListPictures != null
+                                 && Total > 0
+                                 && Position > 0
+                                 && !IsBusy;
 
     [RelayCommand(CanExecute = nameof(CanMovePrevious))]
     private async Task MovePrevious()
     {
-        if (AlbumViewModel == null || Position == null || Total == null)
-            return;
+        if (CanMovePrevious) return;
 
         IsBusy = true;
 
@@ -203,7 +193,7 @@ public partial class ViewerViewModel : ObservableObject
 
         if (Position < 0)
         {
-            Position = Total.Value - 1;
+            Position = Total - 1;
         }
 
         UpdateCurrentPicture();
@@ -214,21 +204,18 @@ public partial class ViewerViewModel : ObservableObject
 
     private void UpdateCurrentPicture()
     {
-        if (AlbumViewModel == null || Position == null)
+        if (ListPictures == null || Position == null)
             return;
 
         int index = 0;
-        foreach (var group in AlbumViewModel.PicturesGroups)
+        foreach (var picture in ListPictures)
         {
-            foreach (var pictureInGroup in group)
+            if (index == Position)
             {
-                if (index == Position)
-                {
-                    Picture = pictureInGroup;
-                    return;
-                }
-                index++;
+                Picture = picture;
+                return;
             }
+            index++;
         }
 
         // Если картинка не найдена, сбрасываем Position и Picture

@@ -7,9 +7,9 @@
              xmlns:tpicture="clr-namespace:PicsyncClient.Models.Pictures"
              xmlns:cv="clr-namespace:PicsyncClient.Converters"
              x:Class="PicsyncClient.Views.MainPage">
-    <ContentPage.BindingContext>
+    <!--<ContentPage.BindingContext>
         <vm:MainPageViewModel/>
-    </ContentPage.BindingContext>
+    </ContentPage.BindingContext>-->
     
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -28,7 +28,7 @@
                      IsVisible="{Binding HasSynced, Converter={StaticResource InvertedBoolConverter}}">
             <HorizontalStackLayout Spacing="5" IsVisible="{Binding RefreshCommand.IsRunning}">
                 <ActivityIndicator IsRunning="True"/>
-                <Label Text="Загрузка"/>
+                <Label Text="Загрузка" VerticalOptions="Center"/>
             </HorizontalStackLayout>
             <StackLayout Spacing="10" IsVisible="{Binding RefreshCommand.IsRunning, Converter={StaticResource InvertedBoolConverter}}">
                 <Label Text="Нет синхронизируемых альбомов" HorizontalOptions="Center"/>
@@ -36,12 +36,19 @@
             </StackLayout>
         </StackLayout>
         
-        <CollectionView Margin="1,0"
+        <!--<CollectionView Margin="1,0"
                 ItemsSource="{Binding PicturesGroups}" 
                 IsGrouped="True"
                 SizeChanged="CollectionView_SizeChanged"
                 RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
                 RemainingItemsThreshold="{Binding PageSize}"
+                IsVisible="{Binding HasSynced}">-->
+        
+        <CollectionView Margin="1,0"
+                ItemsSource="{Binding PicturesGroups}" 
+                IsGrouped="True"
+                x:Name="PicturesCollectionView"
+                SizeChanged="CollectionView_SizeChanged"
                 IsVisible="{Binding HasSynced}">
             <CollectionView.Header>
                 <ScrollView Orientation="Horizontal" HorizontalOptions="Center">
@@ -93,7 +100,7 @@
             </CollectionView.Header>
             <CollectionView.GroupHeaderTemplate>
                 <DataTemplate>
-                    <Label Text="{Binding Title}" FontSize="18">
+                    <Label Text="{Binding Key, StringFormat='{0:MMMM, yyyy}'}" FontSize="18">
                         <Label.Margin>
                             <OnPlatform x:TypeArguments="Thickness" Default="5,5,5,1">
                                 <On Platform="WinUI" Value="0,5,0,1"/>
@@ -143,24 +150,27 @@
                     <BoxView HeightRequest="1" BackgroundColor="Transparent"/>
 
                     <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
-                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
-                IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                            Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                            IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
                         <StackLayout Grid.Column="1" Spacing="5">
                             <HorizontalStackLayout Spacing="5">
-                                <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24"
+                                       IsVisible="{Binding RefreshCommand.IsRunning, Converter={StaticResource InvertedBoolConverter}}">
                                     <Image.Behaviors>
                                         <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
                                     </Image.Behaviors>
                                 </Image>
+                                <ActivityIndicator IsRunning="True" HeightRequest="24" WidthRequest="24"
+                                       IsVisible="{Binding RefreshCommand.IsRunning}"/>
                                 <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
                             </HorizontalStackLayout>
                             <Label Text="{Binding Error}"/>
                         </StackLayout>
                     </Border>
 
-                    <Button Margin="1,0,1,2" Text="Ещё" 
+                    <!--<Button Margin="1,0,1,2" Text="Ещё" 
                     Command="{Binding LoadMoreCommand}" 
-                    IsVisible="{Binding CanLoadMore}"/>
+                    IsVisible="{Binding CanLoadMore}"/>-->
                 </StackLayout>
             </CollectionView.Footer>
         </CollectionView>

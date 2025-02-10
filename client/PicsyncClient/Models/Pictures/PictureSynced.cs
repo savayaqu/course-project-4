@@ -58,4 +58,18 @@ public class PictureSynced : PictureRemote, IPictureLocal
     {
         LocalPath = local.LocalPath;
     }
+
+    public override bool IsSynced => true;
+
+    public override bool IsLocal            => true;
+    public override bool IsStrictLocal      => false;
+    public override bool IsLocalInSyncAlbum => false;
+
+    public override bool IsRemote               => true;
+    public override bool IsRemoteInSyncAlbum    => false;
+    public override bool IsRemoteNonOwned       => Album is AlbumRemote album && album.Owner != null;
+    public override bool IsRemoteOwned          => Album is AlbumRemote album && album.Owner == null;
+    public override bool IsStrictRemote         => false;
+    public override bool IsStrictRemoteNonOwned => false;
+    public override bool IsStrictRemoteOwned    => false;
 }

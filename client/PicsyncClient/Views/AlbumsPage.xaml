@@ -76,7 +76,7 @@
                                     <Grid ColumnDefinitions="*,auto" Margin="0,10,0,0" HeightRequest="40">
                                         <StackLayout VerticalOptions="Center">
                                             <HorizontalStackLayout>
-                                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
+                                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" LineBreakMode="MiddleTruncation"/>
                                                 <Label Text="{Binding NameDuplicaIndex, StringFormat=' ({0})'}" VerticalTextAlignment="End" 
                                                        IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
                                                 <Label Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14" VerticalTextAlignment="End"/>
@@ -85,7 +85,7 @@
                                                 IsVisible="{Binding ., Converter={StaticResource FalseOnUriRoot}}"/>
                                         </StackLayout>
 
-                                        <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="5">
                                             <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
                                                     IsVisible="{Binding InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}">
                                                 <Label Text="{Binding InvitationsCount}" HorizontalOptions="Center"/>
@@ -212,7 +212,7 @@
                                         </Label>
                                     </StackLayout>
 
-                                    <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="5">
                                         <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
                                                      IsVisible="{Binding InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}">
                                             <Label Text="{Binding InvitationsCount}" HorizontalOptions="Center"/>
@@ -320,7 +320,7 @@
                                                IsVisible="{Binding LocalPath, Converter={StaticResource FalseOnUriRoot}}"/>
                                     </StackLayout>
 
-                                    <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="5">
                                         <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3">
                                             <Label Text="{Binding PicturesCount, Converter={StaticResource CountSuffixConverter}}" HorizontalOptions="Center"/>
                                             <Image Source="images.png" HeightRequest="16" WidthRequest="16">

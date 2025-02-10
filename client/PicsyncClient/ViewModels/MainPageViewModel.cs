@@ -3,22 +3,21 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Maui.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text.Json;
-using PicsyncClient.Models;
 using PicsyncClient.Models.Albums;
 using PicsyncClient.Models.Pictures;
-using PicsyncClient.Models.Response;
 using PicsyncClient.Components.Popups;
 using PicsyncClient.Views;
 using PicsyncClient.Utils;
 using PicsyncClient.Enum;
-using static PicsyncClient.Utils.Fetcher;
-using static PicsyncClient.Utils.LocalDB;
+using CommunityToolkit.Mvvm.Collections;
+using Microsoft.Maui.Controls;
 
 namespace PicsyncClient.ViewModels;
 
 public partial class MainPageViewModel : ObservableObject
 {
+    private MainPage? _contentPage;
+
     [ObservableProperty]
     private string? error;
 
@@ -26,17 +25,22 @@ public partial class MainPageViewModel : ObservableObject
     bool hasSynced = false;
 
     [ObservableProperty]
-    private ObservableCollection<ItemsGroup<IPictureLocal>> picturesGroups = [];
+    private ObservableGroupedCollection<DateOnly, IPictureLocal> picturesGroups = [];
+
+    public List<IPictureLocal> PicturesFlat { get; set; } = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LocalCount))]
     [NotifyPropertyChangedFor(nameof(SyncedCount))]
     private ObservableCollection<AlbumSynced> albumsSynced = [];
 
-    public MainPageViewModel()
+    public MainPageViewModel(MainPage? contentPage = null)
     {
+        _contentPage = contentPage;
         RefreshCommand.Execute(null);
     }
+
+    public int AllCount    => AlbumsSynced.Sum(a => a.PicturesCount);
 
     public int LocalCount  => AlbumsSynced.Sum(a => a.TrueLocalPicturesCount);
 
@@ -48,16 +52,17 @@ public partial class MainPageViewModel : ObservableObject
     [RelayCommand]
     public async Task Refresh()
     {
+        CanLoadMore = false;
         await RequestLocalAlbums();
 
         HasSynced = AlbumsSynced.Any();
         if (!HasSynced) return;
 
-        PicturesGroups.Clear();
+        //PicturesGroups.Clear();
         PicturesCursors = null;
         CanLoadMore = true;
 
-        await LoadMoreCommand.ExecuteAsync(null);
+        //await LoadMoreCommand.ExecuteAsync(null);
     }
 
 
@@ -65,7 +70,7 @@ public partial class MainPageViewModel : ObservableObject
     public async Task SyncManage()
     {
         GeneralSyncManagePopup popup = new();
-        Shell.Current.CurrentPage.ShowPopup(popup);
+        await Shell.Current.CurrentPage.ShowPopupAsync(popup);
     }
 
 
@@ -99,7 +104,7 @@ public partial class MainPageViewModel : ObservableObject
             if (!HasPermissions)
                 return;
         }
-        catch (PlatformNotSupportedException ex)
+        catch (PlatformNotSupportedException)
         {
             return;
         }
@@ -110,8 +115,7 @@ public partial class MainPageViewModel : ObservableObject
         }
         else if (LocalData.Status == LocalLoadStatus.InLoad)
         {
-            // TODO: непроверенный код
-            _ = Shell.Current.DisplayAlert("Страшилка", "TODO: непроверенный код", "OK");
+            // TODO: сделать подписку на изменение
             while (LocalData.Status == LocalLoadStatus.InLoad)
             {
                 await Task.Delay(1000);
@@ -122,19 +126,35 @@ public partial class MainPageViewModel : ObservableObject
             await LocalData.FillPictures();
         }
         AlbumsSynced = new(LocalData.Albums.OfType<AlbumSynced>().ToList());
+
+        PicturesFlat = AlbumsSynced
+            .SelectMany(album => album.LocalPictures)
+            .OrderByDescending(picture => picture.Date)
+            .ToList();
+
+        PicturesGroups = new(PicturesFlat
+            .GroupBy(picture => new DateOnly(
+                picture.Date.Year, 
+                picture.Date.Month, 
+                1
+            ))
+            .ToList()
+        );
     }
 
 
     public List<IEnumerator<IPictureLocal>>? PicturesCursors = null;
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
+    //[NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
     public bool canLoadMore = false;
 
+    /*
     [RelayCommand(CanExecute = nameof(CanLoadMore))]
     public async Task LoadMore()
     {
         Debug.WriteLine("=========== START LoadMore ============");
+        
         try
         {
             if (!CanLoadMore) return;
@@ -190,7 +210,7 @@ public partial class MainPageViewModel : ObservableObject
         
                 int lastGroupIndex = PicturesGroups.Count - 1;
                 if (lastGroupIndex >= 0)
-                    lastGroupTitle = PicturesGroups?[lastGroupIndex].Title;
+                    lastGroupTitle = PicturesGroups?[lastGroupIndex].Key;
         
                 if (lastGroupTitle == currGroupTitle)
                     PicturesGroups[lastGroupIndex].Add(picture);
@@ -210,7 +230,7 @@ public partial class MainPageViewModel : ObservableObject
             Debug.WriteLine($"LoadMore: Ex:\n{ex.Message}");
         }
     }
-
+    */
 
     [ObservableProperty]
     private int columnCount = 1;
@@ -231,10 +251,19 @@ public partial class MainPageViewModel : ObservableObject
         Debug.WriteLine($"=== ChgColW ===\n{ColumnWidth} = {containerWidth} / {ColumnCount}");
     }
 
-
     [RelayCommand]
-    private async Task OpenViewer(Models.Pictures.IPicture picture)
+    private async Task OpenViewer(IPictureLocal picture)
     {
-        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture), false);
+        await Shell.Current.Navigation.PushAsync(
+            new ViewerMainPage(
+                picture, 
+                PicturesFlat
+                    .Cast<Models.Pictures.IPicture>()
+                    .ToList(),
+                pictureOut => _contentPage?.ScrollTo(pictureOut)
+            ), 
+            false
+        );
+        await Task.Delay(500);
     }
 }

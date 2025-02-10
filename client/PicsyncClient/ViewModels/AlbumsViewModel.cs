@@ -38,7 +38,7 @@ public partial class AlbumsViewModel : ObservableObject
     private void OnAlbumsSyncedCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         => OnPropertyChanged(nameof(SyncedIsVisibled));
 
-    partial void OnAlbumsSyncedChanged(ObservableCollection<AlbumSynced> oldValue, ObservableCollection<AlbumSynced> newValue)
+    partial void OnAlbumsSyncedChanged(ObservableCollection<AlbumSynced>? oldValue, ObservableCollection<AlbumSynced> newValue)
     {
         if (oldValue != null)
             oldValue.CollectionChanged -= OnAlbumsSyncedCollectionChanged;
@@ -142,7 +142,7 @@ public partial class AlbumsViewModel : ObservableObject
             if (!HasPermissions)
                 return false;
         }
-        catch (PlatformNotSupportedException ex)
+        catch (PlatformNotSupportedException)
         {
             return false;
         }
@@ -154,7 +154,7 @@ public partial class AlbumsViewModel : ObservableObject
         else if (LocalData.Status == LocalLoadStatus.InLoad)
         {
             // TODO: непроверенный код
-            _ = Shell.Current.DisplayAlert("—трашилка", "TODO: непроверенный код", "OK");
+            //_ = Shell.Current.DisplayAlert("—трашилка", "TODO: непроверенный код", "OK");
             while (LocalData.Status == LocalLoadStatus.InLoad)
             {
                 await Task.Delay(1000);
@@ -205,7 +205,6 @@ public partial class AlbumsViewModel : ObservableObject
         );
 
         AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
-        Debug.WriteLine(AlbumsRemote[0]?.ThumbnailPaths[0]);
     }
 
 

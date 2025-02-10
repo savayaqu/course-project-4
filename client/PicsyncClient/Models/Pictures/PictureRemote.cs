@@ -25,7 +25,7 @@ public class PictureRemote : PictureBase
 
     [Ignore]
     [JsonIgnore]
-    public new AlbumRemote SpecificAlbum
+    public AlbumRemote SpecificAlbum
     {
         get => (AlbumRemote)Album;
         set => Album = value;
@@ -34,4 +34,12 @@ public class PictureRemote : PictureBase
     // Геттеры
     public override string OriginalPath  => URLs.PictureOriginal (SpecificAlbum?.Id ?? 0, Id, SpecificAlbum?.Preview?.Signature).ToString();
     public override string ThumbnailPath => URLs.PictureThumbnail(SpecificAlbum?.Id ?? 0, Id, SpecificAlbum?.Preview?.Signature).ToString();
+
+    public override bool IsRemote => true;
+    public override bool IsRemoteInSyncAlbum    => Album is AlbumSynced;
+    public override bool IsRemoteNonOwned       => Album is AlbumRemote album && album.Owner != null;
+    public override bool IsRemoteOwned          => Album is AlbumRemote album && album.Owner == null;
+    public override bool IsStrictRemote         => true;
+    public override bool IsStrictRemoteNonOwned => IsRemoteNonOwned;
+    public override bool IsStrictRemoteOwned    => IsRemoteOwned;
 }

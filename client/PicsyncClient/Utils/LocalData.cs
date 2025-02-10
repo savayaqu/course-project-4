@@ -251,8 +251,7 @@ public static class LocalData
                         isInSync = album != null;
 
                         // Создаём новый объект альбома если нигде нет ещё
-                        if (!isInSync)
-                            album = new AlbumLocal(albumPath);
+                        album ??= new AlbumLocal(albumPath);
 
                         // Ищем дубликат по имени
                         stopwatch.Restart();
