@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Cacheables\SpaceInfo;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\User\UserSelfUpdateRequest;
 use App\Http\Requests\Api\User\UserUpdateRequest;
@@ -37,11 +38,25 @@ class UserController extends Controller
     {
         $user = Auth::user();
         $user->load([
-            'role', 'warnings', 'complaintsFrom',
+            'role', 'warnings',
+            'complaintsFrom', 'complaintsFrom.type', 'complaintsFrom.album',
+            'complaintsFrom.picture', 'complaintsFrom.aboutUser',
         ])->loadCount([
-            'tags', 'albums', 'pictures', 'albumsViaAccess',
+            'tags', 'albums', 'pictures', 'albumsViaAccess', 'complaintsFrom',
+            'complaintsFrom as complaints_from_accepted_count' => fn ($query) => $query->where('status', 1),
         ]);
-        return response()->json(['user' => UserResource::make($user)]);
+
+        $quotaTotal = $user->quotaTotal();
+        $quotaUsed = $user->quotaUsed();
+
+        return response()->json([
+            'user' => UserResource::make($user),
+            'quota' => [
+                'total' => $quotaTotal,
+                'used'  => $quotaUsed,
+                'free'  => $quotaTotal - $quotaUsed,
+            ],
+        ]);
     }
 
     public function update(UserUpdateRequest $request, User $user): JsonResponse

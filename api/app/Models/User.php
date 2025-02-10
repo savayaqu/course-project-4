@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Cacheables\SpaceInfo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
@@ -51,11 +52,31 @@ class User extends Model implements
     }
 
     // Функции
-    public function ban()
+    public function ban(): void
     {
         AlbumAccess::whereIn('album_id', $this->albums()->pluck('id'))->delete();
         Complaint::where('about_user_id', $this->id)->update(['status' => 1]);
         $this->tokens()->delete();
+    }
+
+    public function quotaTotal(): int
+    {
+        if ($this->role->name == 'admin') {
+            $space = SpaceInfo::get();
+            $usedHim = $this->quotaUsed();
+            return $space->total - ($space->used - $usedHim);
+        }
+        else {
+            return min(
+                config('settings.free_storage_limit'),
+                SpaceInfo::getCached()->free
+            );
+        }
+    }
+
+    public function quotaUsed(): int
+    {
+        return $this->pictures()->sum('size');
     }
 
     // Связи
