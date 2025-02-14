@@ -37,6 +37,7 @@ public partial class MainPageViewModel : ObservableObject
     public MainPageViewModel(MainPage? contentPage = null)
     {
         _contentPage = contentPage;
+
         RefreshCommand.Execute(null);
     }
 
@@ -58,11 +59,8 @@ public partial class MainPageViewModel : ObservableObject
         HasSynced = AlbumsSynced.Any();
         if (!HasSynced) return;
 
-        //PicturesGroups.Clear();
         PicturesCursors = null;
         CanLoadMore = true;
-
-        //await LoadMoreCommand.ExecuteAsync(null);
     }
 
 
@@ -140,6 +138,44 @@ public partial class MainPageViewModel : ObservableObject
             ))
             .ToList()
         );
+    }
+
+    [RelayCommand]
+    private async Task OpenViewer(IPictureLocal picture)
+    {
+        await Shell.Current.Navigation.PushAsync(
+            new ViewerMainPage(
+                picture,
+                PicturesFlat
+                    .Cast<Models.Pictures.IPicture>()
+                    .ToList(),
+                pictureOut => _contentPage?.ScrollTo(pictureOut)
+            ),
+            false
+        );
+        await Task.Delay(500);
+    }
+
+    public void LightUpdate()
+    {
+        AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
+
+        PicturesFlat
+        .UpdateFrom(AlbumsSynced
+            .SelectMany(album => album.LocalPictures)
+            .OrderByDescending(picture => picture.Date)
+            .ToList()
+        );
+
+        PicturesGroups
+        .SyncWith(new ObservableGroupedCollection<DateOnly, IPictureLocal>(
+            PicturesFlat
+            .GroupBy(picture => new DateOnly(
+                picture.Date.Year,
+                picture.Date.Month,
+                1
+            )
+        )));
     }
 
 
@@ -249,21 +285,5 @@ public partial class MainPageViewModel : ObservableObject
 
         ColumnWidth = containerWidth / ColumnCount;
         Debug.WriteLine($"=== ChgColW ===\n{ColumnWidth} = {containerWidth} / {ColumnCount}");
-    }
-
-    [RelayCommand]
-    private async Task OpenViewer(IPictureLocal picture)
-    {
-        await Shell.Current.Navigation.PushAsync(
-            new ViewerMainPage(
-                picture, 
-                PicturesFlat
-                    .Cast<Models.Pictures.IPicture>()
-                    .ToList(),
-                pictureOut => _contentPage?.ScrollTo(pictureOut)
-            ), 
-            false
-        );
-        await Task.Delay(500);
     }
 }

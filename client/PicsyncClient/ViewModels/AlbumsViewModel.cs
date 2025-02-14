@@ -17,9 +17,9 @@ namespace PicsyncClient.ViewModels;
 
 public partial class AlbumsViewModel : ObservableObject
 {
+    [ObservableProperty] private ObservableCollection<AlbumLocal>  albumsLocal  = [];
     [ObservableProperty] private ObservableCollection<AlbumSynced> albumsSynced = [];
     [ObservableProperty] private ObservableCollection<AlbumRemote> albumsRemote = [];
-    [ObservableProperty] private ObservableCollection<AlbumLocal>  albumsLocal  = [];
 
     public AlbumsViewModel()
     {
@@ -165,14 +165,15 @@ public partial class AlbumsViewModel : ObservableObject
             await LocalData.FillPictures();
         }
         CanUpdateLocal = true;
-        AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
-        AlbumsSynced = new(LocalData.Albums.OfType<AlbumSynced>().ToList());
+        AlbumsLocal .UpdateFrom(LocalData.Albums.OfType<AlbumLocal >().ToList());
+        AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
         return true;
     }
 
     [RelayCommand]
     public void LightUpdate()
     {
+        /*
         if (HasPermissions)
         {
             AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
@@ -180,6 +181,11 @@ public partial class AlbumsViewModel : ObservableObject
         }
 
         AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
+        */
+
+        AlbumsLocal .UpdateFrom(LocalData.Albums.OfType<AlbumLocal >().ToList());
+        AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
+        AlbumsRemote.UpdateFrom(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible).ToList());
     }
 
 
@@ -204,7 +210,11 @@ public partial class AlbumsViewModel : ObservableObject
             cancellationToken: token
         );
 
-        AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
+        AlbumsRemote.UpdateFrom( // TODO: отдельно обновлять только инфу
+            RemoteAlbumsData.AlbumsOwn
+            .Concat(RemoteAlbumsData.AlbumsAccessible)
+            .ToList()
+        );
     }
 
 
