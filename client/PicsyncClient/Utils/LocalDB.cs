@@ -21,8 +21,8 @@ public static class LocalDB
             string hashname;
             try
             {
-                string host = ServerData.Url?.Host ?? "nohost";
-                string login = AuthData.User?.Login ?? "nologin";
+                string host = ServerData.Url?.Host.ToLower() ?? "nohost";
+                string login = AuthData.User?.Login?.ToLower() ?? "nologin";
                 string data = host + "_" + login;
 #if DEBUG
                 Debug.WriteLine("LocalDB: Init: data: " + data);

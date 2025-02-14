@@ -1,4 +1,5 @@
-﻿using PicsyncClient.Models;
+﻿using Microsoft.Maui.Controls;
+using PicsyncClient.Models;
 using PicsyncClient.Models.Response;
 using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
@@ -86,6 +87,20 @@ public static class AuthData
     public static async Task TryExitAndNavigate(Action<bool>? setIsFetch = null)
     {
         bool isExit = false;
+
+        if (PictureSender.Default.IsUploading)
+        {
+            bool isStopUpload = await Shell.Current.DisplayAlert(
+                "Ошибка",
+                $"На фоне идёт синхронизация. Остановить чтобы выйти?",
+                "Остановить и выйти", "Отмена"
+            );
+            if (isStopUpload)
+                PictureSender.Default.StopUpload();
+            else
+                return;
+        }
+
         try
         {
             var res = await FetchAsync(HttpMethod.Post, "logout", setIsFetch);
@@ -98,17 +113,17 @@ public static class AuthData
         {
             isExit = await Shell.Current.DisplayAlert(
                 "Ошибка", 
-                $"Токен не удалился. Причина:\n{ex.Message}\nВыйти насильно?", 
-                "Да", "Отмена"
+                $"Токен не удалился. Причина:\n{ex.Message}\nВыйти насильно?",
+                "Выйти насильно", "Отмена"
             );
         }
 
-        if (isExit)
-        {
-            Token = null;
-            User = null;
-            await Shell.Current.GoToAsync("//Login");
-        }
+        if (!isExit) return;
+
+        Token = null;
+        User = null;
+        LocalDB.Reset();
+        await Shell.Current.GoToAsync("//Login");
     }
 
     public static async Task Update(
