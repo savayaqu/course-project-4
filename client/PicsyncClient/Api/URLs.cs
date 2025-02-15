@@ -11,6 +11,12 @@ public static class URLs
     public static Uri Settings => API_URL;
 
 
+    public static Uri Users =>
+        new($"{API_URL}/users");
+
+    public static Uri UserSelf =>
+        new($"{Users}/me");
+
     public static Uri Albums => 
         new($"{API_URL}/albums");
 
@@ -38,6 +44,13 @@ public static class URLs
 
     public static Uri AlbumAccess(ulong albumId, ulong? userId = null) =>
         new($"{AlbumInfo(albumId)}/accesses" + (userId != null ? $"/{userId}" : ""));
+
+
+    public static Uri ComplaintToAlbum(ulong albumId) =>
+        new($"{AlbumInfo(albumId)}/complaint");
+
+    public static Uri ComplaintToPicture(ulong albumId, ulong pictureId) =>
+        new($"{PictureInfo(albumId, pictureId)}/complaint");
 
 
     public static Uri AlbumPictures(ulong albumId) => 

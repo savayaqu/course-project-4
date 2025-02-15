@@ -38,4 +38,8 @@ public class PictureLocal : PictureBase, IPictureLocal
     // Геттеры
     public override string OriginalPath  => LocalPath;
     public override string ThumbnailPath => LocalPath;
+
+    public override bool IsLocal => true;
+    public override bool IsStrictLocal => true;
+    public override bool IsLocalInSyncAlbum => Album is AlbumSynced;
 }

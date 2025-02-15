@@ -6,6 +6,7 @@ use App\Cacheables\SpaceInfo;
 use App\Exceptions\Api\ApiException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Picture\PictureCreateRequest;
+use App\Http\Requests\Api\Picture\PictureUpdateRequest;
 use App\Http\Resources\PictureResource;
 use App\Models\Album;
 use App\Models\Picture;
@@ -17,7 +18,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Laravel\Facades\Image as Intervention;
+use phpDocumentor\Reflection\File;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\Mime\MimeTypes;
 
 class PictureController extends Controller
 {
@@ -93,9 +96,9 @@ class PictureController extends Controller
         if ($spaceInfo->usedPercent >= config('settings.upload_disable_percentage'))
             throw new ApiException('Server in read-only mode', 400);
 
-        // Получаем сколько сейчас весят пользовательские картинки и какой лимит сервера по загрузкам
-        $currentStorageSize = $user->pictures()->sum('size');
-        $maxStorageSize = config('settings.free_storage_limit');
+        // Получаем сколько сейчас весят пользовательские картинки и какой лимит по загрузкам
+        $currentStorageSize = $user->quotaUsed();
+        $maxStorageSize = $user->quotaTotal();
 
         // Массивы для ответа
         $errored    = [];
@@ -103,10 +106,20 @@ class PictureController extends Controller
 
         // Обрабатываем файлы по одному
         foreach ($pictures as $key => $pictureInRequests) {
-            $file = $request->file("pictures.$key.file");
-            $date = $pictureInRequests['date'] ?? now();
-            $filename = $file->getClientOriginalName();
             try {
+                $file = $request->file("pictures.$key.file");
+                $date = $pictureInRequests['date'] ?? now();
+                $filename = $pictureInRequests['name'] ?? $file->getClientOriginalName();
+
+                logger("\$req filename: $filename");
+
+                $extReq = pathinfo($filename, PATHINFO_EXTENSION);
+                $extReal = $file->guessExtension() ?? $file->extension();
+                if ($extReal != null && $extReal != $extReq)
+                    $filename .= ".$extReal";
+
+                logger("\$upd filename: $filename");
+
                 // Валидация mimes файла и пропускаем если не в разрешённых
                 $validator = Validator::make($pictureInRequests, [
                     'file' => 'mimes:' . implode(',', config('settings.allowed_upload_mimes')),
@@ -114,7 +127,7 @@ class PictureController extends Controller
                 if ($validator->fails()) {
                     $errored[] = [
                         'name'    => $filename,
-                        'message' => $validator->errors()->toArray()['file'],
+                        'message' => $validator->errors()->toArray()['file'][0],
                     ];
                     continue;
                 }
@@ -144,6 +157,10 @@ class PictureController extends Controller
                     ];
                     continue;
                 }
+
+                if (!preg_match('~^[^/\\\\:*?"<>|]+$~u', $filename))
+                    $filename = $hash . ".$extReal";
+
                 // Проверка, существует ли картинка с таким именем и модифицируем имя счётчиком если да
                 $counter = 1;
                 $extension      = pathinfo($filename, PATHINFO_EXTENSION);
@@ -158,9 +175,11 @@ class PictureController extends Controller
                     $filenameValid = "$nameWithoutExt ($counter).$extension";
                 }
 
+                logger("\$filenameValid: $filenameValid");
+
                 // Получение размеров, пропускаем если не получилось
                 try {
-                    $imagesizes = getimagesize($tmpPath);
+                    $imageSizes = getimagesize($tmpPath);
                 }
                 catch (Exception) {
                     $errored[] = [
@@ -176,8 +195,8 @@ class PictureController extends Controller
                     'hash'      => $hash,
                     'date'      => $date,
                     'size'      => $filesize,
-                    'width'     => $imagesizes[0],
-                    'height'    => $imagesizes[1],
+                    'width'     => $imageSizes[0],
+                    'height'    => $imageSizes[1],
                     'album_id'  => $album->id,
                 ]);
 
@@ -189,11 +208,14 @@ class PictureController extends Controller
 
                 // Запись как успешного в ответ
                 $successful[] = $pictureDB;
-            } catch (Exception) {
+            } catch (Exception $ex) {
                 // Что-то пошло не так
                 $errored[] = [
                     'name' => $filename,
-                    'message' => 'Something going wrong',
+                    'message' => 'Something going wrong'
+                    . config('app.debug')
+                        ? ("\n" . $ex->getMessage())
+                        : '',
                 ];
             }
         }
@@ -213,6 +235,42 @@ class PictureController extends Controller
             'sign' => $sign,
             'picture' => PictureResource::make($picture),
         ]);
+    }
+
+    public function update(PictureUpdateRequest $request, Album $album, Picture $picture): JsonResponse
+    {
+        $path = $picture->getPath($album->user_id);
+        $name = $request->name;
+
+        $mimeTypes = new MimeTypes();
+        $mimeType = $mimeTypes->guessMimeType(Storage::path($path));
+        $extReal = $mimeTypes->getExtensions($mimeType)[0] ?? '';
+
+        $extReq = pathinfo($request->name, PATHINFO_EXTENSION);
+
+        if ($extReal != null && $extReal != $extReq)
+            $name .= ".$extReal";
+
+        if ($picture->name == $name)
+            return response()->json(['picture' => PictureResource::make($picture)]);
+
+        $counter = 1;
+        $extension      = pathinfo($name, PATHINFO_EXTENSION);
+        $nameWithoutExt = pathinfo($name, PATHINFO_FILENAME);
+        $nameValid = $name;
+        while (Picture
+            ::where('album_id', $album->id)
+            ->where('name', $nameValid)
+            ->exists()
+        ) {
+            $counter++;
+            $nameValid = "$nameWithoutExt ($counter).$extension";
+        }
+
+        $picture->update(['name' => $nameValid]);
+        Storage::move($path, $picture->getPath($album->user_id));
+
+        return response()->json(['picture' => PictureResource::make($picture)]);
     }
 
     public function thumbnail(Request $request, $albumId, $pictureId, $orientation, $size): BinaryFileResponse|JsonResponse|RedirectResponse

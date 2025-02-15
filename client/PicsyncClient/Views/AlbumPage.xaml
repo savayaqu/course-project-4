@@ -34,7 +34,7 @@
                 </StackLayout.GestureRecognizers>
                 
                 <HorizontalStackLayout>
-                    <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold"
+                    <Label Text="{Binding Album.Name}" FontSize="18" FontAttributes="Bold" LineBreakMode="MiddleTruncation"
                            TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}"/>
                     <Label Text="{Binding Album.NameDuplicaIndex, StringFormat=' ({0})'}" FontSize="18" VerticalTextAlignment="End" IsVisible="False" 
                            TextColor="{AppThemeBinding Dark={StaticResource SecondaryDarkText}, Light={StaticResource Black}}">
@@ -89,7 +89,7 @@
                     </HorizontalStackLayout>
                 </HorizontalStackLayout>
             </StackLayout>
-            
+
             <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center" x:Name="AfterTitleManagmentButtons" IsVisible="False">
                 <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="False" Command="{Binding AccessManageCommand}">
                     <mcb:ContentButton.Resources>
@@ -234,7 +234,8 @@
                 </StackLayout>
             </mcb:ContentButton>
 
-            <mcb:ContentButton Grid.Column="3" Margin="5,0,0,0" Padding="8,2" HeightRequest="40" Command="{Binding RefreshCommand}">
+            <mcb:ContentButton Grid.Column="3" Margin="5,0,0,0" Padding="8,2" HeightRequest="40" Command="{Binding RefreshCommand}"
+                               IsVisible="{OnPlatform True, Android=False, iOS=False}">
                 <StackLayout VerticalOptions="Center" Padding="1,0">
                     <Image Source="refresh_cw.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
                         <Image.Behaviors>
@@ -270,177 +271,199 @@
             </VisualState>
         </VisualStateGroup>
     </VisualStateManager.VisualStateGroups>
-    
-    <CollectionView Margin="1,0"
-                    ItemsSource="{Binding PicturesGroups}" 
-                    IsGrouped="True"
-                    SizeChanged="CollectionView_SizeChanged"
-                    RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
-                    RemainingItemsThreshold="{Binding PageSize}">
-        <CollectionView.Header>
-            <ScrollView Orientation="Horizontal" HorizontalOptions="Center" x:Name="BottomManagmentButtons" IsVisible="False" MaximumHeightRequest="0">
-                <HorizontalStackLayout Spacing="5" Margin="5" HorizontalOptions="Center">
-                    <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="False" Command="{Binding AccessManageCommand}">
-                        <mcb:ContentButton.Resources>
-                            <ResourceDictionary>
-                                <Style TargetType="Label">
-                                    <Setter Property="TextColor" Value="{AppThemeBinding Dark=Black, Light=White}"/>
-                                </Style>
-                            </ResourceDictionary>
-                        </mcb:ContentButton.Resources>
-                        <mcb:ContentButton.Triggers>
-                            <MultiTrigger TargetType="mcb:ContentButton">
-                                <MultiTrigger.Conditions>
-                                    <BindingCondition Binding="{Binding IsRemoteOwned}" Value="True"/>
-                                    <BindingCondition Binding="{Binding Album.InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}" Value="True"/>
-                                </MultiTrigger.Conditions>
-                                <Setter Property="IsVisible" Value="True"/>
-                            </MultiTrigger>
-                            <MultiTrigger TargetType="mcb:ContentButton">
-                                <MultiTrigger.Conditions>
-                                    <BindingCondition Binding="{Binding IsRemoteOwned}" Value="True"/>
-                                    <BindingCondition Binding="{Binding Album.GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}" Value="True"/>
-                                </MultiTrigger.Conditions>
-                                <Setter Property="IsVisible" Value="True"/>
-                            </MultiTrigger>
-                        </mcb:ContentButton.Triggers>
-                        <StackLayout VerticalOptions="Center" Padding="1,0">
-                            <HorizontalStackLayout Spacing="10">
-                                <HorizontalStackLayout Spacing="2">
-                                    <Image Source="share_2.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
-                                        <Image.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
-                                        </Image.Behaviors>
-                                    </Image>
-                                    <Label Text="{Binding Album.InvitationsCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                </HorizontalStackLayout>
-                                <HorizontalStackLayout Spacing="2">
-                                    <Image Source="users.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
-                                        <Image.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
-                                        </Image.Behaviors>
-                                    </Image>
-                                    <Label Text="{Binding Album.GrantAccessesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                </HorizontalStackLayout>
-                            </HorizontalStackLayout>
-                            <Label Text="Доступы" FontSize="10" HorizontalOptions="Center" FontAttributes="Bold"/>
-                        </StackLayout>
-                    </mcb:ContentButton>
 
-                    <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="{Binding IsSynced}" Command="{Binding SyncManageCommand}">
-                        <mcb:ContentButton.Resources>
-                            <ResourceDictionary>
-                                <Style TargetType="Label">
-                                    <Setter Property="TextColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
-                                </Style>
-                            </ResourceDictionary>
-                        </mcb:ContentButton.Resources>
-                        <StackLayout VerticalOptions="Center" Padding="1,0">
-                            <HorizontalStackLayout Spacing="10">
-                                <HorizontalStackLayout Spacing="2">
-                                    <Image Source="cloud_upload.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
-                                        <Image.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
-                                        </Image.Behaviors>
-                                    </Image>
-                                    <Label Text="{Binding Album.TrueLocalPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding RefreshCommand.IsRunning}">
+        <CollectionView Margin="1,0"
+                ItemsSource="{Binding PicturesGroups}" 
+                IsGrouped="True"
+                SizeChanged="CollectionView_SizeChanged"
+                RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}"
+                RemainingItemsThreshold="{Binding PageSize}">
+            <CollectionView.Header>
+                <ScrollView Orientation="Horizontal" HorizontalOptions="Center" x:Name="BottomManagmentButtons" IsVisible="False" MaximumHeightRequest="0">
+                    <HorizontalStackLayout Spacing="5" Margin="5" HorizontalOptions="Center">
+                        <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="False" Command="{Binding AccessManageCommand}">
+                            <mcb:ContentButton.Resources>
+                                <ResourceDictionary>
+                                    <Style TargetType="Label">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Dark=Black, Light=White}"/>
+                                    </Style>
+                                </ResourceDictionary>
+                            </mcb:ContentButton.Resources>
+                            <mcb:ContentButton.Triggers>
+                                <MultiTrigger TargetType="mcb:ContentButton">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsRemoteOwned}" Value="True"/>
+                                        <BindingCondition Binding="{Binding Album.InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="IsVisible" Value="True"/>
+                                </MultiTrigger>
+                                <MultiTrigger TargetType="mcb:ContentButton">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding IsRemoteOwned}" Value="True"/>
+                                        <BindingCondition Binding="{Binding Album.GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}" Value="True"/>
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="IsVisible" Value="True"/>
+                                </MultiTrigger>
+                            </mcb:ContentButton.Triggers>
+                            <StackLayout VerticalOptions="Center" Padding="1,0">
+                                <HorizontalStackLayout Spacing="10">
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Image Source="share_2.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
+                                            <Image.Behaviors>
+                                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
+                                            </Image.Behaviors>
+                                        </Image>
+                                        <Label Text="{Binding Album.InvitationsCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Image Source="users.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
+                                            <Image.Behaviors>
+                                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
+                                            </Image.Behaviors>
+                                        </Image>
+                                        <Label Text="{Binding Album.GrantAccessesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
                                 </HorizontalStackLayout>
-                                <HorizontalStackLayout Spacing="2">
-                                    <Image Source="cloud_check.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
-                                        <Image.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
-                                        </Image.Behaviors>
-                                    </Image>
-                                    <Label Text="{Binding Album.SyncedPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <Label Text="Доступы" FontSize="10" HorizontalOptions="Center" FontAttributes="Bold"/>
+                            </StackLayout>
+                        </mcb:ContentButton>
+
+                        <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="{Binding IsSynced}" Command="{Binding SyncManageCommand}">
+                            <mcb:ContentButton.Resources>
+                                <ResourceDictionary>
+                                    <Style TargetType="Label">
+                                        <Setter Property="TextColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
+                                    </Style>
+                                </ResourceDictionary>
+                            </mcb:ContentButton.Resources>
+                            <StackLayout VerticalOptions="Center" Padding="1,0">
+                                <HorizontalStackLayout Spacing="10">
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Image Source="cloud_upload.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
+                                            <Image.Behaviors>
+                                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
+                                            </Image.Behaviors>
+                                        </Image>
+                                        <Label Text="{Binding Album.TrueLocalPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Image Source="cloud_check.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
+                                            <Image.Behaviors>
+                                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
+                                            </Image.Behaviors>
+                                        </Image>
+                                        <Label Text="{Binding Album.SyncedPicturesCount}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Spacing="2">
+                                        <Image Source="cloud.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
+                                            <Image.Behaviors>
+                                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
+                                            </Image.Behaviors>
+                                        </Image>
+                                        <Label Text="{Binding Album.TrueRemotePicturesCount}" HorizontalOptions="Center"/>
+                                    </HorizontalStackLayout>
                                 </HorizontalStackLayout>
-                                <HorizontalStackLayout Spacing="2">
-                                    <Image Source="cloud.png" HorizontalOptions="Center" HeightRequest="20" WidthRequest="20">
-                                        <Image.Behaviors>
-                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Black, Light=White}"/>
-                                        </Image.Behaviors>
-                                    </Image>
-                                    <Label Text="{Binding Album.TrueRemotePicturesCount}" HorizontalOptions="Center"/>
-                                </HorizontalStackLayout>
-                            </HorizontalStackLayout>
-                            <Label Text="Синхронизация" FontSize="10" HorizontalOptions="Center" FontAttributes="Bold"/>
-                        </StackLayout>
-                    </mcb:ContentButton>
-                </HorizontalStackLayout>
-            </ScrollView>
-        </CollectionView.Header>
-        <CollectionView.GroupHeaderTemplate>
-            <DataTemplate>
-                <Label Text="{Binding Title}" FontSize="18">
-                    <Label.Margin>
-                        <OnPlatform x:TypeArguments="Thickness" Default="5,5,5,1">
-                            <On Platform="WinUI" Value="0,5,0,1"/>
-                        </OnPlatform>
-                    </Label.Margin>
-                </Label>
-            </DataTemplate>
-        </CollectionView.GroupHeaderTemplate>
-        <CollectionView.ItemsLayout>
-            <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" />
-        </CollectionView.ItemsLayout>
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <Grid HeightRequest="{Binding ColumnWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumViewModel}}}">
-                    <!--<Border Margin="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 4"></Border>-->
-                    <Image Margin="1" Source="{Binding ThumbnailPath}" Aspect="AspectFill">
-                        <Image.GestureRecognizers>
-                            <TapGestureRecognizer CommandParameter="{Binding .}"
-                                Command="{Binding OpenViewerCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumViewModel}}}"/>
-                        </Image.GestureRecognizers>
-                    </Image>
-                    <Grid HorizontalOptions="End" VerticalOptions="End" Padding="2"
-                          IsVisible="{Binding IsSynced, Source={RelativeSource AncestorType={x:Type vm:AlbumViewModel}}}">
-                        <Image HeightRequest="20" WidthRequest="20" >
-                            <Image.Behaviors>
-                                <tk:IconTintColorBehavior TintColor="White"/>
-                            </Image.Behaviors>
-                            <Image.Shadow>
-                                <Shadow Brush="Black" Offset="0,0" Radius="3" Opacity="0.75" />
-                            </Image.Shadow>
-                            <Image.Triggers>
-                                <DataTrigger Binding="{Binding ., Converter={StaticResource TrueOnTargetTypeStrictConverter}, ConverterParameter={x:Type tpicture:PictureSynced}}" Value="True" TargetType="Image">
-                                    <Setter Property="Source" Value="cloud_check.png"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ., Converter={StaticResource TrueOnTargetTypeStrictConverter}, ConverterParameter={x:Type tpicture:PictureRemote}}" Value="True" TargetType="Image">
-                                    <Setter Property="Source" Value="cloud.png"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding ., Converter={StaticResource TrueOnTargetTypeStrictConverter}, ConverterParameter={x:Type tpicture:PictureLocal}}" Value="True" TargetType="Image">
-                                    <Setter Property="Source" Value="cloud_upload.png"/>
-                                </DataTrigger>
-                            </Image.Triggers>
+                                <Label Text="Синхронизация" FontSize="10" HorizontalOptions="Center" FontAttributes="Bold"/>
+                            </StackLayout>
+                        </mcb:ContentButton>
+                    </HorizontalStackLayout>
+                </ScrollView>
+            </CollectionView.Header>
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding Title}" FontSize="18">
+                        <Label.Margin>
+                            <OnPlatform x:TypeArguments="Thickness" Default="5,5,5,1">
+                                <On Platform="WinUI" Value="0,5,0,1"/>
+                            </OnPlatform>
+                        </Label.Margin>
+                    </Label>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid HeightRequest="{Binding ColumnWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumViewModel}}}">
+                        <!--<Border Margin="1" Stroke="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 4"></Border>-->
+                        <Image Margin="1" Source="{Binding ThumbnailPath}" Aspect="AspectFill">
+                            <Image.GestureRecognizers>
+                                <TapGestureRecognizer CommandParameter="{Binding .}"
+                            Command="{Binding OpenViewerCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumViewModel}}}"/>
+                            </Image.GestureRecognizers>
                         </Image>
-                    </Grid>
-                </Grid>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-        <CollectionView.Footer>
-            <StackLayout>
-                <BoxView HeightRequest="1" BackgroundColor="Transparent"/>
-
-                <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
-                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
-                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                    <StackLayout Grid.Column="1" Spacing="5">
-                        <HorizontalStackLayout Spacing="5">
-                            <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                        <Grid HorizontalOptions="End" VerticalOptions="End" Padding="2"
+                      IsVisible="{Binding IsSynced, Source={RelativeSource AncestorType={x:Type vm:AlbumViewModel}}}">
+                            <Image HeightRequest="20" WidthRequest="20" >
                                 <Image.Behaviors>
-                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                    <tk:IconTintColorBehavior TintColor="White"/>
                                 </Image.Behaviors>
+                                <Image.Shadow>
+                                    <Shadow Brush="Black" Offset="0,0" Radius="3" Opacity="0.75" />
+                                </Image.Shadow>
+                                <Image.Triggers>
+                                    <DataTrigger Binding="{Binding ., Converter={StaticResource TrueOnTargetTypeStrictConverter}, ConverterParameter={x:Type tpicture:PictureSynced}}" Value="True" TargetType="Image">
+                                        <Setter Property="Source" Value="cloud_check.png"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ., Converter={StaticResource TrueOnTargetTypeStrictConverter}, ConverterParameter={x:Type tpicture:PictureRemote}}" Value="True" TargetType="Image">
+                                        <Setter Property="Source" Value="cloud.png"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ., Converter={StaticResource TrueOnTargetTypeStrictConverter}, ConverterParameter={x:Type tpicture:PictureLocal}}" Value="True" TargetType="Image">
+                                        <Setter Property="Source" Value="cloud_upload.png"/>
+                                    </DataTrigger>
+                                </Image.Triggers>
                             </Image>
-                            <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding Error}"/>
-                    </StackLayout>
-                </Border>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.Footer>
+                <StackLayout>
+                    <BoxView HeightRequest="1" BackgroundColor="Transparent"/>
 
-                <Button Margin="1,0,1,2" Text="Ещё" 
-                        Command="{Binding LoadMoreCommand}" 
-                        IsVisible="{Binding CanLoadMore}"/>
-            </StackLayout>
-        </CollectionView.Footer>
-    </CollectionView>
+                    <StackLayout Spacing="5">
+                        <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
+                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                IsVisible="{Binding ErrorOnAlbum, Converter={StaticResource IsNotNullConverter}}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding ErrorOnAlbum}"/>
+                            </StackLayout>
+                        </Border>
+
+                        <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
+                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                IsVisible="{Binding ErrorOnPage, Converter={StaticResource IsNotNullConverter}}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding ErrorOnPage}"/>
+                            </StackLayout>
+                        </Border>
+                    </StackLayout>
+
+                    <Label Margin="5" Text="Загрузка..." IsVisible="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+                    <Button Margin="1,0,1,2" Text="Ещё" 
+                    Command="{Binding LoadMoreCommand}" 
+                    IsVisible="{Binding CanLoadMore}"/>
+                </StackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
+    </RefreshView>
 </ContentPage>

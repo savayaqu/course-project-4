@@ -45,6 +45,6 @@ public partial class AlbumsPage : ContentPage
             return;
         }
 
-        //viewModel.LightUpdate(); // TODO: Clear статичных списков и переназначение списков во ViewModel жрёт производительность на переотображение превью
+        viewModel.LightUpdate();
     }
 }

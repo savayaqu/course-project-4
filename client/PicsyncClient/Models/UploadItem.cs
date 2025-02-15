@@ -11,17 +11,10 @@ public partial class UploadItem<TItem>() : ObservableObject
         Item = item;
     }
 
-    public required TItem Item { get; set; }
+    public required TItem Item { get; init; }
 
-    [ObservableProperty]
-    public string? error;
-
-    [ObservableProperty]
-    public DateTime? startedAt;
-
-    [ObservableProperty]
-    public TimeSpan? timeSpent;
-
-    [ObservableProperty]
-    public double  progress  = 0;
+    [ObservableProperty] private string?   _error;
+    [ObservableProperty] private DateTime? _startedAt;
+    [ObservableProperty] private TimeSpan? _timeSpent;
+    [ObservableProperty] private double    _progress  = 0;
 }

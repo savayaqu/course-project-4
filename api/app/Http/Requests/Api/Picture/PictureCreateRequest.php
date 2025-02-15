@@ -12,6 +12,10 @@ class PictureCreateRequest extends ApiRequest
             'pictures'        => 'required|array|min:1',
             'pictures.*.file' => 'required|file',
             'pictures.*.date' => 'nullable|date',
+            'pictures.*.name' => [
+                'nullable',
+                'regex:~^[^/\\\\:*?"<>|]+$~u',
+            ],
         ];
     }
 }

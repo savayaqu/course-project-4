@@ -47,9 +47,12 @@
                                 <Label WidthRequest="75" Text="Название" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
                                 <Grid Grid.Column="2" ColumnDefinitions="*,auto">
                                     <Label Text="{Binding Album.Name}" FontAttributes="Bold" VerticalOptions="Center"/>
-                                    <Entry Text="{Binding NewName}" IsVisible="False"/>
-                                    <Button Grid.Column="1" ImageSource="pencil.png" HeightRequest="40" WidthRequest="40" Padding="8"
-                                            Command="{Binding StartEditName}" IsVisible="{Binding IsRemoteOwned}"/>
+                                    <Button Grid.Column="1" ImageSource="pencil.png" HeightRequest="30" WidthRequest="30" Padding="4" BackgroundColor="Transparent"
+                                            Command="{Binding UpdateNameCommand}" IsVisible="{Binding IsRemoteOwned}">
+                                        <Button.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Button.Behaviors>
+                                    </Button>
                                 </Grid>
                             </Grid>
 

@@ -21,45 +21,164 @@
         <vm:AlbumsViewModel/>
     </ContentPage.BindingContext>
 
-    <ScrollView>
-        <StackLayout Margin="5,0">
+    <RefreshView Command="{Binding RequestAlbumsCommand}" IsRefreshing="{Binding RequestAlbumsCommand.IsRunning}">
+        <ScrollView>
+            <StackLayout Margin="5,0">
 
-            <StackLayout IsVisible="{Binding SyncedIsVisibled}">
+                <StackLayout IsVisible="{Binding SyncedIsVisibled}">
+                    <Grid ColumnDefinitions="*,auto" HeightRequest="50">
+                        <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
+                            <Label FontSize="18" VerticalOptions="Center" Text="Синхронизируемые"/>
+                            <ActivityIndicator VerticalOptions="Center" HeightRequest="24" WidthRequest="24"
+                                   IsRunning="{Binding RequestAlbumsCommand.IsRunning}"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                            <Label Text="Обновить" TextDecorations="Underline" FontSize="14" Padding="10" VerticalTextAlignment="Center"
+                           TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                           IsEnabled="{Binding CanRequestAlbums}">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding RequestAlbumsCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <CollectionView ItemsSource="{Binding AlbumsSynced}">
+                        <CollectionView.ItemsLayout>
+                            <GridItemsLayout Orientation="Vertical" 
+                                     Span="{Binding ColumnCount}" 
+                                     VerticalItemSpacing="5" 
+                                     HorizontalItemSpacing="5"/>
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame Padding="10" Margin="0">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                    CommandParameter="{Binding .}"
+                                    Command="{Binding GoToAlbumCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}"/>
+                                    </Frame.GestureRecognizers>
+
+                                    <StackLayout>
+                                        <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5" 
+                                    HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
+                                            <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                                <Image Source="{Binding ThumbnailPaths[0]}" Aspect="AspectFill"/>
+                                            </Border>
+                                            <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                                <Image Source="{Binding ThumbnailPaths[1]}" Aspect="AspectFill"/>
+                                            </Border>
+                                            <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                                <Image Source="{Binding ThumbnailPaths[2]}" Aspect="AspectFill"/>
+                                            </Border>
+                                            <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                                <Image Source="{Binding ThumbnailPaths[3]}" Aspect="AspectFill"/>
+                                            </Border>
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,auto" Margin="0,10,0,0" HeightRequest="40">
+                                            <StackLayout VerticalOptions="Center">
+                                                <HorizontalStackLayout>
+                                                    <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" LineBreakMode="MiddleTruncation"/>
+                                                    <Label Text="{Binding NameDuplicaIndex, StringFormat=' ({0})'}" VerticalTextAlignment="End" 
+                                                   IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
+                                                    <Label Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14" VerticalTextAlignment="End"/>
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray" FontSize="11"
+                                            IsVisible="{Binding ., Converter={StaticResource FalseOnUriRoot}}"/>
+                                            </StackLayout>
+
+                                            <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                                                <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
+                                                IsVisible="{Binding InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}">
+                                                    <Label Text="{Binding InvitationsCount}" HorizontalOptions="Center"/>
+                                                    <Image Source="share_2.png" HeightRequest="16" WidthRequest="16">
+                                                        <Image.Behaviors>
+                                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                                        </Image.Behaviors>
+                                                    </Image>
+                                                </StackLayout>
+                                                <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
+                                                IsVisible="{Binding GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}">
+                                                    <Label Text="{Binding GrantAccessesCount}" HorizontalOptions="Center"/>
+                                                    <Image Source="users.png" HeightRequest="16" WidthRequest="16">
+                                                        <Image.Behaviors>
+                                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                                        </Image.Behaviors>
+                                                    </Image>
+                                                </StackLayout>
+                                                <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3">
+                                                    <Label Text="{Binding PicturesCount, Converter={StaticResource CountSuffixConverter}}" HorizontalOptions="Center"/>
+                                                    <Image Source="images.png" HeightRequest="16" WidthRequest="16">
+                                                        <Image.Behaviors>
+                                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                                        </Image.Behaviors>
+                                                    </Image>
+                                                </StackLayout>
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </StackLayout>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.Footer>
+                            <BoxView HeightRequest="5" Background="Transparent"/>
+                        </CollectionView.Footer>
+                    </CollectionView>
+
+                    <BoxView HeightRequest="1" Color="Gray" Margin="5"/>
+                    <!--<BoxView HeightRequest="5" BackgroundColor="Transparent"/>-->
+                </StackLayout>
+
                 <Grid ColumnDefinitions="*,auto" HeightRequest="50">
                     <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
-                        <Label FontSize="18" VerticalOptions="Center" Text="Синхронизируемые"/>
+                        <Label FontSize="18" VerticalOptions="Center" Text="На сервере"/>
                         <ActivityIndicator VerticalOptions="Center" HeightRequest="24" WidthRequest="24"
-                                       IsRunning="{Binding RequestAlbumsCommand.IsRunning}"/>
+                                   IsRunning="{Binding RequestRemoteAlbumsCommand.IsRunning}"/>
                     </HorizontalStackLayout>
                     <HorizontalStackLayout Grid.Column="1" Spacing="10">
                         <Label Text="Обновить" TextDecorations="Underline" FontSize="14" Padding="10" VerticalTextAlignment="Center"
-                               TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
-                               IsEnabled="{Binding CanRequestAlbums}">
+                       IsEnabled="{Binding CanRequestRemote}"
+                       TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
                             <Label.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding RequestAlbumsCommand}" />
+                                <TapGestureRecognizer Command="{Binding RequestRemoteAlbumsCommand}"/>
                             </Label.GestureRecognizers>
                         </Label>
                     </HorizontalStackLayout>
                 </Grid>
-                <CollectionView ItemsSource="{Binding AlbumsSynced}">
+                <Border Padding="10" Stroke="Red"
+                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="6"/>
+                    </Border.StrokeShape>
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <HorizontalStackLayout Spacing="5">
+                            <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                <Image.Behaviors>
+                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                </Image.Behaviors>
+                            </Image>
+                            <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding Error}"/>
+                    </StackLayout>
+                </Border>
+                <CollectionView ItemsSource="{Binding AlbumsRemote}" SizeChanged="CollectionView_SizeChanged">
                     <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" 
-                                         Span="{Binding ColumnCount}" 
-                                         VerticalItemSpacing="5" 
-                                         HorizontalItemSpacing="5"/>
+                        <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" VerticalItemSpacing="5" HorizontalItemSpacing="5"/>
                     </CollectionView.ItemsLayout>
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
                             <Frame Padding="10" Margin="0">
                                 <Frame.GestureRecognizers>
                                     <TapGestureRecognizer 
-                                        CommandParameter="{Binding .}"
-                                        Command="{Binding GoToAlbumCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}"/>
+                                CommandParameter="{Binding .}"
+                                Command="{Binding GoToAlbumCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}"/>
                                 </Frame.GestureRecognizers>
 
                                 <StackLayout>
-                                    <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5" 
-                                        HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5"
+                                  HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
+
                                         <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
                                             <Image Source="{Binding ThumbnailPaths[0]}" Aspect="AspectFill"/>
                                         </Border>
@@ -75,19 +194,28 @@
                                     </Grid>
                                     <Grid ColumnDefinitions="*,auto" Margin="0,10,0,0" HeightRequest="40">
                                         <StackLayout VerticalOptions="Center">
-                                            <HorizontalStackLayout>
-                                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
-                                                <Label Text="{Binding NameDuplicaIndex, StringFormat=' ({0})'}" VerticalTextAlignment="End" 
-                                                       IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
-                                                <Label Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14" VerticalTextAlignment="End"/>
-                                            </HorizontalStackLayout>
-                                            <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray" FontSize="11"
-                                                IsVisible="{Binding ., Converter={StaticResource FalseOnUriRoot}}"/>
+                                            <Label>
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
+                                                        <Span Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14"/>
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
+                                            <Label IsVisible="{Binding Owner, Converter={StaticResource IsNotNullConverter}}">
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="от " TextColor="Gray"/>
+                                                        <Span Text="{Binding Owner.Nickname}"/>
+                                                        <Span Text="{Binding Owner.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="12"/>
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
                                         </StackLayout>
 
-                                        <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="5">
                                             <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
-                                                    IsVisible="{Binding InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}">
+                                                 IsVisible="{Binding InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}">
                                                 <Label Text="{Binding InvitationsCount}" HorizontalOptions="Center"/>
                                                 <Image Source="share_2.png" HeightRequest="16" WidthRequest="16">
                                                     <Image.Behaviors>
@@ -96,7 +224,7 @@
                                                 </Image>
                                             </StackLayout>
                                             <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
-                                                    IsVisible="{Binding GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}">
+                                                 IsVisible="{Binding GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}">
                                                 <Label Text="{Binding GrantAccessesCount}" HorizontalOptions="Center"/>
                                                 <Image Source="users.png" HeightRequest="16" WidthRequest="16">
                                                     <Image.Behaviors>
@@ -122,224 +250,98 @@
                         <BoxView HeightRequest="5" Background="Transparent"/>
                     </CollectionView.Footer>
                 </CollectionView>
-                
+
+                <Label Text="Ввести код приглашения" TextDecorations="Underline" FontSize="14" Padding="10" HorizontalOptions="Center"
+               TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding OpenInvitationPreviewCommand}"/>
+                    </Label.GestureRecognizers>
+                </Label>
+
                 <BoxView HeightRequest="1" Color="Gray" Margin="5"/>
                 <!--<BoxView HeightRequest="5" BackgroundColor="Transparent"/>-->
-            </StackLayout>
 
-            <Grid ColumnDefinitions="*,auto" HeightRequest="50">
-                <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
-                    <Label FontSize="18" VerticalOptions="Center" Text="На сервере"/>
-                    <ActivityIndicator VerticalOptions="Center" HeightRequest="24" WidthRequest="24"
-                                       IsRunning="{Binding RequestRemoteAlbumsCommand.IsRunning}"/>
-                </HorizontalStackLayout>
-                <HorizontalStackLayout Grid.Column="1" Spacing="10">
-                    <Label Text="Обновить" TextDecorations="Underline" FontSize="14" Padding="10" VerticalTextAlignment="Center"
-                           IsEnabled="{Binding CanRequestRemote}"
-                           TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding RequestRemoteAlbumsCommand}"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                </HorizontalStackLayout>
-            </Grid>
-            <Border Padding="10" Stroke="Red"
-                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
-                    IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="6"/>
-                </Border.StrokeShape>
-                <StackLayout Grid.Column="1" Spacing="5">
-                    <HorizontalStackLayout Spacing="5">
-                        <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
-                            <Image.Behaviors>
-                                <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                            </Image.Behaviors>
-                        </Image>
-                        <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                <Grid ColumnDefinitions="*,auto" HeightRequest="50">
+                    <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
+                        <Label FontSize="18" VerticalOptions="Center" Text="Локальные"/>
+                        <ActivityIndicator VerticalOptions="Center" HeightRequest="24" WidthRequest="24"
+                                   IsRunning="{Binding RequestLocalAlbumsCommand.IsRunning}"/>
                     </HorizontalStackLayout>
-                    <Label Text="{Binding Error}"/>
-                </StackLayout>
-            </Border>
-            <CollectionView ItemsSource="{Binding AlbumsRemote}" SizeChanged="CollectionView_SizeChanged">
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" VerticalItemSpacing="5" HorizontalItemSpacing="5"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame Padding="10" Margin="0">
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer 
-                                    CommandParameter="{Binding .}"
-                                    Command="{Binding GoToAlbumCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}"/>
-                            </Frame.GestureRecognizers>
+                    <HorizontalStackLayout Grid.Column="1" Spacing="10">
+                        <Label Text="Обновить" TextDecorations="Underline" FontSize="14" Padding="10" VerticalTextAlignment="Center"
+                       TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                       IsVisible="{Binding HasPermissions}"
+                       IsEnabled="{Binding CanUpdateLocal}">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding RequestLocalAlbumsCommand}"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+                </Grid>
+                <Button Text="Запросить разрешения к файлам" Margin="10" 
+                Command="{Binding RequestPermissionsCommand}"
+                IsVisible="{Binding HasPermissions, Converter={StaticResource InvertedBoolConverter}}"/>
+                <CollectionView ItemsSource="{Binding AlbumsLocal}" IsVisible="{Binding HasPermissions}">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" VerticalItemSpacing="5" HorizontalItemSpacing="5"/>
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="10" Margin="0">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer 
+                                CommandParameter="{Binding .}"
+                                Command="{Binding GoToAlbumCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}"/>
+                                </Frame.GestureRecognizers>
 
-                            <StackLayout>
-                                <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5"
-                                      HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
-
-                                    <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[0]}" Aspect="AspectFill"/>
-                                    </Border>
-                                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[1]}" Aspect="AspectFill"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[2]}" Aspect="AspectFill"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[3]}" Aspect="AspectFill"/>
-                                    </Border>
-                                </Grid>
-                                <Grid ColumnDefinitions="*,auto" Margin="0,10,0,0" HeightRequest="40">
-                                    <StackLayout VerticalOptions="Center">
-                                        <Label>
-                                            <Label.FormattedText>
-                                                <FormattedString>
-                                                    <Span Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
-                                                    <Span Text="{Binding Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="14"/>
-                                                </FormattedString>
-                                            </Label.FormattedText>
-                                        </Label>
-                                        <Label IsVisible="{Binding Owner, Converter={StaticResource IsNotNullConverter}}">
-                                            <Label.FormattedText>
-                                                <FormattedString>
-                                                    <Span Text="от " TextColor="Gray"/>
-                                                    <Span Text="{Binding Owner.Nickname}"/>
-                                                    <Span Text="{Binding Owner.Id, StringFormat=' #{0}'}" TextColor="Gray" FontSize="12"/>
-                                                </FormattedString>
-                                            </Label.FormattedText>
-                                        </Label>
-                                    </StackLayout>
-
-                                    <HorizontalStackLayout Grid.Column="1" Spacing="10">
-                                        <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
-                                                     IsVisible="{Binding InvitationsCount, Converter={StaticResource NonZeroToTrueConverter}}">
-                                            <Label Text="{Binding InvitationsCount}" HorizontalOptions="Center"/>
-                                            <Image Source="share_2.png" HeightRequest="16" WidthRequest="16">
-                                                <Image.Behaviors>
-                                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                                </Image.Behaviors>
-                                            </Image>
+                                <StackLayout>
+                                    <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5" 
+                                HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
+                                        <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                            <Image Source="{Binding ThumbnailPaths[0]}" Aspect="AspectFill"/>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                            <Image Source="{Binding ThumbnailPaths[1]}" Aspect="AspectFill"/>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                            <Image Source="{Binding ThumbnailPaths[2]}" Aspect="AspectFill"/>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
+                                            <Image Source="{Binding ThumbnailPaths[3]}" Aspect="AspectFill"/>
+                                        </Border>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="*,auto" Margin="0,10,0,0" HeightRequest="40">
+                                        <StackLayout VerticalOptions="Center">
+                                            <HorizontalStackLayout>
+                                                <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
+                                                <Label Text="{Binding NameDuplicaIndex, StringFormat=' ({0})'}" VerticalTextAlignment="End" 
+                                               IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
+                                            </HorizontalStackLayout>
+                                            <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray"
+                                           IsVisible="{Binding LocalPath, Converter={StaticResource FalseOnUriRoot}}"/>
                                         </StackLayout>
-                                        <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3"
-                                                     IsVisible="{Binding GrantAccessesCount, Converter={StaticResource NonZeroToTrueConverter}}">
-                                            <Label Text="{Binding GrantAccessesCount}" HorizontalOptions="Center"/>
-                                            <Image Source="users.png" HeightRequest="16" WidthRequest="16">
-                                                <Image.Behaviors>
-                                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                                </Image.Behaviors>
-                                            </Image>
-                                        </StackLayout>
-                                        <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3">
-                                            <Label Text="{Binding PicturesCount, Converter={StaticResource CountSuffixConverter}}" HorizontalOptions="Center"/>
-                                            <Image Source="images.png" HeightRequest="16" WidthRequest="16">
-                                                <Image.Behaviors>
-                                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                                </Image.Behaviors>
-                                            </Image>
-                                        </StackLayout>
-                                    </HorizontalStackLayout>
-                                </Grid>
-                            </StackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-                <CollectionView.Footer>
-                    <BoxView HeightRequest="5" Background="Transparent"/>
-                </CollectionView.Footer>
-            </CollectionView>
 
-            <Label Text="Ввести код приглашения" TextDecorations="Underline" FontSize="14" Padding="10" HorizontalOptions="Center"
-                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenInvitationPreviewCommand}"/>
-                </Label.GestureRecognizers>
-            </Label>
-
-            <BoxView HeightRequest="1" Color="Gray" Margin="5"/>
-            <!--<BoxView HeightRequest="5" BackgroundColor="Transparent"/>-->
-
-            <Grid ColumnDefinitions="*,auto" HeightRequest="50">
-                <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
-                    <Label FontSize="18" VerticalOptions="Center" Text="Локальные"/>
-                    <ActivityIndicator VerticalOptions="Center" HeightRequest="24" WidthRequest="24"
-                                       IsRunning="{Binding RequestLocalAlbumsCommand.IsRunning}"/>
-                </HorizontalStackLayout>
-                <HorizontalStackLayout Grid.Column="1" Spacing="10">
-                    <Label Text="Обновить" TextDecorations="Underline" FontSize="14" Padding="10" VerticalTextAlignment="Center"
-                           TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
-                           IsVisible="{Binding HasPermissions}"
-                           IsEnabled="{Binding CanUpdateLocal}">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding RequestLocalAlbumsCommand}"/>
-                        </Label.GestureRecognizers>
-                    </Label>
-                </HorizontalStackLayout>
-            </Grid>
-            <Button Text="Запросить разрешения к файлам" Margin="10" 
-                    Command="{Binding RequestPermissionsCommand}"
-                    IsVisible="{Binding HasPermissions, Converter={StaticResource InvertedBoolConverter}}"/>
-            <CollectionView ItemsSource="{Binding AlbumsLocal}" IsVisible="{Binding HasPermissions}">
-                <CollectionView.ItemsLayout>
-                    <GridItemsLayout Orientation="Vertical" Span="{Binding ColumnCount}" VerticalItemSpacing="5" HorizontalItemSpacing="5"/>
-                </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Frame Padding="10" Margin="0">
-                            <Frame.GestureRecognizers>
-                                <TapGestureRecognizer 
-                                    CommandParameter="{Binding .}"
-                                    Command="{Binding GoToAlbumCommand, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}"/>
-                            </Frame.GestureRecognizers>
-
-                            <StackLayout>
-                                <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5" 
-                                    HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
-                                    <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[0]}" Aspect="AspectFill"/>
-                                    </Border>
-                                    <Border Grid.Row="0" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[1]}" Aspect="AspectFill"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[2]}" Aspect="AspectFill"/>
-                                    </Border>
-                                    <Border Grid.Row="1" Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0">
-                                        <Image Source="{Binding ThumbnailPaths[3]}" Aspect="AspectFill"/>
-                                    </Border>
-                                </Grid>
-                                <Grid ColumnDefinitions="*,auto" Margin="0,10,0,0" HeightRequest="40">
-                                    <StackLayout VerticalOptions="Center">
-                                        <HorizontalStackLayout>
-                                            <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold"/>
-                                            <Label Text="{Binding NameDuplicaIndex, StringFormat=' ({0})'}" VerticalTextAlignment="End" 
-                                                   IsVisible="{Binding NameDuplicaIndex, Converter={StaticResource IsNotNullConverter}}"/>
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                                            <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3">
+                                                <Label Text="{Binding PicturesCount, Converter={StaticResource CountSuffixConverter}}" HorizontalOptions="Center"/>
+                                                <Image Source="images.png" HeightRequest="16" WidthRequest="16">
+                                                    <Image.Behaviors>
+                                                        <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                                    </Image.Behaviors>
+                                                </Image>
+                                            </StackLayout>
                                         </HorizontalStackLayout>
-                                        <Label Text="{Binding LocalPath, Converter={StaticResource LocalUriConverter}}" TextColor="Gray"
-                                               IsVisible="{Binding LocalPath, Converter={StaticResource FalseOnUriRoot}}"/>
-                                    </StackLayout>
+                                    </Grid>
+                                </StackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.Footer>
+                        <BoxView HeightRequest="0" Background="Transparent" Margin="0"/>
+                    </CollectionView.Footer>
+                </CollectionView>
 
-                                    <HorizontalStackLayout Grid.Column="1" Spacing="10">
-                                        <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="3">
-                                            <Label Text="{Binding PicturesCount, Converter={StaticResource CountSuffixConverter}}" HorizontalOptions="Center"/>
-                                            <Image Source="images.png" HeightRequest="16" WidthRequest="16">
-                                                <Image.Behaviors>
-                                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                                </Image.Behaviors>
-                                            </Image>
-                                        </StackLayout>
-                                    </HorizontalStackLayout>
-                                </Grid>
-                            </StackLayout>
-                        </Frame>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-                <CollectionView.Footer>
-                    <BoxView HeightRequest="0" Background="Transparent" Margin="0"/>
-                </CollectionView.Footer>
-            </CollectionView>
-            
-        </StackLayout>
-    </ScrollView>
+            </StackLayout>
+        </ScrollView>
+    </RefreshView>
 </ContentPage>

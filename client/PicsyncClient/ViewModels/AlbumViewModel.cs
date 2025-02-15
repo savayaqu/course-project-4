@@ -21,9 +21,7 @@ public partial class AlbumViewModel : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanLoadMore))]
-    [NotifyPropertyChangedFor(nameof(CanRefresh))]
     [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
-    [NotifyCanExecuteChangedFor(nameof(RefreshCommand))]
     private bool isBusy = false;
 
     [ObservableProperty]
@@ -39,11 +37,11 @@ public partial class AlbumViewModel : ObservableObject
     [ObservableProperty]
     private PicturesPageResponse? lastRemotePicturesPage;
 
-    //public int PageSize => ColumnCount * 10;
+    //public int PageSize => ColumnCount * 10; // Если бы были Offset'ные картинки в API
     public int PageSize => 30;
 
-    [ObservableProperty]
-    private string? error;
+    [ObservableProperty] private string? errorOnPage;
+    [ObservableProperty] private string? errorOnAlbum;
 
     [ObservableProperty]
     private ObservableCollection<ItemsGroup<Models.Pictures.IPicture>> picturesGroups = [];
@@ -63,32 +61,44 @@ public partial class AlbumViewModel : ObservableObject
     public bool IsNonOwned    => Album is AlbumRemote album && album.Owner != null;
     public bool IsRemoteOwned => Album is AlbumRemote album && album.Owner == null;
 
+
     public AlbumViewModel(IAlbum album)
     {
-        LoadInfoCommand.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(AsyncRelayCommand.IsRunning))
-                OnPropertyChanged(nameof(CanLoadInfo));
-        };
-
         Album = album;
-
+        //RefreshCommand.Execute(null);
         LoadInfoCommand.Execute(null);
 
         if (CanLoadMore)
             LoadMoreCommand.Execute(null);
     }
 
-    public bool CanLoadInfo => !LoadInfoCommand.IsRunning;
 
-    [RelayCommand(CanExecute = nameof(CanLoadInfo))]
-    public async Task LoadInfo(CancellationToken token = default)
+    [RelayCommand]
+    public async Task Refresh()
+    {
+        OnPropertyChanged(nameof(Album));
+        PicturesGroups.Clear(); // TODO: Очищать только в случае успеха запроса страницы
+        LocalOffset = 0;
+        RemoteOffset = 0;
+        LastRemotePicturesPage = null;
+
+        Task loadInfoTask = LoadInfoCommand.ExecuteAsync(null);
+
+        if (CanLoadMore) 
+            await LoadMoreCommand.ExecuteAsync(null);
+
+        await loadInfoTask;
+    }
+
+
+    [RelayCommand]
+    public async Task LoadInfo(object? parameter = null, CancellationToken token = default)
     {
         if (Album is not AlbumRemote remote) return;
 
         (var res, var body) = await FetchAsync<AlbumResponse>(
             HttpMethod.Get, URLs.AlbumInfo(remote.Id),
-            setError: e => Error = e,
+            setError: e => ErrorOnAlbum = e,
             cancellationToken: token
         );
 
@@ -101,19 +111,6 @@ public partial class AlbumViewModel : ObservableObject
         OnPropertyChanged(nameof(Album));
     }
 
-    public bool CanRefresh => !IsBusy;
-
-    [RelayCommand(CanExecute = nameof(CanRefresh))]
-    public async Task Refresh()
-    {
-        OnPropertyChanged(nameof(Album));
-        PicturesGroups.Clear();
-        LocalOffset  = 0;
-        RemoteOffset = 0;
-        LastRemotePicturesPage = null;
-        if (CanLoadMore)
-            await LoadMoreCommand.ExecuteAsync(null);
-    }
 
     public bool CanLoadMore 
     { 
@@ -145,21 +142,21 @@ public partial class AlbumViewModel : ObservableObject
                 return albumRemote.RemotePicturesCount > RemoteOffset;
             }
             return false;
-        } 
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanLoadMore))]
     public async Task LoadMore()
     {
+        Debug.WriteLine($"=========== LoadMore (IsBusy: {IsBusy}) ============\nOffset / Total:\n" +
+            ((Album is IAlbumLocal  local) ? $"[local_] {LocalOffset }/{local .LocalPictures.Count}\n" : "") +
+            ((Album is AlbumRemote remote) ? $"[remote] {RemoteOffset}/{remote.RemotePicturesCount}\n" : ""));
+
+        if (!CanLoadMore) return;
+        IsBusy = true;
+
         try
         {
-            Debug.WriteLine($"=========== LoadMore (IsBusy: {IsBusy}) ============\nOffset / Total:\n" +
-                ((Album is IAlbumLocal local ) ? $"[local_] {LocalOffset }/{local .LocalPictures.Count}\n" : "") +
-                ((Album is AlbumRemote remote) ? $"[remote] {RemoteOffset}/{remote.RemotePicturesCount}\n" : ""));
-
-            if (!CanLoadMore) return;
-            IsBusy = true;
-
             List<Models.Pictures.IPicture> piece;
 
             if (Album is AlbumSynced albumSynced)
@@ -198,7 +195,7 @@ public partial class AlbumViewModel : ObservableObject
                                     Sort = PicturesSort.date,
                                     IsReverse = true,
                                 }),
-                                setError: e => Error = e
+                                setError: e => ErrorOnPage = e
                             );
                             if (picturesPage != null)
                             {
@@ -292,9 +289,13 @@ public partial class AlbumViewModel : ObservableObject
                         Sort = PicturesSort.date,
                         IsReverse = true,
                     }),
-                    setError: e => Error = e
+                    setError: e => ErrorOnPage = e
                 );
-                if (picturesPage == null) return;
+                if (picturesPage == null)
+                {
+                    IsBusy = false;
+                    return;
+                }
 
                 albumRemote.RemotePicturesCount = picturesPage.Total;
 
@@ -347,14 +348,14 @@ public partial class AlbumViewModel : ObservableObject
 
             //PicturesGroups.Add(new("test", [piece[5]]));
 
-            IsBusy = false;
             Debug.WriteLine("=========== END LoadMore ============");
         }
         catch (Exception ex)
         {
-            Shell.Current.DisplayAlert("DEBUG", ex.Message, "OK");
+            _ = Shell.Current.DisplayAlert("DEBUG", ex.Message, "OK");
             Debug.WriteLine($"LoadMore: Ex:\n{ex.Message}");
         }
+        IsBusy = false;
     }
 
 
@@ -363,6 +364,7 @@ public partial class AlbumViewModel : ObservableObject
     {
         AlbumInfoPopup popup = new(Album);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        OnPropertyChanged(nameof(Album));
     }
 
     public bool CanSync => Album.GetType() == typeof(AlbumLocal);
@@ -412,28 +414,19 @@ public partial class AlbumViewModel : ObservableObject
         OnPropertyChanged(nameof(Album));
     }
 
+    [RelayCommand]
+    private async Task OpenViewer(Models.Pictures.IPicture picture)
+    {
+        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture, this), false);
+        await Task.Delay(500);
+    }
+
     public bool CanUnjoin => Album is AlbumRemote;
 
     [RelayCommand(CanExecute = nameof(CanUnjoin))]
     public async Task Unjoin(CancellationToken token = default)
     {
         if (Album is not AlbumRemote remote) return;
-        /*
-
-        bool isAgree = await Shell.Current.DisplayAlert("Отписка", "Вы уверены что хотите отписаться от этого альбома?");
-
-        if ()
-
-        HttpResponseMessage res = await FetchAsync(
-            HttpMethod.Delete, URLs.AlbumAccess(remote.Id),
-            f => IsBusy = f, e => Error = e,
-            cancellationToken: token
-        );
-
-        if (!res.IsSuccessStatusCode) return;
-
-        await Shell.Current.GoToAsync("..");
-        */
 
         AlbumUnjoinPopup popup = new(remote);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
@@ -446,26 +439,30 @@ public partial class AlbumViewModel : ObservableObject
     [ObservableProperty]
     private int columnCount = 1;
 
-    [ObservableProperty]
-    private double? requestColumnWidth = 120;
+    private double? _requestColumnWidth = 120;
+    private double? RequestColumnWidth
+    {
+        get => _requestColumnWidth;
+        set
+        {
+            SetProperty(ref _requestColumnWidth, value);
+            CalculateColumnsWidthCommand.Execute(_containerWidth);
+        }
+    }
 
     [ObservableProperty]
     private double columnWidth = 100;
 
+    private double _containerWidth = 100;
+
     [RelayCommand]
     public void CalculateColumnsWidth(double containerWidth)
     {
+        _containerWidth = containerWidth;
         if (RequestColumnWidth != null)
             ColumnCount = Math.Max((int)(containerWidth / RequestColumnWidth), 1);
 
         ColumnWidth = containerWidth / ColumnCount;
         Debug.WriteLine($"=== ChgColW ===\n{ColumnWidth} = {containerWidth} / {ColumnCount}");
-    }
-
-
-    [RelayCommand]
-    private async Task OpenViewer(Models.Pictures.IPicture picture)
-    {
-        await Shell.Current.Navigation.PushAsync(new ViewerPage(picture, this), false);
     }
 }

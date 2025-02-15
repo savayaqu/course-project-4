@@ -35,6 +35,34 @@ public partial class AlbumInfoPopupViewModel : ObservableObject
     public bool IsNonOwned    => Album is AlbumRemote album && album.Owner != null;
     public bool IsRemoteOwned => Album is AlbumRemote album && album.Owner == null;
 
+    [RelayCommand]
+    public async Task UpdateName()
+    {
+        if (Album is not AlbumRemote remote) return;
+        if (remote.Owner != null) return;
+
+        var result = await Shell.Current.DisplayPromptAsync(
+            "Изменение альбома", 
+            "Обновить название альбома", 
+            maxLength: 255, 
+            initialValue: Album.Name
+        );
+        if (result == null || result == Album.Name) return;
+
+        AlbumCreateRequest req = new(result);
+
+        (var res, var body) = await FetchAsync<AlbumResponse>(
+            HttpMethod.Post,
+            URLs.AlbumInfo(remote.Id),
+            setError: e => Error = e,
+            body: req,
+            serialize: true
+        );
+        if (body == null) return;
+
+        Album.Name = body.Album.Name;
+        OnPropertyChanged(nameof(Album));
+    }
 
     [RelayCommand]
     public void Cancel()

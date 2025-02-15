@@ -3,14 +3,14 @@
     x:Class="PicsyncClient.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:PicsyncClient"
+    xmlns:authviews="clr-namespace:PicsyncClient.Views.Auth"
     xmlns:views="clr-namespace:PicsyncClient.Views"
-    Shell.FlyoutBehavior="Disabled"
+    FlyoutBehavior="Disabled"
     Title="Picsync">
 
-    <ShellContent ContentTemplate="{DataTemplate views:Auth.ServerSelectorPage}"  Route="ServerSelector"  Shell.TabBarIsVisible="False"/>
-    <ShellContent ContentTemplate="{DataTemplate views:Auth.LoginPage}"           Route="Login"           Shell.TabBarIsVisible="False"/>
-    <ShellContent ContentTemplate="{DataTemplate views:Auth.SignupPage}"          Route="Signup"          Shell.TabBarIsVisible="False"/>
+    <ShellContent ContentTemplate="{DataTemplate authviews:ServerSelectorPage}"  Route="ServerSelector"  Shell.TabBarIsVisible="False"/>
+    <ShellContent ContentTemplate="{DataTemplate authviews:LoginPage}"           Route="Login"           Shell.TabBarIsVisible="False"/>
+    <ShellContent ContentTemplate="{DataTemplate authviews:SignupPage}"          Route="Signup"          Shell.TabBarIsVisible="False"/>
 
     <TabBar>
         <Tab Title="Недавнее" Icon="house.png">

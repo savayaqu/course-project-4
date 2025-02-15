@@ -56,16 +56,21 @@ class ComplaintController extends Controller
                 $q->where('from_user_id', $user->id);
             });
         }
+        else {
+            // Администратор видит сколько жалоб связано с альбомом
+            $query->withCount('complaints');
+        }
+
         // Фильтрация по статусу
         $query->whereHas('complaints', function ($q) use ($status) {
-           if ($status === "null") {
-               $q->whereNull('status'); // Не рассмотренные жалобы
-           } else if($status == null) {
-               return;
-           }
-           else {
-               $q->where('status', $status); //Конкретный статус
-           }
+            if ($status === null)
+                return; // Любой (не указан)
+            else if ($status === "null")
+                $q->whereNull('status'); // Не рассмотренные жалобы
+            else
+            {
+                $q->where('status', 0); // Конкретный статус (1/0)
+            }
         });
 
         $query->with(['complaints' => function ($q) use (
@@ -78,21 +83,19 @@ class ComplaintController extends Controller
             $status,
             $limit_per_album,
         ) {
-
             if ($user->role->code !== 'admin') {
                 $q->where('from_user_id', $user->id);
             }
             $q->with(['type', 'fromUser', 'picture'])
                 ->orderBy($allowedSortFields[$sortBy], $orderBy)->limit($limit_per_album);
 
-        }])->orderBy($allowedSortFields[$sortBy], $orderBy)
-            ->withCount('complaints');
+        }])->orderBy($allowedSortFields[$sortBy], $orderBy);
 
         // Пагинация
         $albumsPage = $query->paginate($limit);
 
         return response()->json([
-            'page' => $albumsPage->currentPage(),
+            'page'  => $albumsPage->currentPage(),
             'limit' => $albumsPage->perPage(),
             'total' => $albumsPage->total(),
             'albums' => AlbumResource::collection($albumsPage->items()),

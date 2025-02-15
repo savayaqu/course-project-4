@@ -2,6 +2,12 @@
 using CommunityToolkit.Mvvm.Input;
 using PicsyncClient.Models.Albums;
 using PicsyncClient.Models.Pictures;
+using CommunityToolkit.Maui.Views;
+using PicsyncClient.Components.Popups;
+using PicsyncClient.Utils;
+
+
+
 #if ANDROID
 using Android.OS;
 using Android.Views;
@@ -83,18 +89,18 @@ public partial class ViewerViewModel : ObservableObject
         // Платформо-специфичное управление статус-баром и навигационной панелью 
         var activity = Platform.CurrentActivity;
         System.Diagnostics.Debug.WriteLine($"activity: {activity}");
-        if (activity != null) return;
+        if (activity == null) return;
 
         if (AreControlsVisible)
         {
             // Показать статус-бар и навигационную панель
-            //activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
-            //activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.Visible;
-            //activity.Window.ClearFlags(WindowManagerFlags.Fullscreen);
-            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
-            {
-                return;
-            }
+            activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
+            activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)SystemUiFlags.Visible;
+            activity.Window.ClearFlags(WindowManagerFlags.Fullscreen);
+            //if (Build.VERSION.SdkInt < BuildVersionCodes.R)
+            //{
+            //    return;
+            //}
 
             activity.Window?.AddFlags(WindowManagerFlags.ForceNotFullscreen);
             activity.Window?.ClearFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutInScreen);
@@ -104,19 +110,25 @@ public partial class ViewerViewModel : ObservableObject
         }
         else
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
-            {
-                return;
-            }
+            //if (Build.VERSION.SdkInt < BuildVersionCodes.R)
+            //{
+            //    return;
+            //}
 
             activity.Window?.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutInScreen);
             activity.Window?.ClearFlags(WindowManagerFlags.ForceNotFullscreen);
 
             var controller = activity.Window?.InsetsController;
             controller?.Hide(WindowInsets.Type.SystemBars());
-            //activity.Window.AddFlags(WindowManagerFlags.Fullscreen);
-            //activity.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)
-            //    (SystemUiFlags.LayoutStable | SystemUiFlags.LayoutHideNavigation | SystemUiFlags.LayoutFullscreen | SystemUiFlags.HideNavigation | SystemUiFlags.ImmersiveSticky);
+            activity.Window.AddFlags(WindowManagerFlags.Fullscreen);
+            activity.Window.DecorView.SystemUiVisibility = 
+                (StatusBarVisibility)
+                ( SystemUiFlags.LayoutStable 
+                | SystemUiFlags.LayoutHideNavigation 
+                | SystemUiFlags.LayoutFullscreen 
+                | SystemUiFlags.HideNavigation 
+                | SystemUiFlags.ImmersiveSticky
+                );
         }
         /*
         // Скрыть статус-бар и навигационную панель
@@ -130,6 +142,25 @@ public partial class ViewerViewModel : ObservableObject
         UIKit.UIApplication.SharedApplication.SetStatusBarHidden(!AreControlsVisible, UIKit.UIStatusBarAnimation.Fade);
 #endif
     }
+
+
+    [RelayCommand]
+    public async Task OpenInfo()
+    {
+        PictureInfoPopup popup = new(Picture);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+
+        if (result is bool isUnjoin && isUnjoin)
+        {
+            if (Picture is PictureRemote remote)
+                RemoteAlbumsData.AlbumsAccessible.Remove(remote.SpecificAlbum);
+
+            _ = Shell.Current.GoToAsync("//Albums");
+        }
+
+        OnPropertyChanged(nameof(Picture));
+    }
+
     private bool CanMoveNext() => AlbumViewModel != null 
         && Total > 0
         && Position < Total - 1

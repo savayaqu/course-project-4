@@ -149,4 +149,19 @@ public static class ServerData
         Settings = null;
         Shell.Current.GoToAsync("//ServerSelector");
     }
+
+    public static async Task Update(
+        Action<string?>? setError = null,
+        CancellationToken token = default
+    ) {
+        (var res, var body) = await FetchAsync<ServerSettingsResponse>(
+            HttpMethod.Get,
+            URLs.Settings,
+            setError: setError,
+            cancellationToken: token
+        );
+
+        if (body == null) return;
+        Settings = body.Settings;
+    }
 }

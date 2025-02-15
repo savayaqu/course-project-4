@@ -58,13 +58,13 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
     [RelayCommand]
     public async Task InvitationRemove(Invitation invitation, CancellationToken token = default)
     {
-        HttpResponseMessage res = await FetchAsync(
+        HttpResponseMessage? res = await FetchAsync(
             HttpMethod.Delete, URLs.Invitation(invitation.Code),
             f => IsBusy = f, e => Error = e,
             cancellationToken: token
         );
 
-        if (!res.IsSuccessStatusCode) return;
+        if (res == null || !res.IsSuccessStatusCode) return;
 
         Invitations.Remove(invitation);
         Album.Invitations?.Remove(invitation);
@@ -73,13 +73,13 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
     [RelayCommand]
     public async Task AccessRemove(User user, CancellationToken token)
     {
-        HttpResponseMessage res = await FetchAsync(
+        HttpResponseMessage? res = await FetchAsync(
             HttpMethod.Delete, URLs.AlbumAccess(Album.Id, user.Id),
             f => IsBusy = f, e => Error = e,
             cancellationToken: token
         );
 
-        if (!res.IsSuccessStatusCode) return;
+        if (res == null || !res.IsSuccessStatusCode) return;
 
         GrantAccesses.Remove(user);
         Album.GrantAccesses?.Remove(user);

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+          xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+          x:Class="PicsyncClient.Components.Popups.ComplaintCreatePopup"
+          Color="Transparent">
+    <tk:Popup.Resources>
+        <ResourceDictionary>
+            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
+            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
+        </ResourceDictionary>
+    </tk:Popup.Resources>
+    <Grid>
+        <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*">
+                <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
+                    <Label Text="Пожаловаться" FontSize="18" VerticalOptions="Center"/>
+                    <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
+                            Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
+                </Grid>
+
+                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
+                    <StackLayout x:Name="InternalContainer" Spacing="5">
+                        <Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
+                                Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                                IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Error}"/>
+                            </StackLayout>
+                        </Border>
+
+                        <Picker ItemsSource="{Binding ComplaintTypes}" ItemDisplayBinding="{Binding Name}"
+                                SelectedItem="{Binding Type}" Title="Выберите причину"/>
+
+                        <Editor Text="{Binding Message}" Placeholder="Опишите" AutoSize="TextChanges"/>
+
+                        <Button Text="Отправить" Command="{Binding ConfirmCommand}" BackgroundColor="{StaticResource Red}" Grid.Column="2"/>
+                        <Button Text="Отмена" Command="{Binding  CancelCommand}"/>
+                    </StackLayout>
+                </ScrollView>
+            </Grid>
+        </Frame>
+    </Grid>
+</tk:Popup>

@@ -16,4 +16,10 @@ public interface IPicture
     // Геттеры
     public string OriginalPath  { get; }
     public string ThumbnailPath { get; }
+
+    public bool IsLocal          { get; }
+    public bool IsSynced         { get; }
+    public bool IsRemote         { get; }
+    public bool IsRemoteNonOwned { get; }
+    public bool IsRemoteOwned    { get; }
 }

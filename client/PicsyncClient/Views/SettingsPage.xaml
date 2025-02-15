@@ -1,19 +1,199 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:cv="clr-namespace:PicsyncClient.Converters"
              x:Class="PicsyncClient.Views.SettingsPage">
     <ContentPage.Resources>
         <ResourceDictionary>
-            <cv:LocalUriConverter x:Key="LocalUriConverter"/>
             <cv:BytesToHumanConverter x:Key="BytesToHumanConverter"/>
+            <cv:ToPercentConverter    x:Key="ToPercentConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
-    <VerticalStackLayout>
-        <Label 
-            Text="Тут профиль и настройки"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-        <Button Command="{Binding TryExitCommand}" Text="Выйти"/>
-    </VerticalStackLayout>
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding RefreshCommand.IsRunning}">
+        <ScrollView>
+            <StackLayout MaximumWidthRequest="400" Spacing="10" Margin="10" VerticalOptions="Center">
+                <Label Text="{Binding Stats.GotAt, StringFormat='получено: {0}'}" FontSize="12" TextColor="Gray" HorizontalOptions="End"/>
+                <Frame Padding="5,15,5,5">
+                    <StackLayout>
+                        <Grid Margin="10,0" RowDefinitions="*,auto">
+                            <Label Text="О вас" FontSize="18"/>
+                            <Button Grid.Column="1" ImageSource="pencil.png" HeightRequest="30" WidthRequest="30" Padding="4" HorizontalOptions="End"
+                                    BackgroundColor="Transparent" Command="{Binding EditSelfCommand}">
+                                <Button.Behaviors>
+                                    <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                </Button.Behaviors>
+                            </Button>
+                        </Grid>
+                        <FlexLayout JustifyContent="Center">
+                            <StackLayout Margin="5">
+                                <Label Text="Никнейм" FontSize="12" TextColor="Gray"/>
+                                <Label Text="{Binding User.Nickname}" FontSize="16"/>
+                            </StackLayout>
+                            <!--<StackLayout Margin="5">
+                                <Label Text="Логин" FontSize="12" TextColor="Gray"/>
+                                <Label Text="{Binding User.Login}"/>
+                            </StackLayout>-->
+                            <StackLayout Margin="5" Spacing="3">
+                                <Label Text="ИД" FontSize="12" TextColor="Gray"/>
+                                <Label Text="{Binding User.Id, StringFormat='#{0}'}"/>
+                            </StackLayout>
+                            <StackLayout Margin="5" Spacing="3">
+                                <Label Text="Роль" FontSize="12" TextColor="Gray"/>
+                                <Label Text="{Binding User.Role}"/>
+                            </StackLayout>
+                        </FlexLayout>
+                    </StackLayout>
+                </Frame>
+                <Frame Padding="5,15,5,5">
+                    <StackLayout>
+                        <Label Margin="10,0" Text="Статистика" FontSize="18" FlexLayout.Grow="1"/>
+                        <FlexLayout Wrap="Wrap" JustifyContent="Center">
+                            <StackLayout Margin="5">
+                                <Label Text="Картинок загружено" LineBreakMode="WordWrap" WidthRequest="75"
+                                       FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                                <Label Text="{Binding Stats.PicturesCount}" HorizontalOptions="Center" FontSize="16" FontAttributes="Bold"/>
+                            </StackLayout>
+                            <StackLayout Margin="5">
+                                <Label Text="Альбомов&#10;создано и доступно" LineBreakMode="WordWrap" WidthRequest="120"
+                                       FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                                <Label HorizontalOptions="Center" FontSize="16">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Stats.AlbumsOwnCount}" FontSize="16"/>
+                                            <Span Text="  +  " FontSize="16"/>
+                                            <Span Text="{Binding Stats.AlbumsAccessibleCount}" FontSize="16"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+                            <StackLayout Margin="5">
+                                <Label Text="Тегов создано" LineBreakMode="WordWrap" WidthRequest="75"
+                                       FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                                <Label Text="{Binding Stats.AlbumsAccessibleCount}" HorizontalOptions="Center" FontSize="16" FontAttributes="Bold"/>
+                            </StackLayout>
+                            <StackLayout Margin="5">
+                                <Label Text="Жалоб одобрено из отправленных" LineBreakMode="WordWrap" WidthRequest="150"
+                                       FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                                <Label HorizontalOptions="Center" FontSize="16">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Stats.ComplaintsFromAcceptedCount}" FontSize="16" TextColor="Green"/>
+                                            <Span Text="  /  " FontSize="16"/>
+                                            <Span Text="{Binding Stats.ComplaintsFromCount}" FontSize="16"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+                            <StackLayout Margin="5">
+                                <Label Text="Предупреждений&#10;получено из возможных" LineBreakMode="WordWrap" WidthRequest="150"
+                                       FontSize="12" TextColor="Gray" HorizontalTextAlignment="Center"/>
+                                <Label HorizontalOptions="Center" FontSize="16">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Stats.Warnings.Count}" FontSize="16" TextColor="Red"/>
+                                            <Span Text="  /  " FontSize="16"/>
+                                            <Span Text="{Binding ServerSettings.WarningLimitForBan}" FontSize="16"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </StackLayout>
+                        </FlexLayout>
+                    </StackLayout>
+                </Frame>
+                <Frame Padding="15">
+                    <StackLayout Spacing="10">
+                        <Label Text="Ваша квота" FontSize="18"/>
+                        <StackLayout>
+                            <Grid ColumnDefinitions="*,auto">
+                                <Label Text="Занято" FontSize="12" TextColor="Gray"/>
+                                <Label Text="{Binding Stats.UseQuota, Converter={StaticResource ToPercentConverter}}" Grid.Column="1"/>
+                            </Grid>
+                            <ProgressBar Progress="{Binding Stats.UseQuota}"/>
+                            <Grid ColumnDefinitions="auto,*,auto">
+                                <Label Text="{Binding Stats.UsedQuota, Converter={StaticResource BytesToHumanConverter}}" FontSize="12"/>
+                                <Label Text="{Binding Stats.TotalQuota, Converter={StaticResource BytesToHumanConverter}}" FontSize="12" Grid.Column="2"/>
+                            </Grid>
+                        </StackLayout>
+                    </StackLayout>
+                </Frame>
+                <Frame Padding="15">
+                    <StackLayout Spacing="10">
+                        <Label Text="О сервере" FontSize="18"/>
+                        <Border Padding="10" Stroke="Yellow" StrokeShape="RoundRectangle 6"
+                                Background="{AppThemeBinding Dark={StaticResource YellowDark}, Light={StaticResource Yellow}}"
+                                IsVisible="{Binding ServerSettings.IsUploadDisabled}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Предупреждение" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="Сервер переполнен и не может больше сохранять картинки"/>
+                            </StackLayout>
+                        </Border>
+                        <StackLayout>
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding CopyUrlCommand}"/>
+                            </StackLayout.GestureRecognizers>
+                            <Label Text="Адрес" FontSize="12" TextColor="Gray"/>
+                            <Label Text="{Binding Url}" TextDecorations="Underline"
+                                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"/>
+                        </StackLayout>
+
+                        <StackLayout>
+                            <Label Text="Разрешённые MIME" FontSize="12" TextColor="Gray"/>
+                            <FlexLayout BindableLayout.ItemsSource="{Binding ServerSettings.AllowedUploadMimes}"
+                                        Wrap="Wrap"
+                                        JustifyContent="Start"
+                                        AlignItems="Start"
+                                        AlignContent="Start">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame Padding="10,5" BackgroundColor="{AppThemeBinding Light=Black, Dark=White}" Margin="0,0,2,2">
+                                            <Label Text="{Binding .}" VerticalOptions="Center" HorizontalOptions="Center" FontAttributes="Bold" 
+                                                FontSize="14" TextColor="{AppThemeBinding Light=White, Dark=Black}"/>
+                                        </Frame>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                        </StackLayout>
+                        
+                        <StackLayout>
+                            <Label Text="Разрешённые превью" FontSize="12" TextColor="Gray"/>
+                            <FlexLayout BindableLayout.ItemsSource="{Binding ServerSettings.AllowedPreviewSizes}"
+                                        Wrap="Wrap"
+                                        JustifyContent="Start"
+                                        AlignItems="Start"
+                                        AlignContent="Start">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Frame Padding="10,5" BackgroundColor="{AppThemeBinding Light=#ddd, Dark=#333}" Margin="0,0,2,2" CornerRadius="50">
+                                            <Label Text="{Binding .}" 
+                                                VerticalOptions="Center" 
+                                                HorizontalOptions="Center" 
+                                                FontSize="12"/>
+                                        </Frame>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                        </StackLayout>
+                        <!--<Grid ColumnDefinitions="*,auto">
+                            <Label Text="Занято" FontSize="12" TextColor="Gray"/>
+                            <Label Text="27%" Grid.Column="1"/>
+                        </Grid>
+                        <ProgressBar Progress="0.27"/>
+                        <Grid ColumnDefinitions="auto,*,auto">
+                            <Label Text="514 ГБ" FontSize="12"/>
+                            <Label Text="1,86 ТБ" FontSize="12" Grid.Column="2"/>
+                        </Grid>-->
+                    </StackLayout>
+                </Frame>
+                <Button Command="{Binding TryExitCommand}" Text="Выйти" BackgroundColor="{StaticResource Red}"/>
+            </StackLayout>
+        </ScrollView>
+    </RefreshView>
 </ContentPage>

@@ -17,9 +17,9 @@ namespace PicsyncClient.ViewModels;
 
 public partial class AlbumsViewModel : ObservableObject
 {
+    [ObservableProperty] private ObservableCollection<AlbumLocal>  albumsLocal  = [];
     [ObservableProperty] private ObservableCollection<AlbumSynced> albumsSynced = [];
     [ObservableProperty] private ObservableCollection<AlbumRemote> albumsRemote = [];
-    [ObservableProperty] private ObservableCollection<AlbumLocal>  albumsLocal  = [];
 
     public AlbumsViewModel()
     {
@@ -38,7 +38,7 @@ public partial class AlbumsViewModel : ObservableObject
     private void OnAlbumsSyncedCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         => OnPropertyChanged(nameof(SyncedIsVisibled));
 
-    partial void OnAlbumsSyncedChanged(ObservableCollection<AlbumSynced> oldValue, ObservableCollection<AlbumSynced> newValue)
+    partial void OnAlbumsSyncedChanged(ObservableCollection<AlbumSynced>? oldValue, ObservableCollection<AlbumSynced> newValue)
     {
         if (oldValue != null)
             oldValue.CollectionChanged -= OnAlbumsSyncedCollectionChanged;
@@ -142,7 +142,7 @@ public partial class AlbumsViewModel : ObservableObject
             if (!HasPermissions)
                 return false;
         }
-        catch (PlatformNotSupportedException ex)
+        catch (PlatformNotSupportedException)
         {
             return false;
         }
@@ -154,7 +154,7 @@ public partial class AlbumsViewModel : ObservableObject
         else if (LocalData.Status == LocalLoadStatus.InLoad)
         {
             // TODO: непроверенный код
-            _ = Shell.Current.DisplayAlert("Страшилка", "TODO: непроверенный код", "OK");
+            //_ = Shell.Current.DisplayAlert("Страшилка", "TODO: непроверенный код", "OK");
             while (LocalData.Status == LocalLoadStatus.InLoad)
             {
                 await Task.Delay(1000);
@@ -165,14 +165,15 @@ public partial class AlbumsViewModel : ObservableObject
             await LocalData.FillPictures();
         }
         CanUpdateLocal = true;
-        AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
-        AlbumsSynced = new(LocalData.Albums.OfType<AlbumSynced>().ToList());
+        AlbumsLocal .UpdateFrom(LocalData.Albums.OfType<AlbumLocal >().ToList());
+        AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
         return true;
     }
 
     [RelayCommand]
     public void LightUpdate()
     {
+        /*
         if (HasPermissions)
         {
             AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
@@ -180,6 +181,19 @@ public partial class AlbumsViewModel : ObservableObject
         }
 
         AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
+        */
+
+        AlbumsLocal .UpdateFrom(LocalData.Albums.OfType<AlbumLocal >().ToList());
+        AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
+
+        var remotes = RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible).ToList();
+
+        foreach (var synced in AlbumsSynced)
+        {
+            remotes.RemoveAll(r => r.Id == synced.Id);
+        }
+
+        AlbumsRemote.UpdateFrom(remotes);
     }
 
 
@@ -204,8 +218,11 @@ public partial class AlbumsViewModel : ObservableObject
             cancellationToken: token
         );
 
-        AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
-        Debug.WriteLine(AlbumsRemote[0]?.ThumbnailPaths[0]);
+        AlbumsRemote.UpdateFrom( // TODO: отдельно обновлять только инфу
+            RemoteAlbumsData.AlbumsOwn
+            .Concat(RemoteAlbumsData.AlbumsAccessible)
+            .ToList()
+        );
     }
 
 

@@ -116,7 +116,7 @@ public static class Fetcher
         bool serialize = false,
         CancellationToken cancellationToken = default
     ) {
-        HttpResponseMessage response = await FetchAsync(method, path, setIsFetch, setError, body, serialize, cancellationToken);
+        HttpResponseMessage? response = await FetchAsync(method, path, setIsFetch, setError, body, serialize, cancellationToken);
 
         if (response == null)
             return (default, default);

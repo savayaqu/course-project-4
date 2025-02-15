@@ -33,7 +33,7 @@ class UserResource extends JsonResource
                     $this->when($this->role->code !== 'user', $this->role->code)
                 ),
                 'complaintsFromCount'         => $this->whenCounted('complaintsFrom', fn($count) => $this->when($count, $count)),
-                'complaintsFromAcceptedCount' => $this->whenCounted('complaintsFrom', fn() => $this->complaintsFrom()->where('status', 1)->count()),
+                'complaintsFromAcceptedCount' => $this->whenCounted('complaints_from_accepted', fn($count) => $this->when($count, $count)),
                 'complaintsFrom'              => $this->whenLoaded ('complaintsFrom', fn() =>
                     $this->when($this->complaintsFrom->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsFrom))
                 ),

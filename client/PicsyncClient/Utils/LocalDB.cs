@@ -2,6 +2,8 @@
 using PicsyncClient.Models.Albums;
 using PicsyncClient.Models.Pictures;
 using SQLite;
+using System.Diagnostics;
+using static PicsyncClient.Utils.Helpers;
 
 namespace PicsyncClient.Utils;
 
@@ -16,11 +18,34 @@ public static class LocalDB
                 return _db;
 
             // Инициализация
-            _db = new(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "local.db"));
+            string hashname;
+            try
+            {
+                string host = ServerData.Url?.Host.ToLower() ?? "nohost";
+                string login = AuthData.User?.Login?.ToLower() ?? "nologin";
+                string data = host + "_" + login;
+#if DEBUG
+                Debug.WriteLine("LocalDB: Init: data: " + data);
+#endif
+                hashname = HashUTF8toMD5HEX(data);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("LocalDB: Init: Exception: " + ex.Message);
+                hashname = "default";
+            }
+            _db = new(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
+                $"local-{hashname}.db"
+            ));
             _db.CreateTable<AlbumSynced>();
             _db.CreateTable<PictureSynced>();
             _db.CreateTable<PictureDuplica>();
             return _db;
         }
+    }
+    public static void Reset()
+    {
+        _db = null;
     }
 }

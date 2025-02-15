@@ -75,6 +75,6 @@ public partial class ServerSelectorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task DeletePastUrl(string url) =>
+    private void DeletePastUrl(string url) =>
         PastUrls.Remove(url);
 }
