@@ -18,7 +18,9 @@ class UserController extends Controller
         $users = User::with([
             'role', 'warnings',
         ])->withCount([
-            'tags', 'albums', 'pictures', 'albumsViaAccess', 'complaintsFrom', 'complaintsAbout'
+            'tags', 'albums', 'pictures', 'albumsViaAccess', 'complaintsFrom', 'complaintsAbout',
+            'complaintsFrom as complaints_from_accepted_count'   => fn ($query) => $query->where('status', 1),
+            'complaintsAbout as complaints_about_accepted_count' => fn ($query) => $query->where('status', 1),
         ])->get();
 
         return response()->json(['users' => UserResource::collection($users)]);

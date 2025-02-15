@@ -20,9 +20,7 @@ class UserResource extends JsonResource
                 'complaintsAboutCount' => $this->whenCounted('complaintsAbout', fn($count) =>
                     $this->when($count, $count)
                 ),
-                'complaintsAboutAcceptedCount' => $this->whenCounted('complaintsAbout', fn() =>
-                    $this->complaintsAbout()->where('status', 1)->count()
-                ),
+                'complaintsAboutAcceptedCount' => $this->whenCounted('complaints_about_accepted', fn($count) => $this->when($count, $count)),
                 'complaintsAbout' => $this->whenLoaded ('complaintsAbout', fn() =>
                     $this->when($this->complaintsAbout->isNotEmpty(), fn() => ComplaintResource::collection($this->complaintsAbout))
                 ),
