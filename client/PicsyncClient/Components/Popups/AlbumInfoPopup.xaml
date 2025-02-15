@@ -9,10 +9,11 @@
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
-            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
-            <tk:IsNullConverter        x:Key="IsNullConverter"/>
-            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
-            <cv:NonZeroToTrueConverter x:Key="NonZeroToTrueConverter"/>
+            <tk:IsNotNullConverter        x:Key="IsNotNullConverter"/>
+            <tk:IsNullConverter           x:Key="IsNullConverter"/>
+            <tk:InvertedBoolConverter     x:Key="InvertedBoolConverter"/>
+            <cv:NonZeroToTrueConverter    x:Key="NonZeroToTrueConverter"/>
+            <cv:DateTimePositionConverter x:Key="DateTimePositionConverter"/>
         </ResourceDictionary>
     </tk:Popup.Resources>
     <Grid>
@@ -103,7 +104,14 @@
 
                             <Grid ColumnDefinitions="75,10,*" IsVisible="{Binding IsRemoteOwned}">
                                 <Label Text="Создан" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                <Label Grid.Column="2" Text="{Binding Album.CreatedAt}"/>
+                                <FlexLayout Grid.Column="2" Wrap="Wrap">
+                                    <Label Grid.Column="2" Text="{Binding Album.CreatedAt}"/>
+                                    <Label Grid.Column="2" TextColor="Gray" Text="{Binding 
+                                        Path=Album.CreatedAt, 
+                                        Converter={StaticResource DateTimePositionConverter},
+                                        StringFormat=' ({0})'
+                                    }"/>
+                                </FlexLayout>
                             </Grid>
 
                             <Grid ColumnDefinitions="75,10,*">

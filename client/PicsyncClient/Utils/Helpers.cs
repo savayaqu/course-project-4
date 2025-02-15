@@ -1,5 +1,5 @@
-﻿using System.Diagnostics;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using static System.Math;
 
 namespace PicsyncClient.Utils;
 
@@ -13,13 +13,14 @@ public static class Helpers
         return Convert.ToHexString(hashBytes);
     }
 
+    public static readonly string[] BytesSuffixes = ["Б", "КБ", "МБ", "ГБ", "ТБ", "ПБ", "ЭБ", "ЗБ", "ИБ"];
+    
     public static string BytesToHuman(ulong bytes)
     {
-        string[] suffixes = ["Б", "КБ", "МБ", "ГБ", "ТБ", "ПБ", "ЭБ", "ЗБ", "ИБ"];
         int suffixIndex = 0;
         double count = bytes;
 
-        while (count >= 1000 && suffixIndex < suffixes.Length - 1)
+        while (count >= 1000 && suffixIndex < BytesSuffixes.Length - 1)
         {
             count /= 1024;
             suffixIndex++;
@@ -34,13 +35,30 @@ public static class Helpers
             ? "0.0" 
             : "0.00";
 
-        return count.ToString(format) + " " + suffixes[suffixIndex];
+        return count.ToString(format) + " " + BytesSuffixes[suffixIndex];
+    }
+    
+    public static readonly string[] CountSuffixes = ["", "K", "M", "B", "T", "Q", "Qt", "Sx"];
+    
+    public static string CountToHuman(ulong number)
+    {
+        int pow = (int)Floor((number > 0 ? Log(number) : 0) / Log(1000));
+        pow = Min(pow, CountSuffixes.Length - 1);
+
+        double value = number / Pow(1000, pow);
+
+        string formatted = value % 1 == 0 
+            ? value.ToString("F0")
+            : value.ToString("F" + 
+                             (3 - Floor(Log10(value) + 1)).ToString()
+            );
+
+        return formatted + CountSuffixes[pow];
     }
 
     public static bool SafeGetDouble(object? input, out double result)
     {
         result = 0;
-
         if (input == null)
             return false;
 
@@ -57,10 +75,7 @@ public static class Helpers
                 result = parsedResult;
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            else return false;
         }
 
         if (input is IConvertible convertible)
@@ -70,12 +85,8 @@ public static class Helpers
                 result = convertible.ToDouble(null);
                 return true;
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
-
         return false;
     }
 }

@@ -13,6 +13,7 @@ using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
 using PicsyncClient.Components.Popups;
 using PicsyncClient.Models;
+using CommunityToolkit.Maui.Alerts;
 
 namespace PicsyncClient.ViewModels.Popups;
 
@@ -53,6 +54,7 @@ public partial class AlbumAccessManagePopupViewModel : ObservableObject
     public async Task InvitationCodeCopy(Invitation invitation)
     {
         await Clipboard.Default.SetTextAsync(invitation.Code);
+        Toast.Make("Скопировано в буфер").Show();
     }
 
     [RelayCommand]

@@ -10,7 +10,6 @@ using PicsyncClient.Views;
 using PicsyncClient.Utils;
 using PicsyncClient.Enum;
 using CommunityToolkit.Mvvm.Collections;
-using Microsoft.Maui.Controls;
 
 namespace PicsyncClient.ViewModels;
 
@@ -49,18 +48,24 @@ public partial class MainPageViewModel : ObservableObject
 
     public int PageSize => ColumnCount * 10;
 
+    [ObservableProperty]
+    private bool isRefreshing = false;
 
     [RelayCommand]
     public async Task Refresh()
     {
+        IsRefreshing = true;
+
         CanLoadMore = false;
         await RequestLocalAlbums();
 
         HasSynced = AlbumsSynced.Any();
-        if (!HasSynced) return;
-
-        PicturesCursors = null;
-        CanLoadMore = true;
+        if (HasSynced)
+        {
+            PicturesCursors = null;
+            CanLoadMore = true;
+        }
+        IsRefreshing = false;
     }
 
 

@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using PicsyncClient.Components.Popups;
 using PicsyncClient.Models;
 using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
@@ -16,9 +18,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string? statsGetError;
     [ObservableProperty] private string? settingsGetError;
 
-    public User? User => AuthData.User;
-    public UserStats? Stats => AuthData.Stats;
-    public Uri? Url => ServerData.Url;
+    public User?           User           => AuthData.User;
+    public UserStats?      Stats          => AuthData.Stats;
+    public Uri?            Url            => ServerData.Url;
     public ServerSettings? ServerSettings => ServerData.Settings;
 
     public string AllowedUploadMimes => String.Join(" ", ServerSettings?.AllowedUploadMimes ?? []);
@@ -53,6 +55,15 @@ public partial class SettingsViewModel : ObservableObject
         if (Url is not Uri uri) return;
         await Clipboard.SetTextAsync(uri.ToString());
         await Toast.Make("Скопировано в буфер").Show();
+    }
+
+
+    [RelayCommand]
+    private async Task EditSelf()
+    {
+        EditSelfPopup popup = new();
+        await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        OnPropertyChanged(nameof(User));
     }
 
     private bool CanExit() => !IsFetch;

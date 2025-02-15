@@ -29,14 +29,11 @@
                 </Label.GestureRecognizers>
             </Label>
 
-            <Border Padding="10" Stroke="Red"
+            <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
                     Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                     IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="6"/>
-                </Border.StrokeShape>
                 <StackLayout Grid.Column="1" Spacing="5">
-                    <HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="5">
                         <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                             <Image.Behaviors>
                                 <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>

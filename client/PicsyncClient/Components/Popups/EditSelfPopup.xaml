@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tk:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+          xmlns:cv="clr-namespace:PicsyncClient.Converters"
+          xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
+          xmlns:talbum="clr-namespace:PicsyncClient.Models.Albums"
+          x:Class="PicsyncClient.Components.Popups.EditSelfPopup"
+          Color="Transparent">
+    <tk:Popup.Resources>
+        <ResourceDictionary>
+            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
+            <tk:IsNullConverter        x:Key="IsNullConverter"/>
+            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
+            <cv:NonZeroToTrueConverter x:Key="NonZeroToTrueConverter"/>
+            <cv:BytesToHumanConverter  x:Key="BytesToHumanConverter"/>
+            <cv:ErrorConverter         x:Key="ErrorConverter"/>
+        </ResourceDictionary>
+    </tk:Popup.Resources>
+    <Grid>
+        <Frame Margin="10" BackgroundColor="{AppThemeBinding Light=White, Dark={StaticResource OffBlack}}" BorderColor="Transparent">
+            <Grid MaximumWidthRequest="350" RowDefinitions="auto,*">
+                <Grid ColumnDefinitions="*,auto"  Margin="0,0,0,10">
+                    <Label Text="Изменение себя" FontSize="18" VerticalOptions="Center"/>
+                    <Button Grid.Column="1" HeightRequest="40" WidthRequest="40" ImageSource="x.png"
+                            Padding="8" VerticalOptions="Start" Command="{Binding CancelCommand}"/>
+                </Grid>
+
+                <ScrollView Grid.Row="1" MaximumHeightRequest="{Binding Height, Source={x:Reference InternalContainer}}" MinimumHeightRequest="50">
+                    <StackLayout x:Name="InternalContainer" Spacing="5">
+                        <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
+                            Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+                            IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
+                            <StackLayout Grid.Column="1" Spacing="5">
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
+                                        <Image.Behaviors>
+                                            <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
+                                        </Image.Behaviors>
+                                    </Image>
+                                    <Label Text="Ошибка" FontAttributes="Bold" FontSize="16"/>
+                                </HorizontalStackLayout>
+                                <Label Text="{Binding Error}"/>
+                            </StackLayout>
+                        </Border>
+
+                        <Entry Text="{Binding Login}" Placeholder="Новый логин"/>
+                        <Label TextColor="Red" FontSize="12" Margin="0,-5,0,0"
+                            Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=login}"/>
+
+                        <Entry Text="{Binding Nickname}" Placeholder="Новый никнейм"/>
+                        <Label TextColor="Red" FontSize="12" Margin="0,-5,0,0"
+                            Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=nickname}"/>
+
+                        <Entry Text="{Binding Password}" Placeholder="Новый пароль" IsPassword="True"/>
+                        <Label TextColor="Red" FontSize="12" Margin="0,-5,0,0"
+                            Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=password}"/>
+
+                        <Entry Text="{Binding PasswordConfirm}" Placeholder= "Повторите пароль"  IsPassword="True"/>
+                        <Label TextColor="Red" FontSize="12" 
+                            Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=passwordConfirm}"/>
+
+                        <Button Text="Изменить" Command="{Binding ConfirmCommand}"/>
+                    </StackLayout>
+                </ScrollView>
+            </Grid>
+        </Frame>
+    </Grid>
+</tk:Popup>

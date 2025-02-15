@@ -23,7 +23,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding RefreshCommand.IsRunning}">
+    <RefreshView Command="{Binding RefreshCommand}" IsRefreshing="{Binding IsRefreshing}">
         <Grid>
             <StackLayout Spacing="5" VerticalOptions="Center" HorizontalOptions="Center"
                  IsVisible="{Binding HasSynced, Converter={StaticResource InvertedBoolConverter}}">

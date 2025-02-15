@@ -13,6 +13,7 @@ using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
 using PicsyncClient.Models.Pictures;
 using PicsyncClient.Components.Popups;
+using PicsyncClient.Views;
 
 namespace PicsyncClient.ViewModels.Popups;
 
@@ -37,7 +38,7 @@ public partial class PictureInfoPopupViewModel : ObservableObject
 
         var result = await Shell.Current.DisplayPromptAsync(
             "Изменение картинки", 
-            "Введите новое название картинки", 
+            "Введите новое название картинки на сервере", 
             maxLength: 255,
             initialValue: CurrentPicture.Name
         );
@@ -56,6 +57,13 @@ public partial class PictureInfoPopupViewModel : ObservableObject
 
         remote.Name = body.Picture.Name;
         OnPropertyChanged(nameof(CurrentPicture));
+    }
+
+    [RelayCommand]
+    private async Task GoToAlbum()
+    {
+        await Shell.Current.Navigation.PushAsync(new AlbumPage(CurrentPicture.Album));
+        _popup.Close();
     }
 
     [RelayCommand]

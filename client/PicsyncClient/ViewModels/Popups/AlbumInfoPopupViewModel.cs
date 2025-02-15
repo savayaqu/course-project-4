@@ -43,7 +43,7 @@ public partial class AlbumInfoPopupViewModel : ObservableObject
 
         var result = await Shell.Current.DisplayPromptAsync(
             "Изменение альбома", 
-            "Обновить название альбома", 
+            "Введите новое название альбома на сервере", 
             maxLength: 255, 
             initialValue: Album.Name
         );

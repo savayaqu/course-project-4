@@ -15,15 +15,18 @@
             <StackLayout MaximumWidthRequest="400" Spacing="10" Margin="10" VerticalOptions="Center">
                 <Label Text="{Binding Stats.GotAt, StringFormat='получено: {0}'}" FontSize="12" TextColor="Gray" HorizontalOptions="End"/>
                 <Frame Padding="5,15,5,5">
+                    <Frame.GestureRecognizers>
+                        <TapGestureRecognizer Command="{Binding EditSelfCommand}"/>
+                    </Frame.GestureRecognizers>
                     <StackLayout>
                         <Grid Margin="10,0" RowDefinitions="*,auto">
                             <Label Text="О вас" FontSize="18"/>
-                            <Button Grid.Column="1" ImageSource="pencil.png" HeightRequest="30" WidthRequest="30" Padding="4" HorizontalOptions="End"
-                                    BackgroundColor="Transparent" Command="{Binding EditSelfCommand}">
-                                <Button.Behaviors>
+                            <Image Grid.Column="1" Source="pencil.png" HeightRequest="24" WidthRequest="24" Margin="4" HorizontalOptions="End"
+                                   BackgroundColor="Transparent">
+                                <Image.Behaviors>
                                     <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=White, Light=Black}"/>
-                                </Button.Behaviors>
-                            </Button>
+                                </Image.Behaviors>
+                            </Image>
                         </Grid>
                         <FlexLayout JustifyContent="Center">
                             <StackLayout Margin="5">

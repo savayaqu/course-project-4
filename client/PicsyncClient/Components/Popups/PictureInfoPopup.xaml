@@ -9,11 +9,12 @@
           Color="Transparent">
     <tk:Popup.Resources>
         <ResourceDictionary>
-            <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
-            <tk:IsNullConverter        x:Key="IsNullConverter"/>
-            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
-            <cv:NonZeroToTrueConverter x:Key="NonZeroToTrueConverter"/>
-            <cv:BytesToHumanConverter  x:Key="BytesToHumanConverter"/>
+            <tk:IsNotNullConverter         x:Key="IsNotNullConverter"/>
+            <tk:IsNullConverter            x:Key="IsNullConverter"/>
+            <tk:InvertedBoolConverter      x:Key="InvertedBoolConverter"/>
+            <cv:NonZeroToTrueConverter     x:Key="NonZeroToTrueConverter"/>
+            <cv:BytesToHumanConverter      x:Key="BytesToHumanConverter"/>
+            <cv:DateTimePositionConverter  x:Key="DateTimePositionConverter"/>
         </ResourceDictionary>
     </tk:Popup.Resources>
     <Grid>
@@ -105,15 +106,29 @@
 
                             <Grid ColumnDefinitions="90,10,*">
                                 <Label Text="Размер" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                <Label Grid.Column="2" Text="{Binding CurrentPicture.Size, Converter={StaticResource BytesToHumanConverter}}"/>
+                                <FlexLayout Grid.Column="2" Wrap="Wrap">
+                                    <Label Text="{Binding CurrentPicture.Size, Converter={StaticResource BytesToHumanConverter}}"/>
+                                    <Label Text="{Binding CurrentPicture.Size, StringFormat=' ({0} байтов)'}" TextColor="Gray"/>
+                                </FlexLayout>
                             </Grid>
 
                             <Grid ColumnDefinitions="90,10,*">
                                 <Label Text="Дата" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                <Label Grid.Column="2" Text="{Binding CurrentPicture.Date}"/>
+                                <FlexLayout Grid.Column="2" Wrap="Wrap">
+                                    <Label Grid.Column="2" Text="{Binding CurrentPicture.Date}"/>
+                                    <Label Grid.Column="2" TextColor="Gray" Text="{Binding 
+                                        Path=CurrentPicture.Date, 
+                                        Converter={StaticResource DateTimePositionConverter},
+                                        StringFormat=' ({0})'
+                                    }"/>
+                                </FlexLayout>
                             </Grid>
 
                             <Grid ColumnDefinitions="90,10,*">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding GoToAlbumCommand}"/>
+                                </Grid.GestureRecognizers>
+                                
                                 <Label Text="Альбом" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
                                 <Label Grid.Column="2">
                                     <Label.FormattedText>
@@ -127,7 +142,14 @@
 
                             <Grid ColumnDefinitions="90,10,*" IsVisible="{Binding CurrentPicture.IsRemote}">
                                 <Label Text="Загружена" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
-                                <Label Grid.Column="2" Text="{Binding CurrentPicture.UploadedAt}"/>
+                                <FlexLayout Grid.Column="2" Wrap="Wrap">
+                                    <Label Grid.Column="2" Text="{Binding CurrentPicture.UploadedAt}"/>
+                                    <Label Grid.Column="2" TextColor="Gray" Text="{Binding 
+                                        Path=CurrentPicture.UploadedAt, 
+                                        Converter={StaticResource DateTimePositionConverter},
+                                        StringFormat=' ({0})'
+                                    }"/>
+                                </FlexLayout>
                             </Grid>
 
                             <Button Text="Пожаловаться" Command="{Binding ComplaintCommand}" IsVisible="{Binding CurrentPicture.IsStrictRemoteNonOwned}"
