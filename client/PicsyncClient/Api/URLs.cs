@@ -46,6 +46,13 @@ public static class URLs
         new($"{AlbumInfo(albumId)}/accesses" + (userId != null ? $"/{userId}" : ""));
 
 
+    public static Uri ComplaintToAlbum(ulong albumId) =>
+        new($"{AlbumInfo(albumId)}/complaint");
+
+    public static Uri ComplaintToPicture(ulong albumId, ulong pictureId) =>
+        new($"{PictureInfo(albumId, pictureId)}/complaint");
+
+
     public static Uri AlbumPictures(ulong albumId) => 
         new($"{AlbumInfo(albumId)}/pictures");
 

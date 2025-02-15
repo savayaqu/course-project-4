@@ -99,6 +99,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Components\Popups\ComplaintCreatePopup.xaml.cs">
+	    <DependentUpon>ComplaintCreatePopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Components\Popups\PictureInfoPopup.xaml.cs">
 	    <DependentUpon>PictureInfoPopup.xaml</DependentUpon>
 	  </Compile>
@@ -141,6 +144,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Components\Popups\ComplaintCreatePopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Components\Popups\PictureInfoPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -36,13 +36,15 @@ public partial class AlbumUnjoinPopupViewModel : ObservableObject
     {
         // TODO создание жалобы
 
-        HttpResponseMessage res = await FetchAsync(
-            HttpMethod.Delete, URLs.AlbumAccess(Album.Id),
-            f => IsBusy = f, e => Error = e,
+        HttpResponseMessage? res = await FetchAsync(
+            HttpMethod.Delete, 
+            URLs.AlbumAccess(Album.Id),
+            f => IsBusy = f, 
+            e => Error = e,
             cancellationToken: token
         );
 
-        if (!res.IsSuccessStatusCode) return;
+        if (res == null || !res.IsSuccessStatusCode) return;
 
         _popup.Close(true);
     }

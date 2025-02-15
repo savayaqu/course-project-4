@@ -185,7 +185,15 @@ public partial class AlbumsViewModel : ObservableObject
 
         AlbumsLocal .UpdateFrom(LocalData.Albums.OfType<AlbumLocal >().ToList());
         AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
-        AlbumsRemote.UpdateFrom(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible).ToList());
+
+        var remotes = RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible).ToList();
+
+        foreach (var synced in AlbumsSynced)
+        {
+            remotes.RemoveAll(r => r.Id == synced.Id);
+        }
+
+        AlbumsRemote.UpdateFrom(remotes);
     }
 
 

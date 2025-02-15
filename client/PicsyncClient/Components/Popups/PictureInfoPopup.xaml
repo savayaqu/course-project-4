@@ -129,6 +129,12 @@
                                 <Label Text="Загружена" TextColor="Gray" HorizontalTextAlignment="End" VerticalOptions="Center"/>
                                 <Label Grid.Column="2" Text="{Binding CurrentPicture.UploadedAt}"/>
                             </Grid>
+
+                            <Button Text="Пожаловаться" Command="{Binding ComplaintCommand}" IsVisible="{Binding CurrentPicture.IsStrictRemoteNonOwned}"
+                                    BackgroundColor="{AppThemeBinding Dark={StaticResource Red}, Light={StaticResource RedDark}}"/>
+
+                            <Button Text="Удалить" Command="{Binding RemoveCommand}" IsVisible="{Binding CurrentPicture.IsStrictRemoteOwned}"
+                                    BackgroundColor="{AppThemeBinding Dark={StaticResource Red}, Light={StaticResource RedDark}}"/>
                         </StackLayout>
                     </StackLayout>
                 </ScrollView>

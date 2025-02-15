@@ -12,6 +12,7 @@ using System.Text.Json;
 using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
 using PicsyncClient.Models.Pictures;
+using PicsyncClient.Components.Popups;
 
 namespace PicsyncClient.ViewModels.Popups;
 
@@ -32,12 +33,11 @@ public partial class PictureInfoPopupViewModel : ObservableObject
     [RelayCommand]
     public async Task UpdateName()
     {
-        if (CurrentPicture is not PictureRemote remote) return;
-        if (CurrentPicture.IsRemoteNonOwned) return;
+        if (CurrentPicture is not PictureRemote remote || remote.IsRemoteNonOwned) return;
 
         var result = await Shell.Current.DisplayPromptAsync(
             "Изменение картинки", 
-            "Обновить название картинки", 
+            "Введите новое название картинки", 
             maxLength: 255,
             initialValue: CurrentPicture.Name
         );
@@ -56,6 +56,35 @@ public partial class PictureInfoPopupViewModel : ObservableObject
 
         remote.Name = body.Picture.Name;
         OnPropertyChanged(nameof(CurrentPicture));
+    }
+
+    [RelayCommand]
+    public async Task Complaint()
+    {
+        if (CurrentPicture is not PictureRemote remote || remote.IsRemoteOwned) return;
+
+        ComplaintCreatePopup popup = new(remote.SpecificAlbum, remote);
+        await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+    }
+
+    [RelayCommand]
+    public async Task Remove()
+    {
+        if (CurrentPicture is not PictureRemote remote || remote.IsRemoteNonOwned) return;
+
+        bool result = await Shell.Current.DisplayAlert(
+            "Внимание!",
+            "Вы действительно хотите удалить эту картинку? Это действие нельзя будет обратить.",
+            "Удалить", "Отмена"
+        );
+
+        if (!result) return;
+
+        HttpResponseMessage? res = await FetchAsync(
+            HttpMethod.Delete,
+            URLs.PictureInfo(remote.SpecificAlbum.Id, remote.Id),
+            setError: e => Error = e
+        );
     }
 
     [RelayCommand]
