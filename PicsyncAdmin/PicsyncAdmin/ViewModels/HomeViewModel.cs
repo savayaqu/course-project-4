@@ -1,5 +1,4 @@
-﻿
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,19 +19,26 @@ namespace PicsyncAdmin.ViewModels
         private readonly User? _user = AuthSession.User;
         private readonly string? _token = AuthSession.Token;
         private readonly HttpClient _httpClient;
+
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(LoadComplaintsCommand))] 
+        [NotifyCanExecuteChangedFor(nameof(LoadComplaintsCommand))]
         private bool isFetch = false;
+
         [ObservableProperty] private string statusMessage;
         [ObservableProperty] private double usedPercent;
         [ObservableProperty] private string usedSpaceHumanReadable;
         [ObservableProperty] private string totalSpaceHumanReadable;
         [ObservableProperty] private string freeSpaceHumanReadable;
         [ObservableProperty] private double usedPercentDisplay;
-        [ObservableProperty] public bool canLoadMore = false;
+
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(LoadComplaintsCommand))]
+        private bool canLoadMore = false;
+
         [ObservableProperty] private int currentPage = 1;
-       
+
         public ObservableCollection<AlbumComplaintData> Albums { get; set; } = new ObservableCollection<AlbumComplaintData>();
+
         public HomeViewModel()
         {
             Instance = this;
@@ -41,10 +47,10 @@ namespace PicsyncAdmin.ViewModels
             AppSettings.SettingsUpdated += OnSettingsUpdated;
             // Загрузка настроек
             Task.Run(() => LoadSettings());
-            Task.Run(() => LoadComplaints());
-
+            //Task.Run(() => LoadComplaints());
         }
-        [RelayCommand(CanExecute = nameof(CanLoadComplaints))]
+
+        [RelayCommand(CanExecute = nameof(CanLoadData))]
         public async Task LoadComplaints()
         {
             try
@@ -82,6 +88,9 @@ namespace PicsyncAdmin.ViewModels
                 CanLoadMore = responseObject.Total > responseObject.Page * responseObject.Limit;
                 CurrentPage++;
 
+                Debug.WriteLine("Можно еще загрузить: " + CanLoadMore);
+                Debug.WriteLine("Загружается: " + IsFetch);
+
                 // Обрабатываем данные из API
                 foreach (var albumData in responseObject.Albums)
                 {
@@ -116,7 +125,6 @@ namespace PicsyncAdmin.ViewModels
                     Albums.Add(albumData);
                 }
 
-
                 Debug.WriteLine($"Successfully loaded page {responseObject.Page} with {responseObject.Albums.Count} albums.");
             }
             catch (System.Text.Json.JsonException ex)
@@ -128,8 +136,8 @@ namespace PicsyncAdmin.ViewModels
                 StatusMessage = "Произошла ошибка. Попробуйте снова.";
             }
         }
-        private bool CanLoadComplaints() =>
-            !IsFetch;
+
+        private bool CanLoadData() => !IsFetch;
 
         [RelayCommand]
         private async Task NavigateToUserContentPage(Album album)
@@ -144,6 +152,7 @@ namespace PicsyncAdmin.ViewModels
                 throw;
             }
         }
+
         [RelayCommand]
         public async Task ResetComplaints()
         {
@@ -152,7 +161,6 @@ namespace PicsyncAdmin.ViewModels
             CanLoadMore = false; // Сброс состояния загрузки дополнительных данных
             await LoadComplaints();
         }
-
 
         // Обработчик события обновления
         private void OnSettingsUpdated()
@@ -163,6 +171,7 @@ namespace PicsyncAdmin.ViewModels
             TotalSpaceHumanReadable = AppSettings.BytesToHuman(AppSettings.TotalSpace);
             FreeSpaceHumanReadable = AppSettings.BytesToHuman(AppSettings.FreeSpace);
         }
+
         public async Task LoadSettings()
         {
             try
