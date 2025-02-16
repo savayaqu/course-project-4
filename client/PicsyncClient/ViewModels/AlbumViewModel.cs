@@ -92,14 +92,13 @@ public partial class AlbumViewModel : ObservableObject
 
 
     [RelayCommand]
-    public async Task LoadInfo(object? parameter = null, CancellationToken token = default)
+    public async Task LoadInfo()
     {
         if (Album is not AlbumRemote remote) return;
 
         (var res, var body) = await FetchAsync<AlbumResponse>(
             HttpMethod.Get, URLs.AlbumInfo(remote.Id),
-            setError: e => ErrorOnAlbum = e,
-            cancellationToken: token
+            setError: e => ErrorOnAlbum = e
         );
 
         if (body == null) return;

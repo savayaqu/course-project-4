@@ -90,7 +90,7 @@ public static class Fetcher
             setIsFetch?.Invoke(false);
             return response;
         }
-        catch (TaskCanceledException ex)
+        catch (Exception ex) when (ex is System.Net.WebException || ex is TaskCanceledException)
         {
             setIsFetch?.Invoke(false);
             setError?.Invoke("Время ожидания вышло");

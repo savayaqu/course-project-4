@@ -22,8 +22,9 @@ public static class LocalDB
             try
             {
                 string host = ServerData.Url?.Host.ToLower() ?? "nohost";
+                string path = ServerData.Url?.AbsolutePath.ToLower() ?? "nopath";
                 string login = AuthData.User?.Login?.ToLower() ?? "nologin";
-                string data = host + "_" + login;
+                string data = $"{host}{path}_{login}";
 #if DEBUG
                 Debug.WriteLine("LocalDB: Init: data: " + data);
 #endif

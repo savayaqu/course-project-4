@@ -6,7 +6,6 @@
              x:Class="PicsyncClient.Views.Auth.ServerSelectorPage">
     <ContentPage.Resources>
         <ResourceDictionary>
-            <tk:IsListNotNullOrEmptyConverter x:Key="IsListNotNullOrEmptyConverter" />
             <tk:IsNotNullConverter x:Key="IsNotNullConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -26,7 +25,7 @@
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="6"/>
                 </Border.StrokeShape>
-                <StackLayout Grid.Column="1" Spacing="5">
+                <StackLayout Spacing="5">
                     <HorizontalStackLayout Spacing="5">
                         <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                             <Image.Behaviors>

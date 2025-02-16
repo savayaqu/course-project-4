@@ -247,7 +247,7 @@ public partial class AlbumsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SquareWidth))]
-    private int columnCount = 3;
+    private int columnCount = 1;
 
     [ObservableProperty]
     private double? requestColumnWidth = 180;

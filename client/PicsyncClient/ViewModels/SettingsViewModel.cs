@@ -37,6 +37,7 @@ public partial class SettingsViewModel : ObservableObject
 
         OnPropertyChanged(nameof(User));
         OnPropertyChanged(nameof(Stats));
+        OnPropertyChanged(nameof(Url));
         OnPropertyChanged(nameof(ServerSettings));
     }
 
