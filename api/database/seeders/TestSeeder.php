@@ -48,7 +48,7 @@ class TestSeeder extends Seeder
 
             foreach ($files as $file) {
                 // Ищем случайного пользователя и альбом
-                $album = Album::inRandomOrder()->first();
+                $album = Album::query()->inRandomOrder()->first();
                 $user = $album->user;
                 // Путь назначения
                 $destinationDirectory = $album->getPath();
@@ -66,7 +66,7 @@ class TestSeeder extends Seeder
                 File::copy($file->getRealPath(), $filePath);
 
                 // Добавляем запись в базу данных
-                DB::table('pictures')->insertOrIgnore([
+                $picture = DB::table('pictures')->insertOrIgnore([
                     'name' => $fileName,
                     'hash' => md5_file($filePath),
                     'date' => now(),
@@ -77,29 +77,33 @@ class TestSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
+                if(Complaint::query()->count() <90)
+                {
+                    // Создание жалобы
+                    DB::table('complaints')->insertOrIgnore([
+                        'description' => 'This is a test complaint.',
+                        'complaint_type_id' => ComplaintType::inRandomOrder()->first()->id,
+                        'picture_id' => $picture->id ?? null,
+                        'album_id' => $album->id,
+                        'about_user_id' => $user->id,
+                        'from_user_id' => User::where('role_id', $roleUserId)->inRandomOrder()->first()->id, // случайный пользователь, кроме создателя,
+                        'status' => null,
+                    ]);
+                }
             }
 
-        for($i=0;$i<=60;$i++)
-        {
-            // Получение случайного альбома пользователя
-            $album = Album::inRandomOrder()->first();
-            $user = $album->user;
-            // Получение случайной картинки из альбома
-            $picture = Picture::where('album_id', $album->id)->inRandomOrder()->first();
-            if($picture)
-            {
-                // Создание жалобы
-                DB::table('complaints')->insertOrIgnore([
-                    'description' => 'This is a test complaint.',
-                    'complaint_type_id' => ComplaintType::inRandomOrder()->first()->id,
-                    'picture_id' => $picture->id,
-                    'album_id' => $album->id,
-                    'about_user_id' => $user->id,
-                    'from_user_id' => User::where('role_id', $roleUserId)->inRandomOrder()->first()->id, // случайный пользователь, кроме создателя,
-                    'status' => null,
-                ]);
-            }
-        }
+        //for($i=0;$i<=60;$i++)
+        //{
+        //    // Получение случайного альбома пользователя
+        //    $album = Album::inRandomOrder()->first();
+        //    $user = $album->user;
+        //    // Получение случайной картинки из альбома
+        //    $picture = Picture::where('album_id', $album->id)->inRandomOrder()->first();
+        //    if($picture)
+        //    {
+        //
+        //    }
+        //}
 
     }
 }
