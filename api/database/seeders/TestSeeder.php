@@ -27,13 +27,35 @@ class TestSeeder extends Seeder
         User::firstOrCreate(['login' => 'test1'],['name' => 'Чел 1', 'login' => 'test1', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
         User::firstOrCreate(['login' => 'test2'],['name' => 'Чел 2', 'login' => 'test2', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
         User::firstOrCreate(['login' => 'test3'],['name' => 'Чел 3', 'login' => 'test3', 'password' => 'Test123!', 'is_banned' => 0, 'role_id' => $roleUserId]);
-        Album::firstOrCreate(['name' => 'Яблоко'],['name' =>"Яблоко", 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
-        Album::firstOrCreate(['name' => 'Помидор'],['name'=>"Помидор", 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
-        Album::firstOrCreate(['name' => 'Огурец'],['name' =>"Огурец", 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
-        AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 3]);
-        AlbumAccess::firstOrCreate(['album_id' => 2, 'user_id' => 4]);
-        AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 4]);
-        AlbumAccess::firstOrCreate(['album_id' => 3, 'user_id' => 2]);
+
+        for($i=0;$i<=25;$i++)
+        {
+            Album::query()->firstOrCreate([
+                'name' => fake()->unique()->name(),
+                'path' => fake()->unique()->slug(),
+                'user_id' => User::query()->inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id
+            ]);
+        }
+        foreach(Album::all() as $album)
+        {
+            $albumUserId = $album->user_id;
+            AlbumAccess::query()->firstOrCreate([
+                'album_id' => $album->id,
+                'user_id' => User::query()
+                    ->where('role_id', '!=', $roleAdminId)
+                    ->where('id', '!=', $albumUserId)
+                    ->inRandomOrder()
+                    ->first()
+                    ->id
+            ]);
+        }
+        //Album::firstOrCreate(['name' => 'Яблоко'],['name' =>"Яблоко", 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
+        //Album::firstOrCreate(['name' => 'Помидор'],['name'=>"Помидор", 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
+        //Album::firstOrCreate(['name' => 'Огурец'],['name' =>"Огурец", 'path' => fake()->slug(), 'user_id' => User::inRandomOrder()->whereNot('role_id', $roleAdminId)->first()->id]);
+        //AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 3]);
+        //AlbumAccess::firstOrCreate(['album_id' => 2, 'user_id' => 4]);
+        //AlbumAccess::firstOrCreate(['album_id' => 1, 'user_id' => 4]);
+        //AlbumAccess::firstOrCreate(['album_id' => 3, 'user_id' => 2]);
         ComplaintType::firstOrCreate(['name' => 'Террористическая пропаганда']);
         ComplaintType::firstOrCreate(['name' => 'Сцены насилия']);
         ComplaintType::firstOrCreate(['name' => 'Разжигание ненависти']);
@@ -66,7 +88,7 @@ class TestSeeder extends Seeder
                 File::copy($file->getRealPath(), $filePath);
 
                 // Добавляем запись в базу данных
-                $picture = DB::table('pictures')->insertOrIgnore([
+                DB::table('pictures')->insertOrIgnore([
                     'name' => $fileName,
                     'hash' => md5_file($filePath),
                     'date' => now(),
@@ -79,16 +101,24 @@ class TestSeeder extends Seeder
                 ]);
                 if(Complaint::query()->count() <90)
                 {
+                    $picture = Picture::query()->where('album_id', $album->id)->inRandomOrder()->first();
+                    $fromUser = User::where('role_id', $roleUserId)->where('id','!=', $user->id)->inRandomOrder()->first();
+                    $complaintExists = Complaint::query()
+                        ->where('picture_id', $picture->id)
+                        ->where('from_user_id', $fromUser->id)
+                        ->exists();
                     // Создание жалобы
-                    DB::table('complaints')->insertOrIgnore([
-                        'description' => 'This is a test complaint.',
-                        'complaint_type_id' => ComplaintType::inRandomOrder()->first()->id,
-                        'picture_id' => $picture->id ?? null,
-                        'album_id' => $album->id,
-                        'about_user_id' => $user->id,
-                        'from_user_id' => User::where('role_id', $roleUserId)->inRandomOrder()->first()->id, // случайный пользователь, кроме создателя,
-                        'status' => null,
-                    ]);
+                    if(!$complaintExists) {
+                        Complaint::query()->firstOrCreate([
+                            'description' => fake()->slug . fake()->name(),
+                            'complaint_type_id' => ComplaintType::inRandomOrder()->first()->id,
+                            'picture_id' => $picture->id ?? null,
+                            'album_id' => $album->id,
+                            'about_user_id' => $user->id,
+                            'from_user_id' => $fromUser->id, // случайный пользователь, кроме создателя,
+                            'status' => null,
+                        ]);
+                    }
                 }
             }
 
