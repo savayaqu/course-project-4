@@ -47,7 +47,7 @@ namespace PicsyncAdmin.ViewModels
             AppSettings.SettingsUpdated += OnSettingsUpdated;
             // Загрузка настроек
             Task.Run(() => LoadSettings());
-            Task.Run(() => LoadComplaints());
+            _ = LoadComplaints();
         }
 
         [RelayCommand(CanExecute = nameof(CanLoadData))]
