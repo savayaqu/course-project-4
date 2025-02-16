@@ -325,18 +325,21 @@ namespace PicsyncAdmin.ViewModels
                     StatusMessage = "Не удалось загрузить данные альбома.";
                     return;
                 }
-
+                Album.User.Id = albumData.Album.Owner.Id;
                 // Запись данных в свойства
                 PicturesCount = albumData.Album.PicturesCount;
                 ComplaintsCount = albumData.Album.ComplaintsCount;
                 AlbumName = albumData.Album.Name;
-                UserName = albumData.Album.User?.Name ?? "";
+                UserName = albumData.Album.Owner?.Name ?? "";
                 StatusMessage = ""; // Скрываем статус, если данные загружены
 
                 // Логика работы с картинками
                 CanLoadMore = responseObject.Total > responseObject.Page * responseObject.Limit;
                 CurrentPage++;
 
+                Debug.WriteLine("Id альбома" + Album.Id);
+                Debug.WriteLine("Владелец альбома" + Album.User.Name + Album.User.Id);
+                Debug.WriteLine("Название альбома" + Album.Name);
                 foreach (var picture in responseObject.Pictures)
                 {
                     picture.OriginalPath ??= new API_URL($"/albums/{Album.Id}/pictures/{picture.Id}/original?sign={responseObject.Sign}");

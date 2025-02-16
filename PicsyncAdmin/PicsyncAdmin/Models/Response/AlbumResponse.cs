@@ -17,7 +17,7 @@ namespace PicsyncAdmin.Models.Response
         [JsonProperty("id")] public int Id { get; set; }
 
         [JsonProperty("name")] public required string Name { get; set; }
-        [JsonProperty("owner")] public required User User { get; set; }
+        [JsonProperty("owner")] public required User Owner { get; set; }
 
         [JsonProperty("picturesCount")] public int PicturesCount { get; set; }
 
