@@ -4,22 +4,20 @@ using CommunityToolkit.Mvvm.Input;
 using PicsyncClient.Components.Popups;
 using PicsyncClient.Enum;
 using PicsyncClient.Models.Albums;
-using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
 using PicsyncClient.Views;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json;
-using static PicsyncClient.Utils.Fetcher;
 using static PicsyncClient.Utils.LocalDB;
 
 namespace PicsyncClient.ViewModels;
 
 public partial class AlbumsViewModel : ObservableObject
 {
-    [ObservableProperty] private ObservableCollection<AlbumLocal>  albumsLocal  = [];
-    [ObservableProperty] private ObservableCollection<AlbumSynced> albumsSynced = [];
-    [ObservableProperty] private ObservableCollection<AlbumRemote> albumsRemote = [];
+    [ObservableProperty] private ObservableCollection<AlbumLocal>  _albumsLocal  = [];
+    [ObservableProperty] private ObservableCollection<AlbumSynced> _albumsSynced = [];
+    [ObservableProperty] private ObservableCollection<AlbumRemote> _albumsRemote = [];
 
     public AlbumsViewModel()
     {
@@ -33,27 +31,20 @@ public partial class AlbumsViewModel : ObservableObject
         RequestAlbumsCommand.Execute(null);
     }
 
-    public bool SyncedIsVisibled => AlbumsSynced.Count > 0;
+    public bool SyncedIsVisible => AlbumsSynced.Count > 0;
 
     private void OnAlbumsSyncedCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        => OnPropertyChanged(nameof(SyncedIsVisibled));
+        => OnPropertyChanged(nameof(SyncedIsVisible));
 
     partial void OnAlbumsSyncedChanged(ObservableCollection<AlbumSynced>? oldValue, ObservableCollection<AlbumSynced> newValue)
     {
         if (oldValue != null)
             oldValue.CollectionChanged -= OnAlbumsSyncedCollectionChanged;
 
-        if (newValue != null)
-            newValue.CollectionChanged += OnAlbumsSyncedCollectionChanged;
+        newValue.CollectionChanged += OnAlbumsSyncedCollectionChanged;
 
-        OnPropertyChanged(nameof(SyncedIsVisibled));
+        OnPropertyChanged(nameof(SyncedIsVisible));
     }
-
-    //[ObservableProperty]
-    //[NotifyPropertyChangedFor(nameof(CanRequestAlbums))]
-    //[NotifyCanExecuteChangedFor(nameof(RequestAlbumsCommand))]
-    //private bool isBusyOnRequestAll = false;
-
     public bool CanRequestAlbums => !(RequestAlbumsCommand.IsRunning || IsFetch);
 
     [RelayCommand(CanExecute = nameof(CanRequestAlbums), IncludeCancelCommand = true)]
@@ -69,26 +60,26 @@ public partial class AlbumsViewModel : ObservableObject
         List<AlbumSynced> syncedAlbumsFromLocal = new(AlbumsSynced);
         AlbumsSynced.Clear();
 
-        // Проверка что синхронизирующиеся альбомы до сих пор на сервере
+        // РџСЂРѕРІРµСЂРєР°, С‡С‚Рѕ СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓСЋС‰РёРµСЃСЏ Р°Р»СЊР±РѕРјС‹ РґРѕ СЃРёС… РїРѕСЂ РЅР° СЃРµСЂРІРµСЂРµ
         for (int i = AlbumsRemote.Count - 1; i >= 0; i--)
         {
             var remote = AlbumsRemote[i];
             var synced = syncedAlbumsFromLocal.FirstOrDefault(a => a.Id == remote.Id);
 
-            if (synced is not AlbumSynced syncedTrue) continue;
+            if (synced is not { }) continue;
 
-            Debug.WriteLine($"RequestAlbums: synced.simple: #{syncedTrue.Id} {syncedTrue.LocalPath}");
-            syncedTrue.Update(remote);
+            Debug.WriteLine($"RequestAlbums: synced.simple: #{synced.Id} {synced.LocalPath}");
+            synced.Update(remote);
 
-            DB.Update(syncedTrue);
+            DB.Update(synced);
 
             AlbumsRemote.RemoveAt(i);
-            AlbumsSynced.Insert(0, syncedTrue); 
+            AlbumsSynced.Insert(0, synced); 
 
-            syncedAlbumsFromLocal.Remove(syncedTrue);
+            syncedAlbumsFromLocal.Remove(synced);
         }
-
-        // Оставшиейся в syncedAlbumsFromLocal более не синхронизируются
+        
+        // РћСЃС‚Р°РІС€РёРµСЃСЏ РІ syncedAlbumsFromLocal Р±РѕР»РµРµ РЅРµ СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓСЋС‚СЃСЏ
         foreach (var nonSynced in syncedAlbumsFromLocal)
         {
             Debug.WriteLine("RequestAlbums: foreach: \n" + JsonSerializer.Serialize(nonSynced));
@@ -105,7 +96,7 @@ public partial class AlbumsViewModel : ObservableObject
 
 
     [ObservableProperty] 
-    private bool hasPermissions = false;
+    private bool _hasPermissions;
 
     [RelayCommand]
     private async Task RequestPermissions()
@@ -119,23 +110,23 @@ public partial class AlbumsViewModel : ObservableObject
             }
             else
             {
-                _ = Shell.Current.DisplayAlert("Ошибка", "Вы должны дать разрешение на просмотр картинок", "OK");
+                _ = Shell.Current.DisplayAlert("РћС€РёР±РєР°", "Р’С‹ РґРѕР»Р¶РЅС‹ РґР°С‚СЊ СЂР°Р·СЂРµС€РµРЅРёРµ РЅР° РїСЂРѕСЃРјРѕС‚СЂ РєР°СЂС‚РёРЅРѕРє", "OK");
             }
         }
         catch (PlatformNotSupportedException ex)
         {
-            _ = Shell.Current.DisplayAlert("Ошибка", ex.Message, "OK");
+            _ = Shell.Current.DisplayAlert("РћС€РёР±РєР°", ex.Message, "OK");
         }
     }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RequestLocalAlbumsCommand))]
-    public bool canUpdateLocal = false;
+    private bool _canUpdateLocal;
 
     [RelayCommand(CanExecute = nameof(CanUpdateLocal))]
     public async Task<bool> RequestLocalAlbums()
     {
-        // Если не разрешено или не поддерживается — произойдёт исключение
+        // Р•СЃР»Рё РЅРµ СЂР°Р·СЂРµС€РµРЅРѕ РёР»Рё РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ вЂ” РїСЂРѕРёР·РѕР№РґС‘С‚ РёСЃРєР»СЋС‡РµРЅРёРµ
         try
         {
             HasPermissions = await LocalData.CheckPermissions();
@@ -153,8 +144,6 @@ public partial class AlbumsViewModel : ObservableObject
         }
         else if (LocalData.Status == LocalLoadStatus.InLoad)
         {
-            // TODO: непроверенный код
-            //_ = Shell.Current.DisplayAlert("Страшилка", "TODO: непроверенный код", "OK");
             while (LocalData.Status == LocalLoadStatus.InLoad)
             {
                 await Task.Delay(1000);
@@ -173,16 +162,6 @@ public partial class AlbumsViewModel : ObservableObject
     [RelayCommand]
     public void LightUpdate()
     {
-        /*
-        if (HasPermissions)
-        {
-            AlbumsLocal  = new(LocalData.Albums.OfType<AlbumLocal >().ToList());
-            AlbumsSynced = new(LocalData.Albums.OfType<AlbumSynced>().ToList());
-        }
-
-        AlbumsRemote = new(RemoteAlbumsData.AlbumsOwn.Concat(RemoteAlbumsData.AlbumsAccessible));
-        */
-
         AlbumsLocal .UpdateFrom(LocalData.Albums.OfType<AlbumLocal >().ToList());
         AlbumsSynced.UpdateFrom(LocalData.Albums.OfType<AlbumSynced>().ToList());
 
@@ -202,10 +181,10 @@ public partial class AlbumsViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(CanRequestAlbums))]
     [NotifyCanExecuteChangedFor(nameof(RequestAlbumsCommand))] 
     [NotifyCanExecuteChangedFor(nameof(RequestRemoteAlbumsCommand))]
-    private bool isFetch = false;
+    private bool _isFetch;
 
     [ObservableProperty] 
-    private string? error = null;
+    private string? _error;
 
     public bool CanRequestRemote => !IsFetch;
 
@@ -218,7 +197,7 @@ public partial class AlbumsViewModel : ObservableObject
             cancellationToken: token
         );
 
-        AlbumsRemote.UpdateFrom( // TODO: отдельно обновлять только инфу
+        AlbumsRemote.UpdateFrom( // TODO: РѕС‚РґРµР»СЊРЅРѕ РѕР±РЅРѕРІР»СЏС‚СЊ С‚РѕР»СЊРєРѕ РёРЅС„Сѓ
             RemoteAlbumsData.AlbumsOwn
             .Concat(RemoteAlbumsData.AlbumsAccessible)
             .ToList()
@@ -245,18 +224,27 @@ public partial class AlbumsViewModel : ObservableObject
     }
 
 
+    public void Reset()
+    {
+        AlbumsRemote.Clear();
+        IsFetch = false;
+        Error = null;
+        RequestRemoteAlbumsCommand.Execute(null);
+    }
+
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SquareWidth))]
-    private int columnCount = 1;
+    private int _columnCount = 1;
 
     [ObservableProperty]
-    private double? requestColumnWidth = 180;
+    private double? _requestColumnWidth = 180;
 
     [ObservableProperty]
-    private double squareWidth;
+    private double _squareWidth;
 
     [RelayCommand]
-    public void CalculateColumnsWidth(double containerWidth)
+    private void CalculateColumnsWidth(double containerWidth)
     {
         if (RequestColumnWidth != null)
             ColumnCount = Math.Max((int)(containerWidth / RequestColumnWidth), 1);
@@ -264,14 +252,5 @@ public partial class AlbumsViewModel : ObservableObject
         SquareWidth = ( (containerWidth - 5*(ColumnCount - 1)) / ColumnCount ) - 15;
 
         Debug.WriteLine($"=== SquareWidth ===\n{SquareWidth} = {containerWidth} / {ColumnCount}");
-    }
-
-
-    public void Reset()
-    {
-        AlbumsRemote.Clear();
-        IsFetch = false;
-        Error = null;
-        RequestRemoteAlbumsCommand.Execute(null);
     }
 }

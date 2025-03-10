@@ -12,23 +12,23 @@ public partial class LoginViewModel : ObservableObject
 {
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TryLoginCommand))]
-    private string login = "";
+    private string _login = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TryLoginCommand))]
-    private string password = "";
+    private string _password = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TryLoginCommand))]
-    private bool isFetch = false;
+    private bool _isFetch;
 
     [ObservableProperty]
-    private string? error = null;
+    private string? _error;
 
-    public string Url => ServerData.Url?.ToString();
+    public string Url => ServerData.Url?.ToString() ?? "";
 
     [RelayCommand]
-    public void ForgetServer() => ServerData.ForgetAndNavigate();
+    private void ForgetServer() => ServerData.ForgetAndNavigate();
 
     [RelayCommand]
     private void GoToSignup() => Shell.Current.GoToAsync("//Signup");
@@ -44,7 +44,7 @@ public partial class LoginViewModel : ObservableObject
         var credentials = new CredentialsRequest(Login, Password);
         try
         {
-            (var res, var body) = await FetchAsync<AuthResponse>(
+            var (res, body) = await FetchAsync<AuthResponse>(
                 HttpMethod.Post, "login",
                 isFetch => IsFetch = isFetch,
                 error => Error = error,
@@ -64,7 +64,7 @@ public partial class LoginViewModel : ObservableObject
             if (Error != null)
                 throw new Exception(Error);
 
-            if (body?.Token == null || body?.User == null)
+            if (body?.Token == null || body.User == null)
                 throw new Exception("Ошибка сервера: не пришли нужные данные\n" 
                     + await res.Content.ReadAsStringAsync());
 
@@ -75,13 +75,6 @@ public partial class LoginViewModel : ObservableObject
         {
             Error = ex.Message;
         }
-
-        /*
-        Debug.WriteLine("ERROR: " + Error);
-        Debug.WriteLine("BODY: " + JsonSerializer.Serialize(body));
-        Debug.WriteLine("RESPONSE: " + JsonSerializer.Serialize(res));
-        Debug.WriteLine("CONTENT: " + JsonSerializer.Serialize(await res.Content.ReadAsStringAsync()));
-        */
     }
     public void Update()
     {

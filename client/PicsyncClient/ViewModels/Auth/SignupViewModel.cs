@@ -14,34 +14,34 @@ public partial class SignupViewModel : ObservableObject
 {
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TrySignupCommand))]
-    private string nickname = "";
+    private string _nickname = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TrySignupCommand))]
-    private string login = "";
+    private string _login = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TrySignupCommand))]
-    private string password = "";
+    private string _password = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TrySignupCommand))]
-    private string passwordConfirm = "";
+    private string _passwordConfirm = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TrySignupCommand))]
-    private bool isFetch = false;
+    private bool _isFetch;
 
     [ObservableProperty]
-    private string? error = null;
+    private string? _error;
 
     [ObservableProperty]
-    private Dictionary<string, List<string>> badFields = [];
+    private Dictionary<string, List<string>> _badFields = [];
 
-    public string Url => ServerData.Url?.ToString();
+    public string Url => ServerData.Url?.ToString() ?? "";
 
     [RelayCommand]
-    public void ForgetServer() => ServerData.ForgetAndNavigate();
+    private void ForgetServer() => ServerData.ForgetAndNavigate();
 
     [RelayCommand]
     private void GoToLogin()
@@ -67,7 +67,7 @@ public partial class SignupViewModel : ObservableObject
         var regData = new RegisterRequest(Login, Password, Nickname);
         try
         {
-            (var res, var body) = await FetchAsync<AuthResponse>(
+            var (res, body) = await FetchAsync<AuthResponse>(
                 HttpMethod.Post, "register",
                 isFetch => IsFetch = isFetch,
                 error   => Error   = error,
@@ -81,7 +81,7 @@ public partial class SignupViewModel : ObservableObject
             if (res.StatusCode == HttpStatusCode.UnprocessableEntity)
             {
                 var errorJson = await res.Content.ReadAsStringAsync();
-                Debug.WriteLine("ERRJSON: " + errorJson);
+                Debug.WriteLine("ERR_JSON: " + errorJson);
                 BadFields = JsonSerializer.Deserialize<ErrorResponse>(errorJson)?.Errors ?? [];
                 throw new Exception("Ошибка валидации данных");
             }
@@ -92,7 +92,7 @@ public partial class SignupViewModel : ObservableObject
             if (Error != null)
                 throw new Exception(Error);
 
-            if (body?.Token == null || body?.User == null)
+            if (body?.Token == null || body.User == null)
                 throw new Exception("Ошибка сервера: не пришли нужные данные\n"
                     + await res.Content.ReadAsStringAsync());
 
@@ -106,12 +106,11 @@ public partial class SignupViewModel : ObservableObject
         }
     }
 
-    private bool CanSignup() =>
-        Nickname != "" &&
-        Login != "" &&
-        Password != "" &&
-        PasswordConfirm != "" &&
-        !IsFetch;
+    private bool CanSignup() => Nickname        != "" 
+                             && Login           != "" 
+                             && Password        != "" 
+                             && PasswordConfirm != "" 
+                             && !IsFetch;
 
     public void Update()
     {

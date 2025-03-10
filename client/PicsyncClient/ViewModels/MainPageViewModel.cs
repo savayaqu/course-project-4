@@ -15,28 +15,27 @@ namespace PicsyncClient.ViewModels;
 
 public partial class MainPageViewModel : ObservableObject
 {
-    private MainPage? _contentPage;
+    private readonly MainPage? _contentPage;
 
     [ObservableProperty]
-    private string? error;
+    private string? _error;
 
     [ObservableProperty]
-    bool hasSynced = false;
+    private bool _hasSynced;
 
     [ObservableProperty]
-    private ObservableGroupedCollection<DateOnly, IPictureLocal> picturesGroups = [];
+    private ObservableGroupedCollection<DateOnly, IPictureLocal> _picturesGroups = [];
 
-    public List<IPictureLocal> PicturesFlat { get; set; } = [];
+    private List<IPictureLocal> PicturesFlat { get; set; } = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(LocalCount))]
     [NotifyPropertyChangedFor(nameof(SyncedCount))]
-    private ObservableCollection<AlbumSynced> albumsSynced = [];
+    private ObservableCollection<AlbumSynced> _albumsSynced = [];
 
     public MainPageViewModel(MainPage? contentPage = null)
     {
         _contentPage = contentPage;
-
         RefreshCommand.Execute(null);
     }
 
@@ -49,7 +48,7 @@ public partial class MainPageViewModel : ObservableObject
     public int PageSize => ColumnCount * 10;
 
     [ObservableProperty]
-    private bool isRefreshing = false;
+    private bool _isRefreshing;
 
     [RelayCommand]
     public async Task Refresh()
@@ -70,7 +69,7 @@ public partial class MainPageViewModel : ObservableObject
 
 
     [RelayCommand]
-    public async Task SyncManage()
+    private async Task SyncManage()
     {
         GeneralSyncManagePopup popup = new();
         await Shell.Current.CurrentPage.ShowPopupAsync(popup);
@@ -78,11 +77,11 @@ public partial class MainPageViewModel : ObservableObject
 
 
     [ObservableProperty]
-    private bool hasPermissions = false;
+    private bool _hasPermissions;
 
 
     [RelayCommand]
-    public async Task GoToAlbums()
+    private async Task GoToAlbums()
     {
         try
         {
@@ -98,7 +97,7 @@ public partial class MainPageViewModel : ObservableObject
         }
     }
 
-    public async Task RequestLocalAlbums()
+    private async Task RequestLocalAlbums()
     {
         // Если не разрешено или не поддерживается — произойдёт исключение
         try
@@ -184,11 +183,11 @@ public partial class MainPageViewModel : ObservableObject
     }
 
 
-    public List<IEnumerator<IPictureLocal>>? PicturesCursors = null;
+    public List<IEnumerator<IPictureLocal>>? PicturesCursors;
 
     [ObservableProperty]
     //[NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
-    public bool canLoadMore = false;
+    private bool _canLoadMore;
 
     /*
     [RelayCommand(CanExecute = nameof(CanLoadMore))]
@@ -274,16 +273,16 @@ public partial class MainPageViewModel : ObservableObject
     */
 
     [ObservableProperty]
-    private int columnCount = 1;
+    private int _columnCount = 1;
 
     [ObservableProperty]
-    private double? requestColumnWidth = 120;
+    private double? _requestColumnWidth = 120;
 
     [ObservableProperty]
-    private double columnWidth = 100;
+    private double _columnWidth = 100;
 
     [RelayCommand]
-    public void CalculateColumnsWidth(double containerWidth)
+    private void CalculateColumnsWidth(double containerWidth)
     {
         if (RequestColumnWidth != null)
             ColumnCount = Math.Max((int)(containerWidth / RequestColumnWidth), 1);

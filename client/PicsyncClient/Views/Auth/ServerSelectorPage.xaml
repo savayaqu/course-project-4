@@ -19,12 +19,10 @@
             
             <Label Text="Выбор сервера" HorizontalTextAlignment="Center" FontSize="24"/>
 
-            <Border Padding="10" Stroke="Red"
-                    Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
+            <Border Padding="10" Stroke="Red" StrokeShape="RoundRectangle 6"
+                    Background="{AppThemeBinding Dark={StaticResource RedDark}, 
+                                                Light={StaticResource Red}}"
                     IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="6"/>
-                </Border.StrokeShape>
                 <StackLayout Spacing="5">
                     <HorizontalStackLayout Spacing="5">
                         <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
@@ -43,7 +41,8 @@
             <StackLayout HeightRequest="30">
                 <Label Text="Отмена"
                    IsVisible="{Binding IsFetch}"
-                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, 
+                                              Light={StaticResource Primary}}"
                    TextDecorations="Underline" FontSize="16" Padding="5"
                    HorizontalTextAlignment="Center">
                     <Label.GestureRecognizers>
@@ -58,9 +57,11 @@
                         <Label Text="Прошлые сервера" HorizontalTextAlignment="Center" Margin="0,10"/>
                     </DataTemplate>
                 </CollectionView.HeaderTemplate>
+                
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="2"/>
                 </CollectionView.ItemsLayout>
+                
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Frame Padding="5">
@@ -71,15 +72,19 @@
                                         CommandParameter="{Binding .}"/>
                                 </Grid.GestureRecognizers>
                                 <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0,0,0"/>
-                                <Button Grid.Column="1" HeightRequest="32" WidthRequest="32" ImageSource="trash_2.png" Padding="8"
+                                <Button Grid.Column="1" 
+                                        HeightRequest="32" WidthRequest="32" 
+                                        ImageSource="trash_2.png" Padding="8"
                                         CommandParameter="{Binding .}"
                                         Command="{Binding DeletePastUrlCommand, Source={RelativeSource AncestorType={x:Type vm:ServerSelectorViewModel}}}"
-                                        Background="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                                        Background="{AppThemeBinding Light=Red, 
+                                                                      Dark={StaticResource Gray600}}">
                                     <Button.Behaviors>
-                                        <tk:IconTintColorBehavior TintColor="Red"/>
+                                        <tk:IconTintColorBehavior TintColor="{AppThemeBinding Dark=Red, Light=White}"/>
                                     </Button.Behaviors>
                                 </Button>
-                                <Image Grid.Column="2" Source="chevron_right.png" HeightRequest="24" WidthRequest="24" Margin="10,0,0,0">
+                                <Image Grid.Column="2" Source="chevron_right.png" Margin="10,0,0,0"
+                                       HeightRequest="24" WidthRequest="24" >
                                     <Image.Behaviors>
                                         <tk:IconTintColorBehavior TintColor="{AppThemeBinding Light=Black, Dark=White}"/>
                                     </Image.Behaviors>

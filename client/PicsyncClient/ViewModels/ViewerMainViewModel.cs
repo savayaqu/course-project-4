@@ -67,40 +67,33 @@ public partial class ViewerMainViewModel : ObservableObject
     private bool areControlsVisible = true;
 
     [RelayCommand]
-    public void ToggleControlsVisibility()
+
+    private void ToggleControlsVisibility()
     {
         AreControlsVisible = !AreControlsVisible;
 
 #if ANDROID
+        // Платформо-специфичное управление статус-баром и навигационной панелью 
         var activity = Platform.CurrentActivity;
         System.Diagnostics.Debug.WriteLine($"activity: {activity}");
-        if (activity == null) return;
+        if (activity == null
+         || activity.Window == null
+         || activity.Window.DecorView == null) return;
 
         if (AreControlsVisible)
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
-            {
-                return;
-            }
-
-            activity.Window?.AddFlags(WindowManagerFlags.ForceNotFullscreen);
-            activity.Window?.ClearFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutInScreen);
-
-            var controller = activity.Window?.InsetsController;
-            controller?.Show(WindowInsets.Type.SystemBars());
+            // Показать статус-бар и навигационную панель
+            activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
         }
         else
         {
-            if (Build.VERSION.SdkInt < BuildVersionCodes.R)
-            {
-                return;
-            }
-
-            activity.Window?.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutInScreen);
-            activity.Window?.ClearFlags(WindowManagerFlags.ForceNotFullscreen);
-
-            var controller = activity.Window?.InsetsController;
-            controller?.Hide(WindowInsets.Type.SystemBars());
+            // Скрыть статус-бар и навигационную панель
+            activity.Window.DecorView.SystemUiVisibility =
+                (Android.Views.StatusBarVisibility)(
+                    Android.Views.SystemUiFlags.HideNavigation |
+                    Android.Views.SystemUiFlags.Fullscreen |
+                    Android.Views.SystemUiFlags.ImmersiveSticky
+                );
         }
 #elif IOS
         UIKit.UIApplication.SharedApplication.SetStatusBarHidden(!AreControlsVisible, UIKit.UIStatusBarAnimation.Fade);

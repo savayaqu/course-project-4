@@ -22,29 +22,29 @@ public partial class AlbumViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanLoadMore))]
     [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
-    private bool isBusy = false;
+    private bool _isBusy;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
     [NotifyPropertyChangedFor(nameof(CanLoadMore))]
-    private int localOffset = 0;
+    private int _localOffset;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadMoreCommand))]
     [NotifyPropertyChangedFor(nameof(CanLoadMore))]
-    private int remoteOffset = 0;
+    private int _remoteOffset;
 
     [ObservableProperty]
-    private PicturesPageResponse? lastRemotePicturesPage;
+    private PicturesPageResponse? _lastRemotePicturesPage;
 
     //public int PageSize => ColumnCount * 10; // Если бы были Offset'ные картинки в API
     public int PageSize => 30;
 
-    [ObservableProperty] private string? errorOnPage;
-    [ObservableProperty] private string? errorOnAlbum;
+    [ObservableProperty] private string? _errorOnPage;
+    [ObservableProperty] private string? _errorOnAlbum;
 
     [ObservableProperty]
-    private ObservableCollection<ItemsGroup<Models.Pictures.IPicture>> picturesGroups = [];
+    private ObservableCollection<ItemsGroup<Models.Pictures.IPicture>> _picturesGroups = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLocal))]
@@ -53,13 +53,13 @@ public partial class AlbumViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(IsNonOwned))]
     [NotifyPropertyChangedFor(nameof(IsRemoteOwned))]
     [NotifyPropertyChangedFor(nameof(CanSync))]
-    private IAlbum album;
+    private IAlbum _album;
 
     public bool IsLocal       => Album is IAlbumLocal;
     public bool IsSynced      => Album is AlbumSynced;
     public bool IsRemote      => Album is AlbumRemote;
-    public bool IsNonOwned    => Album is AlbumRemote album && album.Owner != null;
-    public bool IsRemoteOwned => Album is AlbumRemote album && album.Owner == null;
+    public bool IsNonOwned    => Album is AlbumRemote { Owner: not null };
+    public bool IsRemoteOwned => Album is AlbumRemote { Owner: null };
 
 
     public AlbumViewModel(IAlbum album)
@@ -74,7 +74,7 @@ public partial class AlbumViewModel : ObservableObject
 
 
     [RelayCommand]
-    public async Task Refresh()
+    private async Task Refresh()
     {
         OnPropertyChanged(nameof(Album));
         PicturesGroups.Clear(); // TODO: Очищать только в случае успеха запроса страницы
@@ -92,11 +92,11 @@ public partial class AlbumViewModel : ObservableObject
 
 
     [RelayCommand]
-    public async Task LoadInfo()
+    private async Task LoadInfo()
     {
         if (Album is not AlbumRemote remote) return;
 
-        (var res, var body) = await FetchAsync<AlbumResponse>(
+        var (res, body) = await FetchAsync<AlbumResponse>(
             HttpMethod.Get, URLs.AlbumInfo(remote.Id),
             setError: e => ErrorOnAlbum = e
         );
@@ -145,7 +145,7 @@ public partial class AlbumViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanLoadMore))]
-    public async Task LoadMore()
+    private async Task LoadMore()
     {
         Debug.WriteLine($"=========== LoadMore (IsBusy: {IsBusy}) ============\nOffset / Total:\n" +
             ((Album is IAlbumLocal  local) ? $"[local_] {LocalOffset }/{local .LocalPictures.Count}\n" : "") +
@@ -185,7 +185,7 @@ public partial class AlbumViewModel : ObservableObject
                         // Запрашиваем удалённые если надо
                         if (LastRemotePicturesPage == null || LastRemotePicturesPage.Page != requiredPage)
                         {
-                            (var res, var picturesPage) = await FetchAsync<PicturesPageResponse>(
+                            var (res, picturesPage) = await FetchAsync<PicturesPageResponse>(
                                 HttpMethod.Get,
                                 URLs.AlbumPictures(albumSynced.Id, new()
                                 {
@@ -226,7 +226,7 @@ public partial class AlbumViewModel : ObservableObject
 
                         if (syncedPicture != null)
                         {
-                            Debug.WriteLine("finded synced of remote picture: " + JsonSerializer.Serialize(syncedPicture));
+                            Debug.WriteLine("found synced of remote picture: " + JsonSerializer.Serialize(syncedPicture));
                             syncedPicture.Update(remotePicture);
                             DB.Update(syncedPicture);
                             remotePicture = null;
@@ -279,7 +279,7 @@ public partial class AlbumViewModel : ObservableObject
             }
             else if (Album is AlbumRemote albumRemote)
             {
-                (var res, var picturesPage) = await FetchAsync<PicturesPageResponse>(
+                var (res, picturesPage) = await FetchAsync<PicturesPageResponse>(
                     HttpMethod.Get,
                     URLs.AlbumPictures(albumRemote.Id, new()
                     {
@@ -328,17 +328,17 @@ public partial class AlbumViewModel : ObservableObject
             //{
             foreach (var picture in piece)
             {
-                string? currGroupTitle = picture.Date.ToString("MMMM, yyyy");
+                string currGroupTitle = picture.Date.ToString("MMMM, yyyy");
                 string? lastGroupTitle = null;
         
                 int lastGroupIndex = PicturesGroups.Count - 1;
                 if (lastGroupIndex >= 0)
-                    lastGroupTitle = PicturesGroups?[lastGroupIndex].Title;
+                    lastGroupTitle = PicturesGroups[lastGroupIndex].Title;
         
                 if (lastGroupTitle == currGroupTitle)
                     PicturesGroups[lastGroupIndex].Add(picture);
                 else
-                    PicturesGroups.Add(new(currGroupTitle ?? "", [picture]));
+                    PicturesGroups.Add(new(currGroupTitle, [picture]));
         
                 Debug.WriteLine($"Added: {picture.Name}, to: {currGroupTitle}");
             }
@@ -359,17 +359,17 @@ public partial class AlbumViewModel : ObservableObject
 
 
     [RelayCommand]
-    public async Task OpenInfo()
+    private async Task OpenInfo()
     {
         AlbumInfoPopup popup = new(Album);
-        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        await Shell.Current.CurrentPage.ShowPopupAsync(popup);
         OnPropertyChanged(nameof(Album));
     }
 
     public bool CanSync => Album.GetType() == typeof(AlbumLocal);
 
     [RelayCommand(CanExecute = nameof(CanSync))]
-    public async Task Sync()
+    private async Task Sync()
     {
         if (Album is not AlbumLocal albumLocal || 
             albumLocal.GetType() != typeof(AlbumLocal)
@@ -387,7 +387,7 @@ public partial class AlbumViewModel : ObservableObject
     public bool CanSyncManage => Album is AlbumSynced;
 
     [RelayCommand(CanExecute = nameof(CanSyncManage))]
-    public async Task SyncManage()
+    private async Task SyncManage()
     {
         if (Album is not AlbumSynced synced) return;
 
@@ -404,12 +404,12 @@ public partial class AlbumViewModel : ObservableObject
     public bool CanAccessManage => Album is AlbumRemote;
 
     [RelayCommand(CanExecute = nameof(CanAccessManage))]
-    public async Task AccessManage()
+    private async Task AccessManage()
     {
         if (Album is not AlbumRemote remote) return;
 
         AlbumAccessManagePopup popup = new(remote);
-        var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
+        await Shell.Current.CurrentPage.ShowPopupAsync(popup);
         OnPropertyChanged(nameof(Album));
     }
 
@@ -423,20 +423,20 @@ public partial class AlbumViewModel : ObservableObject
     public bool CanUnjoin => Album is AlbumRemote;
 
     [RelayCommand(CanExecute = nameof(CanUnjoin))]
-    public async Task Unjoin(CancellationToken token = default)
+    private async Task Unjoin()
     {
         if (Album is not AlbumRemote remote) return;
 
         AlbumUnjoinPopup popup = new(remote);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync(popup);
 
-        if (result is not bool isExit || !isExit) return;
+        if (result is not (bool and true)) return;
         await Shell.Current.GoToAsync("..");
     }
 
 
     [ObservableProperty]
-    private int columnCount = 1;
+    private int _columnCount = 1;
 
     private double? _requestColumnWidth = 120;
     private double? RequestColumnWidth
@@ -450,12 +450,12 @@ public partial class AlbumViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    private double columnWidth = 100;
+    private double _columnWidth = 100;
 
     private double _containerWidth = 100;
 
     [RelayCommand]
-    public void CalculateColumnsWidth(double containerWidth)
+    private void CalculateColumnsWidth(double containerWidth)
     {
         _containerWidth = containerWidth;
         if (RequestColumnWidth != null)

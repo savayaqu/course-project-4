@@ -19,7 +19,7 @@
                         <TapGestureRecognizer Command="{Binding EditSelfCommand}"/>
                     </Frame.GestureRecognizers>
                     <StackLayout>
-                        <Grid Margin="10,0" RowDefinitions="*,auto">
+                        <Grid Margin="10,0" ColumnDefinitions="*,auto">
                             <Label Text="О вас" FontSize="18"/>
                             <Image Grid.Column="1" Source="pencil.png" HeightRequest="24" WidthRequest="24" Margin="4" HorizontalOptions="End"
                                    BackgroundColor="Transparent">
@@ -28,7 +28,7 @@
                                 </Image.Behaviors>
                             </Image>
                         </Grid>
-                        <FlexLayout JustifyContent="Center">
+                        <FlexLayout JustifyContent="Center" Wrap="Wrap">
                             <StackLayout Margin="5">
                                 <Label Text="Никнейм" FontSize="12" TextColor="Gray"/>
                                 <Label Text="{Binding User.Nickname}" FontSize="16"/>
@@ -126,7 +126,7 @@
                         <Border Padding="10" Stroke="Yellow" StrokeShape="RoundRectangle 6"
                                 Background="{AppThemeBinding Dark={StaticResource YellowDark}, Light={StaticResource Yellow}}"
                                 IsVisible="{Binding ServerSettings.IsUploadDisabled}">
-                            <StackLayout Grid.Column="1" Spacing="5">
+                            <StackLayout Spacing="5">
                                 <HorizontalStackLayout Spacing="5">
                                     <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                                         <Image.Behaviors>

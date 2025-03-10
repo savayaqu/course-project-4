@@ -4,7 +4,6 @@
              xmlns:tk="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:vm="clr-namespace:PicsyncClient.ViewModels"
              xmlns:cv="clr-namespace:PicsyncClient.Converters"
-             xmlns:m="clr-namespace:PicsyncClient.Models"
              x:Class="PicsyncClient.Views.AlbumsPage">
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -24,8 +23,9 @@
     <RefreshView Command="{Binding RequestAlbumsCommand}" IsRefreshing="{Binding RequestAlbumsCommand.IsRunning}">
         <ScrollView>
             <StackLayout Margin="5,0">
+                <!--<BoxView HeightRequest="50" BackgroundColor="Transparent"/>-->
 
-                <StackLayout IsVisible="{Binding SyncedIsVisibled}">
+                <StackLayout IsVisible="{Binding SyncedIsVisible}">
                     <Grid ColumnDefinitions="*,auto" HeightRequest="50">
                         <HorizontalStackLayout Spacing="10" Margin="5" VerticalOptions="Center">
                             <Label FontSize="18" VerticalOptions="Center" Text="Синхронизируемые"/>
@@ -125,7 +125,6 @@
                     </CollectionView>
 
                     <BoxView HeightRequest="1" Color="Gray" Margin="5"/>
-                    <!--<BoxView HeightRequest="5" BackgroundColor="Transparent"/>-->
                 </StackLayout>
 
                 <Grid ColumnDefinitions="*,auto" HeightRequest="50">
@@ -150,7 +149,7 @@
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="6"/>
                     </Border.StrokeShape>
-                    <StackLayout Grid.Column="1" Spacing="5">
+                    <StackLayout Spacing="5">
                         <HorizontalStackLayout Spacing="5">
                             <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                                 <Image.Behaviors>
@@ -177,7 +176,7 @@
 
                                 <StackLayout>
                                     <Grid ColumnDefinitions="*,*" RowDefinitions="*,*" RowSpacing="5" ColumnSpacing="5"
-                                  HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
+                                     HeightRequest="{Binding SquareWidth, Source={RelativeSource AncestorType={x:Type vm:AlbumsViewModel}}}">
 
                                         <Border Grid.Row="0" Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0">
                                             <Image Source="{Binding ThumbnailPaths[0]}" Aspect="AspectFill"/>
@@ -252,7 +251,7 @@
                 </CollectionView>
 
                 <Label Text="Ввести код приглашения" TextDecorations="Underline" FontSize="14" Padding="10" HorizontalOptions="Center"
-               TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
+                    TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}">
                     <Label.GestureRecognizers>
                         <TapGestureRecognizer Command="{Binding OpenInvitationPreviewCommand}"/>
                     </Label.GestureRecognizers>

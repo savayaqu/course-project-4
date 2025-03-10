@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PicsyncClient.Components.Popups;
 using PicsyncClient.Models;
-using PicsyncClient.Models.Response;
 using PicsyncClient.Utils;
 
 namespace PicsyncClient.ViewModels;
@@ -13,10 +12,10 @@ public partial class SettingsViewModel : ObservableObject
 {
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TryExitCommand))]
-    private bool isFetch = false;
+    private bool _isFetch ;
 
-    [ObservableProperty] private string? statsGetError;
-    [ObservableProperty] private string? settingsGetError;
+    [ObservableProperty] private string? _statsGetError;
+    [ObservableProperty] private string? _settingsGetError;
 
     public User?           User           => AuthData.User;
     public UserStats?      Stats          => AuthData.Stats;
@@ -30,8 +29,8 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task Refresh(CancellationToken token = default)
     {
-        var   userTask =   AuthData.Update(_ =>    StatsGetError = _, token);
-        var serverTask = ServerData.Update(_ => SettingsGetError = _, token);
+        var   userTask =   AuthData.Update(e =>    StatsGetError = e, token);
+        var serverTask = ServerData.Update(e => SettingsGetError = e, token);
 
         await Task.WhenAll(userTask, serverTask);
 
@@ -53,7 +52,7 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task CopyUrl()
     {
-        if (Url is not Uri uri) return;
+        if (Url is not { } uri) return;
         await Clipboard.SetTextAsync(uri.ToString());
         await Toast.Make("Скопировано в буфер").Show();
     }

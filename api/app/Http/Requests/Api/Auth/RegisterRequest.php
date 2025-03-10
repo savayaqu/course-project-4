@@ -15,6 +15,16 @@ class RegisterRequest extends ApiRequest
             'password' => 'required|string|min:8|max:255',
         ];
     }
+    public function messages(): array
+    {
+        return [
+            '*.required' => 'Обязательно для заполнения',
+            '*.unique' => 'Уже занят',
+            '*.min' => 'Минимум :min символа',
+            '*.max' => 'Максимум :max символов',
+            '*.regex' => 'Допустимы только латинские буквы, цифры, "_" и "-"',
+        ];
+    }
     protected function prepareForValidation()
     {
         try {

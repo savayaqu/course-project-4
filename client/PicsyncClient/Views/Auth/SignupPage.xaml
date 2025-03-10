@@ -32,7 +32,7 @@
             <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
                     Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                     IsVisible="{Binding Error, Converter={StaticResource IsNotNullConverter}}">
-                <StackLayout Grid.Column="1" Spacing="5">
+                <StackLayout Spacing="5">
                     <HorizontalStackLayout Spacing="5">
                         <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                             <Image.Behaviors>
@@ -49,21 +49,24 @@
                    Placeholder="Придумайте логин*"   
                    Completed="FocusToEntry2"/>
             <Label TextColor="Red" FontSize="12" Margin="0,-5,0,0"
-                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=login}"/>
+                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, 
+                   ConverterParameter=login}"/>
             
             <Entry Text="{Binding Nickname}"        
                    Placeholder="Придумайте никнейм*" 
                    Completed="FocusToEntry3" 
                    x:Name="Entry2"/>
             <Label TextColor="Red" FontSize="12" Margin="0,-5,0,0"
-                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=nickname}"/>
+                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, 
+                   ConverterParameter=nickname}"/>
             
             <Entry Text="{Binding Password}"        
                    Placeholder="Придумайте пароль*"  
                    Completed="FocusToEntry4" x:Name="Entry3" 
                    IsPassword="True"/>
             <Label TextColor="Red" FontSize="12" Margin="0,-5,0,0"
-                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=password}"/>
+                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, 
+                   ConverterParameter=password}"/>
 
             <Entry Text="{Binding PasswordConfirm}" 
                    Placeholder= "Повторите пароль*"  
@@ -71,13 +74,15 @@
                    x:Name="Entry4" 
                    IsPassword="True"/>
             <Label TextColor="Red" FontSize="12" 
-                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, ConverterParameter=passwordConfirm}"/>
+                   Text="{Binding BadFields, Converter={StaticResource ErrorConverter}, 
+                   ConverterParameter=passwordConfirm}"/>
 
             <Button Text="Зарегистрироваться" Command="{Binding TrySignupCommand}"/>
 
             <Label Text="У вас уже есть учётная запись?" HorizontalTextAlignment="Center" Margin="0,10,0,0"/>
-            <Label Text="Авторизироваться" FontSize="16" Padding="5"
-                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, Light={StaticResource Primary}}"
+            <Label Text="Войти" FontSize="16" Padding="5"
+                   TextColor="{AppThemeBinding Dark={StaticResource PrimaryDark}, 
+                                              Light={StaticResource Primary}}"
                    TextDecorations="Underline"
                    HorizontalTextAlignment="Center" Margin="0,-5,0,0">
                 <Label.GestureRecognizers>

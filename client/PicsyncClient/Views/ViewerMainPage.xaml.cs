@@ -22,5 +22,16 @@ public partial class ViewerMainPage : ContentPage
         base.OnDisappearing();
 
         _scrollTo?.Invoke(_viewModel.Picture);
+#if ANDROID
+        var activity = Platform.CurrentActivity;
+        System.Diagnostics.Debug.WriteLine($"activity dis: {activity}");
+        if (activity == null
+         || activity.Window == null
+         || activity.Window.DecorView == null) return;
+
+        activity.Window.DecorView.SystemUiVisibility = Android.Views.StatusBarVisibility.Visible;
+#elif IOS
+        UIKit.UIApplication.SharedApplication.SetStatusBarHidden(false, UIKit.UIStatusBarAnimation.Fade);
+#endif
     }
 }

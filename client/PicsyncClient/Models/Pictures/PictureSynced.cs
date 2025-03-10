@@ -1,6 +1,4 @@
-using PicsyncClient.Converters.Json;
 using PicsyncClient.Models.Albums;
-using PicsyncClient.Utils;
 using SQLite;
 using System.Text.Json.Serialization;
 
@@ -8,7 +6,7 @@ namespace PicsyncClient.Models.Pictures;
 
 public class PictureSynced : PictureRemote, IPictureLocal
 {
-    // Êîíñòğóêòîğû
+    // ĞšĞ¾Ğ½ÑÑ‚Ñ€ÑƒĞºÑ‚Ğ¾Ñ€Ñ‹
     public PictureSynced(IPictureLocal localPicture, PictureRemote remotePicture, AlbumSynced syncedAlbum)
     {
         LocalPath   = localPicture.LocalPath;
@@ -27,7 +25,7 @@ public class PictureSynced : PictureRemote, IPictureLocal
 
     public PictureSynced() { }
 
-    // Ñâîéñòâà
+    // Ğ¡Ğ²Ğ¾Ğ¹ÑÑ‚Ğ²Ğ°
     public string LocalPath { get; set; }
 
     [Ignore]
@@ -38,11 +36,11 @@ public class PictureSynced : PictureRemote, IPictureLocal
         set => Album = value;
     }
 
-    // Ãåòòåğû
-    public override string OriginalPath  => LocalPath ?? URLs.PictureOriginal (SpecificAlbum.Id, Id, SpecificAlbum?.Preview?.Signature).ToString();
-    public override string ThumbnailPath => LocalPath ?? URLs.PictureThumbnail(SpecificAlbum.Id, Id, SpecificAlbum?.Preview?.Signature).ToString();
+    // Ğ“ĞµÑ‚Ñ‚ĞµÑ€Ñ‹
+    public override string OriginalPath  => LocalPath;
+    public override string ThumbnailPath => LocalPath;
 
-    // Ôóíêöèè
+    // Ğ¤ÑƒĞ½ĞºÑ†Ğ¸Ğ¸
     public void Update(PictureRemote remote)
     {
         Id          = remote.Id;
@@ -67,8 +65,8 @@ public class PictureSynced : PictureRemote, IPictureLocal
 
     public override bool IsRemote               => true;
     public override bool IsRemoteInSyncAlbum    => false;
-    public override bool IsRemoteNonOwned       => Album is AlbumRemote album && album.Owner != null;
-    public override bool IsRemoteOwned          => Album is AlbumRemote album && album.Owner == null;
+    public override bool IsRemoteNonOwned       => Album is AlbumRemote { Owner: not null };
+    public override bool IsRemoteOwned          => Album is AlbumRemote { Owner: null };
     public override bool IsStrictRemote         => false;
     public override bool IsStrictRemoteNonOwned => false;
     public override bool IsStrictRemoteOwned    => false;

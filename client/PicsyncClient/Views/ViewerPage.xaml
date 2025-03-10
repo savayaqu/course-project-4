@@ -11,8 +11,6 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <tk:IsNotNullConverter     x:Key="IsNotNullConverter"/>
-            <tk:InvertedBoolConverter  x:Key="InvertedBoolConverter"/>
-            <cv:LocalUriConverter      x:Key="LocalUriConverter"/>
             <cv:BytesToHumanConverter  x:Key="BytesToHumanConverter"/>
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -100,12 +98,7 @@
             </StackLayout>
         </Grid>
     </Shell.TitleView>
-    <!--<ContentPage.Behaviors>
-        <tk:StatusBarBehavior StatusBarColor="Transparent"/>
-    </ContentPage.Behaviors>-->
-    <!--<pinch:PinchZoom>
-        <Image Source="{Binding Picture.OriginalPath}"/>
-    </pinch:PinchZoom>-->
+    
     <Grid BackgroundColor="{AppThemeBinding Light=White, Dark=Black}">
         <Grid.Triggers>
             <DataTrigger TargetType="Grid" Binding="{Binding AreControlsVisible}" Value="False">

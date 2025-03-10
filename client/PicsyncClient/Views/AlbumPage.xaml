@@ -9,12 +9,9 @@
              x:Class="PicsyncClient.Views.AlbumPage"
              Shell.TabBarIsVisible="False"
              Title="{Binding Album.Name}">
-    <!--x:DataType="vm:AlbumViewModel"-->
-
     <ContentPage.Resources>
         <ResourceDictionary>
             <tk:IsNotNullConverter        x:Key="IsNotNullConverter"/>
-            <tk:InvertedBoolConverter     x:Key="InvertedBoolConverter"/>
             <cv:NonZeroToTrueConverter    x:Key="NonZeroToTrueConverter"/>
             <cv:LocalUriConverter         x:Key="LocalUriConverter"/>
             <cv:TrueOnTargetTypeStrictConverter x:Key="TrueOnTargetTypeStrictConverter"/>
@@ -90,7 +87,7 @@
                 </HorizontalStackLayout>
             </StackLayout>
 
-            <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center" x:Name="AfterTitleManagmentButtons" IsVisible="False">
+            <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center" x:Name="AfterTitleButtons" IsVisible="False">
                 <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="False" Command="{Binding AccessManageCommand}">
                     <mcb:ContentButton.Resources>
                         <ResourceDictionary>
@@ -256,7 +253,7 @@
                     <AdaptiveTrigger MinWindowWidth="500"/>
                 </VisualState.StateTriggers>
                 <VisualState.Setters>
-                    <Setter TargetName="AfterTitleManagmentButtons" Property="HorizontalStackLayout.IsVisible" Value="True"/>
+                    <Setter TargetName="AfterTitleButtons" Property="HorizontalStackLayout.IsVisible" Value="True"/>
                 </VisualState.Setters>
             </VisualState>
 
@@ -265,8 +262,8 @@
                     <AdaptiveTrigger MinWindowWidth="0"/>
                 </VisualState.StateTriggers>
                 <VisualState.Setters>
-                    <Setter TargetName="BottomManagmentButtons" Property="ScrollView.IsVisible" Value="True"/>
-                    <Setter TargetName="BottomManagmentButtons" Property="ScrollView.MaximumHeightRequest" Value="50"/>
+                    <Setter TargetName="BottomButtons" Property="ScrollView.IsVisible" Value="True"/>
+                    <Setter TargetName="BottomButtons" Property="ScrollView.MaximumHeightRequest" Value="50"/>
                 </VisualState.Setters>
             </VisualState>
         </VisualStateGroup>
@@ -282,7 +279,7 @@
             
             <CollectionView.Header>
                 <StackLayout>
-                    <ScrollView Orientation="Horizontal" HorizontalOptions="Center" x:Name="BottomManagmentButtons" IsVisible="False" MaximumHeightRequest="0">
+                    <ScrollView Orientation="Horizontal" HorizontalOptions="Center" x:Name="BottomButtons" IsVisible="False" MaximumHeightRequest="0">
                         <HorizontalStackLayout Spacing="5" Margin="5" HorizontalOptions="Center">
                             <mcb:ContentButton Padding="8,2" HeightRequest="40" IsVisible="False" Command="{Binding AccessManageCommand}">
                                 <mcb:ContentButton.Resources>
@@ -375,7 +372,7 @@
                     <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
                 Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
                 IsVisible="{Binding ErrorOnAlbum, Converter={StaticResource IsNotNullConverter}}">
-                        <StackLayout Grid.Column="1" Spacing="5">
+                        <StackLayout Spacing="5">
                             <HorizontalStackLayout Spacing="5">
                                 <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                                     <Image.Behaviors>
@@ -451,7 +448,7 @@
                     <Border Padding="10" Stroke="Red" Margin="5" StrokeShape="RoundRectangle 6"
             Background="{AppThemeBinding Dark={StaticResource RedDark}, Light={StaticResource Red}}"
             IsVisible="{Binding ErrorOnPage, Converter={StaticResource IsNotNullConverter}}">
-                        <StackLayout Grid.Column="1" Spacing="5">
+                        <StackLayout Spacing="5">
                             <HorizontalStackLayout Spacing="5">
                                 <Image Source="triangle_alert.png" HeightRequest="24" WidthRequest="24">
                                     <Image.Behaviors>

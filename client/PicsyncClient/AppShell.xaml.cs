@@ -7,11 +7,11 @@ namespace PicsyncClient;
 
 public partial class AppShell : Shell
 {
-    private readonly List<PageRoute> _navigationItems = [
-        new() { Title = "Недавнее" , Icon = "house.png"      , PageType = typeof(MainPage)    , Route = "Main" },
-        new() { Title = "Альбомы"  , Icon = "library_big.png", PageType = typeof(AlbumsPage)  , Route = "Albums" },
-        new() { Title = "Настройки", Icon = "settings.png"   , PageType = typeof(SettingsPage), Route = "Settings" }
-    ];
+    //private readonly List<PageRoute> _navigationItems = [
+    //    new() { Title = "Недавнее" , Icon = "house.png"      , PageType = typeof(MainPage)    , Route = "Main" },
+    //    new() { Title = "Альбомы"  , Icon = "library_big.png", PageType = typeof(AlbumsPage)  , Route = "Albums" },
+    //    new() { Title = "Настройки", Icon = "settings.png"   , PageType = typeof(SettingsPage), Route = "Settings" }
+    //];
 
     public AppShell()
     {

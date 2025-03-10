@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using PicsyncClient.Utils;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 
 namespace PicsyncClient.ViewModels.Auth;
 
@@ -11,18 +10,18 @@ public partial class ServerSelectorViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TryNewConnectCommand))]
     [NotifyCanExecuteChangedFor(nameof(TryPastConnectCommand))]
-    private string url = "";
+    private string _url = "";
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(TryNewConnectCommand))]
     [NotifyCanExecuteChangedFor(nameof(TryPastConnectCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelConnectCommand))]
-    private bool isFetch = false;
+    private bool _isFetch;
 
     [ObservableProperty]
-    private string? error = null;
+    private string? _error;
 
-    private CancellationTokenSource _cancellationTokenSource;
+    private CancellationTokenSource? _cancellationTokenSource;
 
     public ObservableCollection<string> PastUrls => ServerData.PastUrls;
 
@@ -30,23 +29,22 @@ public partial class ServerSelectorViewModel : ObservableObject
 
     public ServerSelectorViewModel()
     {
-        PastUrls.CollectionChanged += (object? sender, NotifyCollectionChangedEventArgs e) 
-            => OnPropertyChanged(nameof(PastUrlsIsVisible));
+        PastUrls.CollectionChanged += (sender, e) => OnPropertyChanged(nameof(PastUrlsIsVisible));
     }
 
-    public bool CanTryNewConnect() => url != "" && !IsFetch;
+    public bool CanTryNewConnect() => Url != "" && !IsFetch;
 
     [RelayCommand(CanExecute = nameof(CanTryNewConnect))]
     private async Task TryNewConnect()
     {
         _cancellationTokenSource = new();
-        bool isSucces = await ServerData.TrySaveAndNavigate(
+        bool isSuccess = await ServerData.TrySaveAndNavigate(
             Url,
             isFetch => IsFetch = isFetch,
             error => Error = error,
             _cancellationTokenSource.Token
         );
-        if (isSucces)
+        if (isSuccess)
         {
             Url = "";
         }
@@ -58,7 +56,7 @@ public partial class ServerSelectorViewModel : ObservableObject
     private async Task TryPastConnect(string url)
     {
         _cancellationTokenSource = new();
-        bool isSucces = await ServerData.TrySaveAndNavigate(
+        await ServerData.TrySaveAndNavigate(
             url, 
             isFetch => IsFetch = isFetch,
             error => Error = error,
